@@ -30,6 +30,7 @@ Both should pass before you publish, screenshot, or share.
 Start with:
 
 - `templates/operator-card.md`
+- `templates/audit-card.md`
 - `templates/mailbox-entry.md`
 - `templates/route-packet.md`
 - `templates/compute-request.md`
@@ -39,6 +40,9 @@ Use these as formats, not as a mandate. The core rule is that every compute
 request should have an owner, validator, kill gate, and evidence label.
 
 If you want a filled safe example first, read `examples/`.
+
+Use `docs/audit-loop.md` when you want the RCI/Tony plus Bluesky/Redsky review
+cycle before changing docs, dispatching compute, or writing a public note.
 
 ## 4. Keep Private State Outside This Repo
 

@@ -35,6 +35,7 @@ endorsement where there was only inspiration.
 
 - A current-target-first operating model.
 - Worker role cards and handoff templates.
+- RCI/Tony, Anton, Bluesky, and Redsky audit loop.
 - Evidence labels and validation gates.
 - Route packet and compute request templates.
 - Safe filled examples for the templates.
@@ -61,6 +62,8 @@ state in a separate private repo or local folder.
 Full guide: [docs/quickstart.md](docs/quickstart.md).
 
 Safe filled examples: [examples/](examples/).
+
+Audit loop: [docs/audit-loop.md](docs/audit-loop.md).
 
 ## What This Repo Does Not Contain
 

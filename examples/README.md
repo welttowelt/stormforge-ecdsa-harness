@@ -7,6 +7,7 @@ Use them to teach agents the workflow:
 
 - every directed message requests a read receipt,
 - every route has a falsifier,
+- every route can receive a Bluesky and Redsky audit pass,
 - every compute request has a validator and kill gate,
 - every public note separates evidence from claims,
 - scanner output stays `Prefilter` until official validation passes.

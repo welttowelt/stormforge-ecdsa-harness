@@ -26,10 +26,12 @@ need_text() {
 
 for path in \
   templates/operator-card.md \
+  templates/audit-card.md \
   templates/mailbox-entry.md \
   templates/route-packet.md \
   templates/compute-request.md \
   templates/public-note.md \
+  examples/audit-card.example.md \
   examples/operator-card.example.md \
   examples/mailbox-entry.example.md \
   examples/route-packet.example.md \
@@ -41,6 +43,10 @@ done
 
 need_text templates/operator-card.md "read receipt" "Read receipt requested"
 need_text templates/operator-card.md "kill gate" "Kill gate"
+need_text templates/audit-card.md "audit type" "Audit type"
+need_text templates/audit-card.md "bluesky pass" "Bluesky Pass"
+need_text templates/audit-card.md "redsky pass" "Redsky Pass"
+need_text templates/audit-card.md "smallest useful fix" "Smallest useful fix"
 need_text templates/route-packet.md "evidence label" "Evidence label"
 need_text templates/route-packet.md "submit gate" "Submit gate"
 need_text templates/compute-request.md "validator" "Validator"
@@ -51,6 +57,9 @@ need_text templates/public-note.md "purpose and limits" "Purpose And Limits"
 need_text templates/public-note.md "evidence label" "Evidence label"
 
 need_text examples/operator-card.example.md "falsifiable decision" "Falsifiable decision"
+need_text examples/audit-card.example.md "rci tony" "RCI/Tony"
+need_text examples/audit-card.example.md "redsky" "Redsky Pass"
+need_text examples/audit-card.example.md "bluesky" "Bluesky Pass"
 need_text examples/mailbox-entry.example.md "read receipt requested" "Read receipt requested"
 need_text examples/route-packet.example.md "stop condition" "Stop condition"
 need_text examples/compute-request.example.md "zero paid compute" "zero"
