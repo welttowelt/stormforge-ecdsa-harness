@@ -104,3 +104,7 @@ Do not publish until:
 - `docs/credits.md` names every borrowed idea or tool.
 - All examples use fixture/demo data.
 - A human review confirms no private hunt state remains.
+
+See [docs/publish-checklist.md](docs/publish-checklist.md) for the full
+publish sequence and [docs/telegram-announcement.md](docs/telegram-announcement.md)
+for a short sharing draft.
