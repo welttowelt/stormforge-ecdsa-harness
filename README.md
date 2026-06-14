@@ -4,15 +4,39 @@ Public repo: <https://github.com/welttowelt/stormforge-ecdsa-harness>
 
 Fixture dashboard: <https://welttowelt.github.io/stormforge-ecdsa-harness/>
 
-Stormforge is a sanitized operator layer for coordinating public `ecdsa.fail`
-research workflows. It is not the original benchmark harness and it does not
-contain private hunt state.
+Stormforge is a sanitized operator control plane for coordinating public
+`ecdsa.fail` research workflows. It is the layer around the solver: deciding
+what deserves attention, forcing evidence labels, routing workers, gating
+compute, recording ACKs, and keeping public notes safe to share. It is not the
+original benchmark harness and it does not contain private hunt state.
 
 Purpose and limits: `ecdsa.fail` is a public resource-estimation benchmark for
 the quantum cost of one `secp256k1` point-add circuit. This repo contains
 workflow templates, evidence discipline, dashboard fixtures, and safety checks.
 It does not provide runnable attacks, target selection, key recovery, private
 compute endpoints, raw scan logs, unreleased nonces, or live candidate diffs.
+
+## Operator Edge
+
+Agentic benchmark work fails quietly when teams trust memory, chase stale
+routes, spend compute without a kill gate, or promote scanner hits into public
+claims too early. Stormforge makes that operating layer explicit:
+
+- **Current-target lock:** every cycle starts from refreshed public benchmark
+  state, not chat memory.
+- **Route packets:** every idea names the claim, evidence level, validator,
+  owner, budget, and falsifier before it receives compute.
+- **Critique loop:** RCI/Tony, Anton, Bluesky, and Redsky passes separate
+  constructive upside from adversarial failure checks.
+- **Compute gate:** CPU/GPU work is allowed only when a route has a predicate,
+  validator, owner, budget, and stop condition.
+- **Submit gate:** no win language until fresh frontier recheck, official local
+  validation, score win, legal diff, public note, and explicit submit flag.
+- **Public boundary:** dashboards, examples, and notes stay fixture/public-only
+  while private logs, endpoints, routes, and nonces stay out.
+
+The repo is therefore not a faster circuit generator by itself. It is a way to
+make a group of agents and humans behave like a disciplined research desk.
 
 ## Lineage
 
