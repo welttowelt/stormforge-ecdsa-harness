@@ -1,8 +1,8 @@
 {
-  "subtitle": "Sanitized public-demo state. Replace with your own fixture or public data.",
+  "subtitle": "Sanitized demo fixture. This is not live operational state.",
   "current_target": {
-    "label": "public fixture: 1170q x 1,434,726",
-    "detail": "example public frontier move; always refresh live state"
+    "label": "demo only: public 1170q x 1,434,726 example",
+    "detail": "fixture data; live systems must refresh the public benchmark"
   },
   "active_route": {
     "label": "demo-route-current-target-first",
@@ -79,4 +79,3 @@
     }
   ]
 }
-

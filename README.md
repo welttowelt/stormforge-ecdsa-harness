@@ -87,11 +87,20 @@ The check rejects common private material: API-key shapes, remote command
 fragments, host/port patterns, private paths, raw nonce assignments, live
 mailbox filenames, and forbidden state directories.
 
+Before a public push, also scan committed history:
+
+```bash
+scripts/redaction-check.sh --history
+```
+
+The GitHub Actions workflow runs both checks on push and pull request.
+
 ## Release Rule
 
 Do not publish until:
 
 - `scripts/redaction-check.sh` passes.
+- `scripts/redaction-check.sh --history` passes.
 - `docs/credits.md` names every borrowed idea or tool.
 - All examples use fixture/demo data.
 - A human review confirms no private hunt state remains.

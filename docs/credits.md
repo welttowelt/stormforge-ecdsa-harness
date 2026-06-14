@@ -34,8 +34,10 @@ or benchmark harness.
 - **Frosty40 / newjordan**: shared operator-board/status-board inspiration.
 - **Teddy Pender**: low-qubit branch sharing and open-innovation examples.
 - **Sam / karnot.xyz**: operator-card and skill-stack exchange inspiration.
+  Source context: group discussion; public verification not claimed here.
 - **zuiris / Maksim**: group-context inspiration for the two-lane research plus
   narrow engineering handoff model.
+  Source context: group discussion; public verification not claimed here.
 - **gnuchev**: public frontier-move context and a reminder that live target
   checks must refresh public state instead of trusting memory.
 
@@ -51,5 +53,5 @@ or benchmark harness.
 - Use `inspired by` for tactics, workflows, and process ideas.
 - Use `based on` only for direct foundations such as the public challenge.
 - Label group-only material as `group discussion`.
+- Mark group-only credits as public-unverified unless a public URL is added.
 - Do not imply endorsement by any credited person.
-

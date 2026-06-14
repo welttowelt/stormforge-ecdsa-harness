@@ -7,6 +7,7 @@ dashboard.
 
 ```bash
 scripts/redaction-check.sh
+scripts/redaction-check.sh --history
 ```
 
 ## Manual Check
@@ -24,6 +25,9 @@ scripts/redaction-check.sh
 - All dashboard data is fixture or public data.
 - Every borrowed idea or tool has a credit entry.
 - Every group-only source is labeled `group discussion`.
+- Every group-only credit is marked `group_context_unverified_publicly` or
+  equivalent.
+- GitHub Actions redaction checks are present and passing.
 
 ## Allowed
 
@@ -41,4 +45,3 @@ Every public release should state:
 > This is a public benchmark coordination harness for resource-estimation
 > research. It does not include private compute access, attack workflows,
 > unreleased nonces, or live candidate diffs.
-

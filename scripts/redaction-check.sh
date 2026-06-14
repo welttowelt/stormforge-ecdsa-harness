@@ -5,6 +5,14 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 fail=0
+mode="tree"
+
+if [ "${1:-}" = "--history" ]; then
+  mode="history"
+elif [ "${1:-}" != "" ]; then
+  printf 'usage: %s [--history]\n' "$0" >&2
+  exit 2
+fi
 
 print_fail() {
   printf 'redaction_check=fail reason=%s\n' "$1" >&2
@@ -20,15 +28,33 @@ done
 scan_files() {
   find . \
     -path './.git' -prune -o \
+    -path './.github/workflows/redaction.yml' -prune -o \
     -path './scripts/redaction-check.sh' -prune -o \
     -type f -print
+}
+
+scan_tree_pattern() {
+  local pattern="$1"
+  scan_files | xargs grep -nE "$pattern" 2>/dev/null || true
+}
+
+scan_history_pattern() {
+  local pattern="$1"
+  git grep -nE "$pattern" "$(git rev-list --all)" -- . \
+    ':(exclude)scripts/redaction-check.sh' \
+    ':(exclude).github/workflows/redaction.yml' \
+    2>/dev/null || true
 }
 
 check_pattern() {
   local name="$1"
   local pattern="$2"
   local matches
-  matches="$(scan_files | xargs grep -nE "$pattern" 2>/dev/null || true)"
+  if [ "$mode" = "history" ]; then
+    matches="$(scan_history_pattern "$pattern")"
+  else
+    matches="$(scan_tree_pattern "$pattern")"
+  fi
   if [ "$matches" != "" ]; then
     printf 'redaction_check=match pattern=%s\n%s\n' "$name" "$matches" >&2
     fail=1
@@ -40,6 +66,7 @@ check_pattern "generic_secret_key" '(^|[^[:alnum:]_])sk-[[:alnum:]]{16,}'
 check_pattern "remote_command" 'ssh[[:space:]]+[^[:space:]]+@'
 check_pattern "root_remote" 'root@'
 check_pattern "host_port" '([0-9]{1,3}\.){3}[0-9]{1,3}(:[0-9]{2,5})?'
+check_pattern "runpod_endpoint" 'runpod\.io|proxy\.runpod\.net'
 check_pattern "private_key_name" 'id_ed25519|BEGIN OPENSSH PRIVATE KEY|BEGIN RSA PRIVATE KEY'
 check_pattern "url_token" 'token='
 check_pattern "private_home_path" '/Users/[A-Za-z0-9._-]+'
@@ -50,5 +77,4 @@ if [ "$fail" -ne 0 ]; then
   exit 1
 fi
 
-printf 'redaction_check=pass\n'
-
+printf 'redaction_check=pass mode=%s\n' "$mode"
