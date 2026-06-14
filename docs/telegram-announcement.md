@@ -1,13 +1,13 @@
 # Telegram Announcement Draft
 
-hey frens, I cleaned up and open-sourced a sanitized version of my Stormforge
+hey frens, I cleaned up and open-sourced a sanitized version of my Storm
 setup.
 
 Repo:
-https://github.com/welttowelt/stormforge-ecdsa-harness
+https://github.com/welttowelt/storm-ecdsa-harness
 
 Demo dashboard:
-https://welttowelt.github.io/stormforge-ecdsa-harness/
+https://welttowelt.github.io/storm-ecdsa-harness/
 
 Important framing: this is not the original ecdsa.fail harness. The base
 challenge/platform comes from Gautham / ecdsa.fail. Gajesh also shared many

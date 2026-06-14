@@ -9,7 +9,7 @@ credits:
       - https://www.linkedin.com/pulse/you-beat-google-sreeram-kannan-rqehc
     notes: >
       Credited for the base benchmark/platform lineage, not for this repo's
-      Stormforge operator-layer implementation.
+      Storm operator-layer implementation.
 
   - name: ecdsa.fail maintainers and community
     contribution_type: public_benchmark_ecosystem

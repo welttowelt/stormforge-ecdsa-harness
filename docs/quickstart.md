@@ -1,6 +1,6 @@
 # Quickstart
 
-This quickstart shows how to copy the public Stormforge operator layer without
+This quickstart shows how to copy the public Storm operator layer without
 importing private state.
 
 ## 1. Start From A Fresh Copy
@@ -8,8 +8,8 @@ importing private state.
 Use the GitHub template button or clone the repo:
 
 ```bash
-git clone https://github.com/welttowelt/stormforge-ecdsa-harness.git
-cd stormforge-ecdsa-harness
+git clone https://github.com/welttowelt/storm-ecdsa-harness.git
+cd storm-ecdsa-harness
 ```
 
 Keep this repo as a public coordination/template layer. Put private operations

@@ -25,7 +25,7 @@ Expected result:
 - Gautham Anant is credited for base benchmark/platform lineage.
 - Gajesh Naik / Gajesh2007 is credited for early custom agent-harness
   inspiration.
-- Stormforge is described as the sanitized operator layer only.
+- Storm is described as the sanitized operator layer only.
 - Group-only credits are marked as group-context, not public-source claims.
 - Dashboard says demo fixture only.
 - No live route, raw log, endpoint, private path, key, or unreleased nonce
@@ -36,7 +36,7 @@ Expected result:
 Recommended repo name:
 
 ```text
-stormforge-ecdsa-harness
+storm-ecdsa-harness
 ```
 
 Recommended description:

@@ -1,6 +1,6 @@
 # Audit Loop
 
-The Stormforge harness uses critique before compute. A route should survive a
+The Storm harness uses critique before compute. A route should survive a
 small audit loop before it receives worker time, paid CPU/GPU time, or public
 claims.
 

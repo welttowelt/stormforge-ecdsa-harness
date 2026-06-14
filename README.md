@@ -1,10 +1,10 @@
-# Stormforge ECDSA Harness
+# Storm ECDSA Harness
 
-Public repo: <https://github.com/welttowelt/stormforge-ecdsa-harness>
+Public repo: <https://github.com/welttowelt/storm-ecdsa-harness>
 
-Fixture dashboard: <https://welttowelt.github.io/stormforge-ecdsa-harness/>
+Fixture dashboard: <https://welttowelt.github.io/storm-ecdsa-harness/>
 
-Stormforge is a sanitized operator control plane for coordinating public
+Storm is a sanitized operator control plane for coordinating public
 `ecdsa.fail` research workflows. It is the layer around the solver: deciding
 what deserves attention, forcing evidence labels, routing workers, gating
 compute, recording ACKs, and keeping public notes safe to share. It is not the
@@ -20,7 +20,7 @@ compute endpoints, raw scan logs, unreleased nonces, or live candidate diffs.
 
 Agentic benchmark work fails quietly when teams trust memory, chase stale
 routes, spend compute without a kill gate, or promote scanner hits into public
-claims too early. Stormforge makes that operating layer explicit:
+claims too early. Storm makes that operating layer explicit:
 
 - **Current-target lock:** every cycle starts from refreshed public benchmark
   state, not chat memory.
@@ -46,7 +46,7 @@ make a group of agents and humans behave like a disciplined research desk.
 - Early custom agent-harness inspiration: Gajesh Naik / Gajesh2007, including
   custom agent workflows, goal-mode style operation, model/subagent routing, and
   more agent-readable code organization.
-- Stormforge contribution: a sanitized coordination/control-plane layer:
+- Storm contribution: a sanitized coordination/control-plane layer:
   mailbox protocol, ACK/read receipts, route packets, worker roles, dashboard
   views, compute gates, submit gates, and redaction discipline.
 
@@ -72,8 +72,8 @@ endorsement where there was only inspiration.
 Use this as a GitHub template or clone it directly:
 
 ```bash
-git clone https://github.com/welttowelt/stormforge-ecdsa-harness.git
-cd stormforge-ecdsa-harness
+git clone https://github.com/welttowelt/storm-ecdsa-harness.git
+cd storm-ecdsa-harness
 scripts/redaction-check.sh
 scripts/redaction-check.sh --history
 scripts/check-public-harness.sh
@@ -122,7 +122,7 @@ state, and submit gates without leaking operational details.
 Public fixture dashboard:
 
 ```text
-https://welttowelt.github.io/stormforge-ecdsa-harness/
+https://welttowelt.github.io/storm-ecdsa-harness/
 ```
 
 Open locally:

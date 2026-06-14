@@ -1,6 +1,6 @@
 # Operating Model
 
-Stormforge is an operator layer for agentic benchmark research. It assumes the
+Storm is an operator layer for agentic benchmark research. It assumes the
 base benchmark and challenge already exist, then adds coordination discipline
 around agents, evidence, compute, and publication.
 

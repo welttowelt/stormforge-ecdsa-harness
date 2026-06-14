@@ -1,6 +1,6 @@
 # Contributing
 
-Stormforge is a sanitized operator-layer template for public `ecdsa.fail`
+Storm is a sanitized operator-layer template for public `ecdsa.fail`
 coordination. Contributions should improve process clarity, safety, attribution,
 or demo usability without adding private hunt state.
 
