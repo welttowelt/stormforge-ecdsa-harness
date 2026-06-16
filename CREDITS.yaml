@@ -44,6 +44,19 @@ credits:
       - https://github.com/jieyilong/ecdsafail_gpu_toolkit
       - https://github.com/jieyilong/ecdsafail_skills
 
+  - name: tanweai / PUA Skill contributors
+    contribution_type: external_skill_methodology_inspiration
+    used_as: English PIP-style evidence discipline adapted into a local Storm prompt card
+    source_context: public MIT-licensed repo
+    verification_status: public_source
+    source_urls:
+      - https://github.com/tanweai/pua
+    notes: >
+      Storm adapts the repeated-failure methodology and completion-evidence
+      checklist into skills/pip-discipline.md. It does not import plugin hooks,
+      telemetry, feedback upload, leaderboard, survey, remote prompt loading, or
+      always-on behavior.
+
   - name: BitWonka
     contribution_type: public_frontier_process_inspiration
     used_as: promoted-diff discipline, lifecycle/free-reacquire thinking, reachable-support codec framing

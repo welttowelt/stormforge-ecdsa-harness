@@ -74,6 +74,22 @@ endorsement where there was only inspiration.
 - A redaction checklist and automated redaction scan.
 - Public-credit policy for community-derived ideas.
 
+## Skill Cards
+
+The `skills/` directory contains operator prompt cards that can be copied into
+agent instructions or used as a preflight before route work:
+
+- `skills/nasqret-playbook.md`: build route slates before scaling compute.
+- `skills/deepseek-pressure-test.md`: ask an external worker to try to kill a
+  route before acting.
+- `skills/pip-discipline.md`: use the English/PIP-derived evidence discipline
+  after repeated failure, passive handoff, or unverified completion claims. This
+  repo imports only the local prompt-card discipline, not plugin hooks,
+  telemetry, feedback upload, or remote prompt loading.
+
+Codex-style agents can also discover the PIP card through the repo-local bridge
+at `.agents/skills/pip-discipline/SKILL.md`.
+
 ## Quickstart
 
 Use this as a GitHub template or clone it directly:

@@ -109,5 +109,10 @@ For each route:
 6. Treat scanner hits as `Prefilter`.
 7. Submit only after official local validation and a fresh frontier check.
 
+If a worker fails twice, repeats the same approach, or claims completion without
+evidence, run `skills/pip-discipline.md` before the next attempt. It forces the
+worker to read the failure signal, refresh public truth, invert the assumption,
+name three different hypotheses, and define the next bounded check.
+
 The most useful habit is not the dashboard. It is forcing every worker and every
 compute job to explain what would prove the route dead.
