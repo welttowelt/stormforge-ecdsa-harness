@@ -19,6 +19,7 @@
   .eyebrow{font-size:12px;letter-spacing:.14em;color:var(--mute);text-transform:uppercase}
   h1{font-size:19px;font-weight:500;margin:6px 0 4px;color:var(--ink)}
   .sub{font-size:13px;color:var(--mute);margin:0 0 18px;line-height:1.6}
+  .sub b{font-weight:500;color:var(--accent)}
   .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:4px}
   .stat{background:var(--panel);border:1px solid var(--panel-bd);border-radius:10px;padding:14px 16px}
   .stat .lbl{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
@@ -30,7 +31,6 @@
   .legend{display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:var(--mute);margin-top:8px}
   .legend span{display:flex;gap:6px;align-items:center}
   .dot{width:10px;height:10px;border-radius:50%}
-  .ln{width:16px;height:0;border-top:2.5px solid var(--base);align-self:center;opacity:.65}
   .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
   .box{background:var(--panel);border:1px solid var(--panel-bd);border-radius:10px;padding:13px 15px}
   .box .h{font-size:13px;color:var(--accent);margin:0 0 5px}
@@ -55,11 +55,10 @@
 
     <section class="stats" id="stats"></section>
 
-    <h2>where we sit on the sub-1000-qubit race</h2>
+    <h2>our promoted frontier moves · main board</h2>
     <div id="chart"></div>
     <div class="legend">
-      <span><span class="dot" style="background:#4ad99a"></span>our validated circuits</span>
-      <span><span class="ln"></span>public frontier · other solvers</span>
+      <span><span class="dot" style="background:#4ad99a"></span>each dot = one accepted (promoted) row · lower score is better</span>
     </div>
 
     <h2>what we contributed</h2>
@@ -84,78 +83,75 @@ const team = [
   {name:"Akash", gh:"Akashneelesh"}
 ];
 
-/* the team's OWN circuits — each independently re-validated at 0/0/0 on the full 9024-shot trusted eval */
-const ours = [
-  {qubits:976, toffoli:28573233, best:true},
-  {qubits:979, toffoli:28727201}
-];
-
-/* public sub-1000q frontier — context, held by other solvers */
-const frontier = [
-  {solver:"nasqret",   qubits:965, toffoli:34069641},
-  {solver:"jieyilong", qubits:968, toffoli:33476041},
-  {solver:"jieyilong", qubits:973, toffoli:28328177}
+/* the 13 promoted (accepted) primary-score rows, jun 6-10 2026.
+   score = peak qubits x avg executed Toffoli (lower is better). public ecdsa.fail API. */
+const moves = [
+  {d:"jun 6",  q:1309, score:1984166492},
+  {d:"jun 6",  q:1309, score:1982805132},
+  {d:"jun 6",  q:1309, score:1968567139},
+  {d:"jun 6",  q:1309, score:1960613655},
+  {d:"jun 7",  q:1307, score:1917944080},
+  {d:"jun 7",  q:1306, score:1907351618},
+  {d:"jun 7",  q:1306, score:1906003826},
+  {d:"jun 8",  q:1300, score:1824581200},
+  {d:"jun 8",  q:1299, score:1823175078},
+  {d:"jun 8",  q:1298, score:1822107738},
+  {d:"jun 8",  q:1297, score:1820670235},
+  {d:"jun 9",  q:1285, score:1779704440},
+  {d:"jun 10", q:1226, score:1759744004}
 ];
 
 const contribs = [
-  {h:"validated sub-1000q circuits", b:"976q & 979q secp256k1 point-add circuits, each independently re-validated at 0/0/0 (classical / phase / ancilla) on the full 9024-shot trusted eval."},
-  {h:"open harness", b:"the storm ecdsa harness — public tooling and this dashboard, on github. shared, reproducible, auditable."},
-  {h:"validation gate", b:"a 9024-shot trusted-eval pipeline every candidate must pass before it counts — no result is claimed on a count-only or sub-sampled check."},
-  {h:"research map", b:"a floor argument for the standard approach (~1050q, argued two ways: a published theoretical bound and the realized Trail of Bits circuit), with sub-1000 the open structural target — plus a closed-lever map: counter-width, Q-target, hCLZ-parity and fixed-shift divstep all proven dead or parked, so the search stays on the live question."}
+  {h:"main-board frontier moves", b:"13 promoted (accepted) primary-score rows from jun 6–10, totaling 29.9M official score-improvement points, down to an accepted 1226-qubit row — a global qubit floor at the time."},
+  {h:"sub-1000 low-Q race", b:"public measured rows down to 978q, with our 979q circuit independently re-validated at 0/0/0 (classical / phase / ancilla) on the full 9024-shot trusted eval — a contribution to the sub-1000-qubit challenge, where nasqret and jieyilong currently lead."},
+  {h:"open harness + operator stack", b:"the public storm ecdsa harness, shared agent-readable notes, mailbox + read-receipt discipline, multi-model (codex / claude) orchestration and validation gates — the operating layer, not just final circuits."},
+  {h:"research map", b:"a floor argument for the standard approach (~1050q, argued two ways: a published theoretical bound and the realized Trail of Bits circuit), with sub-1000 the open structural target — plus a closed-lever map of what's already dead or parked."}
 ];
 
-const fmt = (t,d)=>(t/1e6).toFixed(d)+"M";
-const best = ours.reduce((a,b)=>b.qubits<a.qubits?b:a);
-
 document.getElementById("sub").innerHTML =
-  `team Storm in the qubit × gate race for the cheapest reversible secp256k1 point-add, ${ASOF}. `+
-  `together we've built and independently validated circuits at <b style="color:var(--accent);font-weight:500">${best.qubits} qubits</b> — among the small set of solvers with validated sub-1000-qubit results — plus the open tooling and research map below.`;
+  `team Storm in the ecdsa.fail race for the cheapest reversible secp256k1 point-add. across June 2026 we landed <b>13 promoted frontier moves</b> on the main qubit×gate board, then pushed into the <b>sub-1000-qubit</b> race with measured rows down to 978q — on top of the open tooling and validation discipline below.`;
 
 document.getElementById("stats").innerHTML = [
-  {lbl:"best validated",  val:`${best.qubits}q`, sub2:`× ${fmt(best.toffoli,2)} gates · trusted 0/0/0`},
-  {lbl:"validation gate",  val:"0/0/0", sub2:"9024 shots · every candidate"},
-  {lbl:"approach floor",  val:"~1050q", sub2:"standard circuits floor here · we validated below it"}
+  {lbl:"promoted frontier moves", val:"13", sub2:"accepted main-board wins · jun 6–10"},
+  {lbl:"official score gained", val:"29.9M", sub2:"direct score-improvement points"},
+  {lbl:"low-Q floor reached", val:"978q", sub2:"public measured · 979q re-validated 0/0/0"}
 ].map(c=>`<div class="stat"><div class="lbl">${c.lbl}</div><div class="val num">${c.val}</div><div class="sub2">${c.sub2}</div></div>`).join("");
 
-/* ---- chart: zoomed to the sub-1000q race ---- */
-const W=720,H=312,M={l:66,r:122,t:28,b:46};
+/* ---- chart: the 13 promoted frontier moves (score descending) ---- */
+const fmtB = s => (s/1e9).toFixed(2)+"B";
+const W=720,H=300,M={l:60,r:120,t:30,b:46};
 const pw=W-M.l-M.r, ph=H-M.t-M.b;
-const qMin=962, qMax=982;
-const tMin=27.6e6, tMax=34.7e6;
-const X=q=>M.l+(q-qMin)/(qMax-qMin)*pw;
-const Y=t=>M.t+(tMax-t)/(tMax-tMin)*ph;
+const n=moves.length;
+const sMin=1.74e9, sMax=2.0e9;
+const X=i=>M.l+(i/(n-1))*pw;
+const Y=s=>M.t+(sMax-s)/(sMax-sMin)*ph;
 
-let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Qubit versus gate count in the sub-1000-qubit race as of ${ASOF}. The public frontier runs from nasqret at 965 qubits to jieyilong at 973 qubits and 28.3M gates. Team Storm's two validated circuits sit just behind it at 976 and 979 qubits and about 28.6M gates.">`;
+let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Team Storm's 13 promoted frontier moves on the main ecdsa.fail board, June 6 to 10 2026. The qubit×gate score fell from about 1.98 billion at 1309 qubits to 1.76 billion at an accepted 1226-qubit row, a global qubit floor at the time.">`;
 s+=`<defs><marker id="arr" markerWidth="9" markerHeight="9" refX="6" refY="4.5" orient="auto"><path d="M1,1 L7,4.5 L1,8" fill="none" stroke="#8fb3a2" stroke-width="1.4"/></marker></defs>`;
 
-[28e6,30e6,32e6,34e6].forEach(t=>{const y=Y(t);
+[1.8e9,1.9e9,2.0e9].forEach(v=>{const y=Y(v);
   s+=`<line x1="${M.l}" y1="${y.toFixed(1)}" x2="${M.l+pw}" y2="${y.toFixed(1)}" stroke="var(--grid)"/>`;
-  s+=`<text x="${M.l-8}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="11" fill="#6f9384">${fmt(t,0)}</text>`;});
-s+=`<text x="${M.l-44}" y="${M.t-12}" font-size="11" fill="#8fb3a2">gates</text>`;
-[965,970,975,980].forEach(q=>{
-  s+=`<text x="${X(q).toFixed(0)}" y="${M.t+ph+18}" text-anchor="middle" font-size="11" fill="#6f9384">${q}</text>`;});
-s+=`<text x="${(M.l+pw).toFixed(0)}" y="${M.t+ph+34}" text-anchor="end" font-size="11" fill="#8fb3a2">qubits →</text>`;
+  s+=`<text x="${M.l-8}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="11" fill="#6f9384">${fmtB(v)}</text>`;});
+s+=`<text x="${M.l-40}" y="${M.t-12}" font-size="11" fill="#8fb3a2">Q×gate score</text>`;
+[[0,"jun 6"],[7,"jun 8"],[12,"jun 10"]].forEach(([i,lab])=>{
+  s+=`<text x="${X(i).toFixed(0)}" y="${M.t+ph+18}" text-anchor="middle" font-size="11" fill="#6f9384">${lab}</text>`;});
 
-/* public frontier line + dots (muted) */
-const fsort=frontier.slice().sort((a,b)=>a.qubits-b.qubits);
-s+=`<path d="${fsort.map((d,i)=>(i?'L':'M')+X(d.qubits).toFixed(1)+','+Y(d.toffoli).toFixed(1)).join(' ')}" fill="none" stroke="var(--base)" stroke-width="2" opacity="0.55"/>`;
-fsort.forEach(d=>s+=`<circle cx="${X(d.qubits).toFixed(1)}" cy="${Y(d.toffoli).toFixed(1)}" r="4.5" fill="var(--base)" opacity="0.6"/>`);
-s+=`<text x="${(X(965)+8).toFixed(0)}" y="${(Y(34069641)+4).toFixed(0)}" font-size="11" fill="#9fb8ab">nasqret · 965q</text>`;
-s+=`<text x="${(X(973)-9).toFixed(0)}" y="${(Y(28328177)+15).toFixed(0)}" text-anchor="middle" font-size="11" fill="#9fb8ab">jieyilong · 973q</text>`;
+s+=`<path d="${moves.map((m,i)=>(i?'L':'M')+X(i).toFixed(1)+','+Y(m.score).toFixed(1)).join(' ')}" fill="none" stroke="var(--accent)" stroke-width="2.5"/>`;
+moves.forEach((m,i)=> s+=`<circle cx="${X(i).toFixed(1)}" cy="${Y(m.score).toFixed(1)}" r="4.5" fill="var(--accent)"/>`);
 
-/* our validated circuits (bright) — two dots, one label for the pair */
-ours.forEach(d=>{
-  s+=`<circle cx="${X(d.qubits).toFixed(1)}" cy="${Y(d.toffoli).toFixed(1)}" r="6" fill="var(--accent)"/>`;
-});
-const rm=ours.reduce((a,b)=>b.qubits>a.qubits?b:a);
-const lx=(X(rm.qubits)+12).toFixed(0);
-s+=`<text x="${lx}" y="${(Y(rm.toffoli)-3).toFixed(0)}" font-size="11" fill="#e9f5ee">Storm · 976 &amp; 979q</text>`;
-s+=`<text x="${lx}" y="${(Y(rm.toffoli)+11).toFixed(0)}" font-size="10.5" fill="#4ad99a">validated 0/0/0</text>`;
+/* endpoint labels */
+s+=`<text x="${(X(0)+8).toFixed(0)}" y="${(Y(moves[0].score)-8).toFixed(0)}" font-size="11" fill="#e9f5ee">start · 1309q</text>`;
+s+=`<text x="${(X(n-1)+9).toFixed(0)}" y="${(Y(moves[n-1].score)-2).toFixed(0)}" font-size="11" fill="#e9f5ee">1226q</text>`;
+s+=`<text x="${(X(n-1)+9).toFixed(0)}" y="${(Y(moves[n-1].score)+12).toFixed(0)}" font-size="10.5" fill="#4ad99a">global floor</text>`;
 
-/* better-direction arrow, bottom-left */
-const ax=X(967.5), ay=Y(29.4e6);
-s+=`<line x1="${ax.toFixed(0)}" y1="${(ay-16).toFixed(0)}" x2="${(ax-30).toFixed(0)}" y2="${(ay+26).toFixed(0)}" stroke="#8fb3a2" stroke-width="1.4" marker-end="url(#arr)"/>`;
-s+=`<text x="${(ax+4).toFixed(0)}" y="${(ay-20).toFixed(0)}" font-size="11" fill="#8fb3a2">better — fewer of both</text>`;
+/* summary note, top-right empty space */
+s+=`<text x="${(M.l+pw).toFixed(0)}" y="${(M.t+12).toFixed(0)}" text-anchor="end" font-size="11" fill="#8fb3a2">13 promoted moves</text>`;
+s+=`<text x="${(M.l+pw).toFixed(0)}" y="${(M.t+27).toFixed(0)}" text-anchor="end" font-size="11" fill="#8fb3a2">−29.9M score</text>`;
+
+/* better-direction arrow (down = lower score) */
+const ax=X(3.4), ay=Y(1.86e9);
+s+=`<line x1="${ax.toFixed(0)}" y1="${(ay-16).toFixed(0)}" x2="${ax.toFixed(0)}" y2="${(ay+26).toFixed(0)}" stroke="#8fb3a2" stroke-width="1.4" marker-end="url(#arr)"/>`;
+s+=`<text x="${(ax+6).toFixed(0)}" y="${(ay+4).toFixed(0)}" font-size="11" fill="#8fb3a2">better</text>`;
 s+=`</svg>`;
 document.getElementById("chart").innerHTML=s;
 
@@ -167,13 +163,10 @@ document.getElementById("teamEl").innerHTML = team.map(m=>
   `<a href="https://github.com/${m.gh}" target="_blank" rel="noopener">@${m.gh}</a></div>`).join("");
 
 document.getElementById("spirit").innerHTML =
-  `one team — every win is the team's win. four of us, all cooking hard on the sub-1000-qubit problem, run with our codex &amp; claude research agents.`;
+  `one team — every win is the team's win. four of us, all cooking hard on the secp256k1 point-add problem, run with our codex &amp; claude research agents.`;
 
 document.getElementById("src").innerHTML =
-  `our circuits are independently re-validated at 0/0/0 on the full 9024-shot trusted eval (q976 × 28,573,233 · q979 × 28,727,201). `+
-  `the public ecdsa.fail board shows only the current pareto frontier (fewest qubits or gates at each point); that frontier is presently held by other solvers — nasqret and jieyilong in this sub-1000q range — so our validated circuits sit just behind it. `+
-  `the field's gate-optimized corner (mpjunior92, 1168q × 1.43M) is a different, higher-qubit regime; this view focuses on the sub-1000-qubit race. `+
-  `we're actively hunting below 965q. illustrative team view, not the official board · <a href="leaderboard.html">the record frontier</a> · <a href="https://www.ecdsa.fail/">ecdsa.fail</a>`;
+  `promoted rows are primary qubit×gate wins; the sub-1000q rows are public measured low-Q evidence, not primary-board wins. figures from the public ecdsa.fail API (${ASOF} capture); our circuits are re-validated locally at 0/0/0 on the full 9024-shot trusted eval. this is a public resource-estimation benchmark for one secp256k1 point-add — not a live exploit or a full Shor run. illustrative team view · <a href="leaderboard.html">the record frontier</a> · <a href="https://www.ecdsa.fail/">ecdsa.fail</a>`;
 </script>
 </body>
 </html>
