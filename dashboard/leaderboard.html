@@ -84,7 +84,7 @@ const fewestT = live.reduce((a,b)=> b.toffoli < a.toffoli ? b : a);
 const baseline = submissions.find(d=>d.baseline);
 
 document.getElementById("sub").innerHTML =
-  `the field's best circuits, ${ASOF}. since the ~${baseline.qubits.toLocaleString()}-qubit Trail of Bits baseline, solvers have pushed the record down to ${fewestQ.qubits} qubits and ${fmtT(fewestT.toffoli)} gates.`;
+  `the field's best circuits, ${ASOF}. since the ~${baseline.qubits.toLocaleString()}-qubit Trail of Bits baseline, the frontier now reaches as few as ${fewestQ.qubits} qubits (${fewestQ.solver}) at one end and ${fmtT(fewestT.toffoli)} gates (${fewestT.solver}, ${fewestT.qubits}q) at the other.`;
 
 document.getElementById("stats").innerHTML = [
   {lbl:"fewest qubits", val:fewestQ.qubits, sub:fewestQ.solver},

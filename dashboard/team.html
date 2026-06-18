@@ -101,7 +101,7 @@ const contribs = [
   {h:"validated sub-1000q circuits", b:"976q & 979q secp256k1 point-add circuits, each independently re-validated at 0/0/0 (classical / phase / ancilla) on the full 9024-shot trusted eval."},
   {h:"open harness", b:"the storm ecdsa harness — public tooling and this dashboard, on github. shared, reproducible, auditable."},
   {h:"validation gate", b:"a 9024-shot trusted-eval pipeline every candidate must pass before it counts — no result is claimed on a count-only or sub-sampled check."},
-  {h:"research map", b:"a two-way sub-1000-qubit floor certificate (~1050q realized floor) plus a closed-lever map — counter-width, Q-target, hCLZ-parity and fixed-shift divstep all proven dead or parked, so the search stays on the live structural question."}
+  {h:"research map", b:"a floor argument for the standard approach (~1050q, argued two ways: a published theoretical bound and the realized Trail of Bits circuit), with sub-1000 the open structural target — plus a closed-lever map: counter-width, Q-target, hCLZ-parity and fixed-shift divstep all proven dead or parked, so the search stays on the live question."}
 ];
 
 const fmt = (t,d)=>(t/1e6).toFixed(d)+"M";
@@ -114,7 +114,7 @@ document.getElementById("sub").innerHTML =
 document.getElementById("stats").innerHTML = [
   {lbl:"best validated",  val:`${best.qubits}q`, sub2:`× ${fmt(best.toffoli,2)} gates · trusted 0/0/0`},
   {lbl:"validation gate",  val:"0/0/0", sub2:"9024 shots · every candidate"},
-  {lbl:"sub-1000q floor",  val:"1050q", sub2:"certified two independent ways"}
+  {lbl:"approach floor",  val:"~1050q", sub2:"standard circuits floor here · we validated below it"}
 ].map(c=>`<div class="stat"><div class="lbl">${c.lbl}</div><div class="val num">${c.val}</div><div class="sub2">${c.sub2}</div></div>`).join("");
 
 /* ---- chart: zoomed to the sub-1000q race ---- */
