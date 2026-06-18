@@ -3,43 +3,35 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ecdsa.fail record frontier — Storm redesign</title>
+<title>ecdsa.fail — record frontier</title>
 <style>
   :root{
     --bg:#0e3a2c; --panel:rgba(180,230,205,0.06); --panel-bd:rgba(180,230,205,0.16);
     --ink:#e9f5ee; --mute:#8fb3a2; --dim:#6f9384; --accent:#4ad99a;
-    --rec:#e9a23b; --ours:#e85a9c; --grid:rgba(180,230,205,0.10);
+    --rec:#e9a23b; --base:#9fb8ab; --grid:rgba(180,230,205,0.10);
     --mono:'DM Mono','SF Mono',ui-monospace,Menlo,monospace;
   }
   *{box-sizing:border-box}
   body{margin:0;background:#072018;color:var(--ink);font-family:var(--mono);
        -webkit-font-smoothing:antialiased;padding:24px 16px}
-  .wrap{max-width:900px;margin:0 auto}
-  .card{background:var(--bg);border:1px solid var(--panel-bd);border-radius:14px;padding:20px 22px}
-  .top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:4px}
+  .wrap{max-width:860px;margin:0 auto}
+  .card{background:var(--bg);border:1px solid var(--panel-bd);border-radius:14px;padding:22px 24px}
   .eyebrow{font-size:12px;letter-spacing:.14em;color:var(--mute);text-transform:uppercase}
-  .tabs{display:flex;gap:6px}
-  .tab{font-size:11px;color:var(--mute);border:1px solid var(--panel-bd);border-radius:8px;padding:3px 10px}
-  .tab.on{color:#072018;background:#e9f5ee;border-color:#e9f5ee}
-  h1{font-size:18px;font-weight:500;margin:2px 0 2px;color:var(--ink)}
-  .asof{font-size:11px;color:var(--dim);margin:0 0 16px}
-  .champs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}
-  .champ{background:var(--panel);border:1px solid var(--panel-bd);border-radius:10px;padding:11px 13px}
-  .champ.best{border-color:var(--accent);background:rgba(74,217,154,0.08)}
-  .champ .lbl{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--mute)}
-  .champ.best .lbl{color:var(--accent)}
-  .champ .val{font-size:20px;color:var(--ink);margin:2px 0}
-  .champ .sub{font-size:11px;color:var(--dim)}
-  .caption{font-size:12px;color:var(--mute);line-height:1.6;margin:0 0 10px}
+  h1{font-size:19px;font-weight:500;margin:6px 0 4px;color:var(--ink)}
+  .sub{font-size:13px;color:var(--mute);margin:0 0 18px;line-height:1.6}
+  .stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:18px}
+  .stat{background:var(--panel);border:1px solid var(--panel-bd);border-radius:10px;padding:14px 16px}
+  .stat .lbl{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+  .stat .val{font-size:26px;color:var(--ink);margin:4px 0 2px}
+  .stat .sub{font-size:12px;color:var(--dim);margin:0}
+  .caption{font-size:13px;color:var(--mute);line-height:1.6;margin:0 0 6px}
   .caption b{font-weight:500;color:var(--accent)}
-  .controls{font-size:12px;color:var(--mute);margin-bottom:8px;display:flex;gap:16px;align-items:center}
-  .controls label{cursor:pointer;display:flex;gap:6px;align-items:center}
   svg{width:100%;height:auto;display:block}
-  .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:11px;color:var(--mute);margin-top:10px}
-  .legend span{display:flex;gap:5px;align-items:center}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:var(--mute);margin-top:8px}
+  .legend span{display:flex;gap:6px;align-items:center}
   .dot{width:10px;height:10px;border-radius:50%}
-  .ln{width:14px;height:0;border-top:2.5px solid var(--accent)}
-  footer{font-size:11px;color:var(--dim);line-height:1.6;margin-top:16px;border-top:1px solid var(--panel-bd);padding-top:12px}
+  .ln{width:16px;height:0;border-top:2.5px solid var(--accent);align-self:center}
+  footer{font-size:11px;color:var(--dim);line-height:1.6;margin-top:18px;border-top:1px solid var(--panel-bd);padding-top:12px}
   footer a{color:var(--mute)}
   .num{font-variant-numeric:tabular-nums}
 </style>
@@ -47,29 +39,21 @@
 <body>
 <div class="wrap">
   <div class="card">
-    <div class="top">
-      <span class="eyebrow">qubit / toffoli trajectory</span>
-      <span class="tabs"><span class="tab">best score</span><span class="tab on">frontier</span><span class="tab">all</span></span>
-    </div>
-    <h1>secp256k1 point-add — record frontier</h1>
-    <p class="asof" id="asof"></p>
+    <span class="eyebrow">secp256k1 point-add · qubit × gate frontier</span>
+    <h1>the record frontier</h1>
+    <p class="sub" id="sub"></p>
 
-    <section class="champs" id="champs"></section>
+    <section class="stats" id="stats"></section>
 
     <p class="caption">two goals: <b>fewer qubits</b> and <b>fewer gates</b> — better is toward the bottom-left.
-      the <b>line</b> is the current records (the frontier). dots above it are beaten on both and hidden by default.</p>
-
-    <div class="controls">
-      <label><input type="checkbox" id="toggle"> show beaten + our submissions</label>
-    </div>
+      the <b>line</b> connects the current record circuits. each one is best at something; together they're the frontier.</p>
 
     <div id="chart"></div>
 
     <div class="legend">
       <span><span class="ln"></span>record frontier</span>
-      <span><span class="dot" style="background:#e9a23b"></span>record</span>
-      <span><span class="dot" style="background:#e85a9c"></span>ours (beaten)</span>
-      <span><span class="dot" style="background:#e9f5ee;opacity:.3"></span>beaten</span>
+      <span><span class="dot" style="background:#e9a23b"></span>record-holder</span>
+      <span><span class="dot" style="background:#9fb8ab;opacity:.55"></span>earlier baseline</span>
     </div>
 
     <footer id="src"></footer>
@@ -77,118 +61,78 @@
 </div>
 
 <script>
-const ASOF = "data as of 18 Jun 2026";
+const ASOF = "18 Jun 2026";
 
 const submissions = [
-  {solver:"nasqret",   model:"Codex",       qubits:966,  toffoli:34069641, date:"18 Jun 07:51", src:"ecdsa.fail submission tooltip"},
-  {solver:"jieyilong", model:"GPT-5 Codex", qubits:968,  toffoli:33476041, date:"18 Jun 07:26", src:"ecdsa.fail submission tooltip"},
-  {solver:"jieyilong", model:"GPT-5",       qubits:973,  toffoli:28328177, date:"18 Jun 05:44", src:"ecdsa.fail submission tooltip"},
-  {solver:"1caf521",   model:"unverified",  qubits:1168, toffoli:1432332,  date:"—",            src:"Q×T tip; solver UNVERIFIED — confirm"},
-  {solver:"storm (ours)", model:"GPT-5/Codex", qubits:976, toffoli:28573233, date:"18 Jun", ours:true, src:"Storm harness local trusted-eval 0/0/0 (submission status unconfirmed)"},
-  {solver:"storm (ours)", model:"GPT-5/Codex", qubits:979, toffoli:28727201, date:"18 Jun", ours:true, src:"Storm harness local trusted-eval 0/0/0 (submission status unconfirmed)"}
+  {solver:"Trail of Bits", qubits:1050, toffoli:32300000, baseline:true},
+  {solver:"nasqret",   qubits:966,  toffoli:34069641},
+  {solver:"jieyilong", qubits:968,  toffoli:33476041},
+  {solver:"jieyilong", qubits:973,  toffoli:28328177},
+  {solver:"1caf521",   qubits:1168, toffoli:1432332}
 ];
 
-const fmtT = t => (t/1e6).toFixed(2) + "M";
-const fmtS = s => s >= 1e9 ? (s/1e9).toFixed(2)+"B" : (s/1e6).toFixed(0)+"M";
+const fmtT = t => (t/1e6).toFixed(t<10e6?2:1) + "M";
 submissions.forEach(d => d.score = d.qubits * d.toffoli);
 
-function computeFrontier(rows){
-  const sorted = rows.slice().sort((a,b)=> a.qubits-b.qubits || a.toffoli-b.toffoli);
-  let min = Infinity;
-  sorted.forEach(d => { if (d.toffoli < min){ d.frontier = true; min = d.toffoli; } else d.frontier = false; });
-  return rows;
-}
-computeFrontier(submissions);
+const live = submissions.filter(d=>!d.baseline);
+const sorted = live.slice().sort((a,b)=> a.qubits-b.qubits || a.toffoli-b.toffoli);
+let min = Infinity;
+sorted.forEach(d => { if (d.toffoli < min){ d.frontier = true; min = d.toffoli; } else d.frontier = false; });
 
-const fewestQ = submissions.reduce((a,b)=> b.qubits < a.qubits ? b : a);
-const fewestT = submissions.reduce((a,b)=> b.toffoli < a.toffoli ? b : a);
-const lowScore = submissions.reduce((a,b)=> b.score < a.score ? b : a);
-const sub1000 = submissions.filter(d=>d.qubits<1000).reduce((a,b)=> b.score < a.score ? b : a);
+const fewestQ = live.reduce((a,b)=> b.qubits < a.qubits ? b : a);
+const fewestT = live.reduce((a,b)=> b.toffoli < a.toffoli ? b : a);
+const baseline = submissions.find(d=>d.baseline);
 
-document.getElementById("asof").textContent = ASOF + " · score = qubits × toffoli (lower is better)";
+document.getElementById("sub").innerHTML =
+  `the field's best circuits, ${ASOF}. since the ~${baseline.qubits.toLocaleString()}-qubit Trail of Bits baseline, solvers have pushed the record down to ${fewestQ.qubits} qubits and ${fmtT(fewestT.toffoli)} gates.`;
 
-const champs = [
-  {lbl:"fewest qubits", val:fewestQ.qubits+" q", sub:fewestQ.solver+" · "+fmtT(fewestQ.toffoli)+" gates", best:false},
-  {lbl:"lowest score (overall #1)", val:fmtS(lowScore.score), sub:lowScore.solver+" · "+lowScore.qubits+" q × "+fmtT(lowScore.toffoli), best:true},
-  {lbl:"best in sub-1000 q", val:sub1000.qubits+" q × "+fmtT(sub1000.toffoli), sub:sub1000.solver+" · score "+fmtS(sub1000.score), best:false}
-];
-document.getElementById("champs").innerHTML = champs.map(c=>
-  `<div class="champ${c.best?' best':''}"><div class="lbl">${c.lbl}</div><div class="val num">${c.val}</div><div class="sub num">${c.sub}</div></div>`
-).join("");
+document.getElementById("stats").innerHTML = [
+  {lbl:"fewest qubits", val:fewestQ.qubits, sub:fewestQ.solver},
+  {lbl:"fewest gates", val:fmtT(fewestT.toffoli), sub:fewestT.solver}
+].map(c=>`<div class="stat"><div class="lbl">${c.lbl}</div><div class="val num">${c.val}</div><div class="sub">${c.solver||c.sub}</div></div>`).join("");
 
-const W=720,H=360,M={l:64,r:120,t:34,b:46};
+const W=720,H=350,M={l:62,r:118,t:34,b:46};
 const pw=W-M.l-M.r, ph=H-M.t-M.b;
 const qs=submissions.map(d=>d.qubits), ts=submissions.map(d=>d.toffoli);
-const qMin=Math.min(...qs)-8, qMax=Math.max(...qs)+8;
-const lt=t=>Math.log10(t), tMin=lt(Math.min(...ts)/1.15), tMax=lt(Math.max(...ts)*1.15);
+const qMin=Math.min(...qs)-10, qMax=Math.max(...qs)+10;
+const lt=t=>Math.log10(t), tMin=lt(Math.min(...ts)/1.18), tMax=lt(Math.max(...ts)*1.12);
 const X=q=>M.l+(q-qMin)/(qMax-qMin)*pw;
 const Y=t=>M.t+(tMax-lt(t))/(tMax-tMin)*ph;
 
-function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+const front = live.filter(d=>d.frontier).sort((a,b)=>a.qubits-b.qubits);
+let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Qubit versus gate-count record frontier for secp256k1 point-add as of ${ASOF}. The frontier runs from ${fewestQ.solver} at ${fewestQ.qubits} qubits down to ${fewestT.solver} at ${fewestT.qubits} qubits and ${fmtT(fewestT.toffoli)} gates, below an earlier ${baseline.qubits}-qubit baseline.">`;
+s += `<defs><marker id="arr" markerWidth="9" markerHeight="9" refX="6" refY="4.5" orient="auto"><path d="M1,1 L7,4.5 L1,8" fill="none" stroke="#8fb3a2" stroke-width="1.4"/></marker></defs>`;
 
-function render(showBeaten){
-  const front = submissions.filter(d=>d.frontier).sort((a,b)=>a.qubits-b.qubits);
-  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Qubit versus gate-count record frontier for secp256k1 point-add. Frontier runs from ${fewestQ.solver} at ${fewestQ.qubits} qubits down to ${fewestT.solver} at ${fewestT.qubits} qubits, ${fmtT(fewestT.toffoli)} gates.">`;
-  s += `<defs><marker id="arr" markerWidth="9" markerHeight="9" refX="6" refY="4.5" orient="auto"><path d="M1,1 L7,4.5 L1,8" fill="none" stroke="#8fb3a2" stroke-width="1.4"/></marker></defs>`;
+[2e6,5e6,10e6,30e6].forEach(t=>{const y=Y(t);
+  s+=`<line x1="${M.l}" y1="${y.toFixed(1)}" x2="${M.l+pw}" y2="${y.toFixed(1)}" stroke="var(--grid)"/>`;
+  s+=`<text x="${M.l-8}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="11" fill="#6f9384">${fmtT(t)}</text>`;});
+s+=`<text x="${M.l-38}" y="${M.t-14}" font-size="11" fill="#8fb3a2">gates (log)</text>`;
+[Math.round(qMin+12),Math.round((qMin+qMax)/2),Math.round(qMax-12)].forEach(q=>{
+  s+=`<text x="${X(q).toFixed(0)}" y="${M.t+ph+18}" text-anchor="middle" font-size="11" fill="#6f9384">${q}</text>`;});
+s+=`<text x="${(M.l+pw).toFixed(0)}" y="${M.t+ph+34}" text-anchor="end" font-size="11" fill="#8fb3a2">qubits →</text>`;
 
-  [2e6,5e6,10e6,30e6].forEach(t=>{
-    const y=Y(t);
-    s+=`<line x1="${M.l}" y1="${y.toFixed(1)}" x2="${M.l+pw}" y2="${y.toFixed(1)}" stroke="var(--grid)"/>`;
-    s+=`<text x="${M.l-8}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="11" fill="#6f9384">${fmtT(t)}</text>`;
-  });
-  s+=`<text x="${M.l-40}" y="${M.t-14}" font-size="11" fill="#8fb3a2">gates (log)</text>`;
-  [qMin+10,(qMin+qMax)/2,qMax-10].forEach(q=>{
-    s+=`<text x="${X(q).toFixed(0)}" y="${M.t+ph+18}" text-anchor="middle" font-size="11" fill="#6f9384">${Math.round(q)}</text>`;
-  });
-  s+=`<text x="${(M.l+pw).toFixed(0)}" y="${M.t+ph+34}" text-anchor="end" font-size="11" fill="#8fb3a2">qubits →</text>`;
-  s+=`<text x="${M.l+6}" y="${M.t+12}" font-size="11" fill="#8fb3a2">← fewest qubits</text>`;
-  s+=`<text x="${(M.l+pw-2).toFixed(0)}" y="${(Y(fewestT.toffoli)+22).toFixed(0)}" text-anchor="end" font-size="11" fill="#8fb3a2">fewest gates ↓</text>`;
+const bx=X(baseline.qubits), by=Y(baseline.toffoli);
+s+=`<circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="4.5" fill="#9fb8ab" opacity="0.55"/>`;
+s+=`<text x="${(bx+9).toFixed(0)}" y="${(by+4).toFixed(0)}" font-size="11" fill="#9fb8ab">baseline · ${baseline.solver} · ${baseline.qubits}q</text>`;
 
-  let path = front.map((d,i)=> (i?'L':'M')+X(d.qubits).toFixed(1)+','+Y(d.toffoli).toFixed(1)).join(' ');
-  s+=`<path d="${path}" fill="none" stroke="var(--accent)" stroke-width="2.5"/>`;
+s+=`<path d="${front.map((d,i)=>(i?'L':'M')+X(d.qubits).toFixed(1)+','+Y(d.toffoli).toFixed(1)).join(' ')}" fill="none" stroke="var(--accent)" stroke-width="2.5"/>`;
+front.forEach(d=> s+=`<circle cx="${X(d.qubits).toFixed(1)}" cy="${Y(d.toffoli).toFixed(1)}" r="6" fill="var(--rec)"/>`);
 
-  if(showBeaten){
-    submissions.filter(d=>!d.frontier && !d.ours).forEach(d=>{
-      s+=`<circle cx="${X(d.qubits).toFixed(1)}" cy="${Y(d.toffoli).toFixed(1)}" r="3.5" fill="#e9f5ee" opacity="0.28"/>`;
-    });
-    submissions.filter(d=>d.ours).forEach(d=>{
-      const dom = front.reduce((a,b)=> (b.qubits<=d.qubits && b.toffoli<=d.toffoli && (!a || b.score>a.score)) ? b : a, null);
-      if(dom) s+=`<line x1="${X(d.qubits).toFixed(1)}" y1="${Y(d.toffoli).toFixed(1)}" x2="${X(dom.qubits).toFixed(1)}" y2="${Y(dom.toffoli).toFixed(1)}" stroke="#e85a9c" stroke-width="1.1" stroke-dasharray="3,3"/>`;
-      s+=`<circle cx="${X(d.qubits).toFixed(1)}" cy="${Y(d.toffoli).toFixed(1)}" r="5" fill="#e85a9c"/>`;
-    });
-    const oy = submissions.filter(d=>d.ours)[0];
-    if(oy) s+=`<text x="${(X(oy.qubits)+8).toFixed(0)}" y="${(Y(oy.toffoli)-6).toFixed(0)}" font-size="11" fill="#f29cc2">ours · beaten</text>`;
-  }
+const labels=[{d:fewestQ,ly:M.t+30},{d:live.find(d=>d.qubits===973),ly:M.t+50},{d:fewestT,right:true}];
+labels.forEach(L=>{ if(!L.d) return; const d=L.d;
+  const lx = L.right ? X(d.qubits)-10 : M.l+pw+8;
+  const ly = L.right ? Y(d.toffoli)-2 : L.ly;
+  if(!L.right) s+=`<line x1="${X(d.qubits).toFixed(1)}" y1="${Y(d.toffoli).toFixed(1)}" x2="${(lx-4).toFixed(0)}" y2="${ly}" stroke="#b4e6cd" stroke-width="0.6" stroke-opacity="0.4"/>`;
+  s+=`<text x="${lx.toFixed(0)}" y="${L.right?ly:ly+4}" text-anchor="${L.right?'end':'start'}" font-size="11" fill="#e9f5ee">${d.solver} · ${d.qubits}q${L.right?' · '+fmtT(d.toffoli):''}</text>`;});
 
-  const labels=[
-    {d:fewestQ, ly:M.t+30},
-    {d:sub1000, ly:M.t+50},
-    {d:fewestT, ly:Y(fewestT.toffoli)-2, right:true}
-  ];
-  front.forEach(d=> s+=`<circle cx="${X(d.qubits).toFixed(1)}" cy="${Y(d.toffoli).toFixed(1)}" r="6" fill="var(--rec)"/>`);
-  labels.forEach(L=>{
-    const d=L.d, lx = L.right ? X(d.qubits)-10 : M.l+pw+8;
-    if(!L.right) s+=`<line x1="${X(d.qubits).toFixed(1)}" y1="${Y(d.toffoli).toFixed(1)}" x2="${(lx-4).toFixed(0)}" y2="${L.ly}" stroke="#b4e6cd" stroke-width="0.6" stroke-opacity="0.4"/>`;
-    s+=`<text x="${lx.toFixed(0)}" y="${(L.right?L.ly:L.ly+4)}" text-anchor="${L.right?'end':'start'}" font-size="11" fill="#e9f5ee">${esc(d.solver)} · ${d.qubits}q · ${fmtT(d.toffoli)}</text>`;
-  });
-
-  const ax=X(qMin+(qMax-qMin)*0.42), ay=Y(7e6);
-  s+=`<line x1="${ax.toFixed(0)}" y1="${(ay-20).toFixed(0)}" x2="${(ax-46).toFixed(0)}" y2="${(ay+34).toFixed(0)}" stroke="#8fb3a2" stroke-width="1.4" marker-end="url(#arr)"/>`;
-  s+=`<text x="${(ax+4).toFixed(0)}" y="${(ay-24).toFixed(0)}" font-size="11" fill="#8fb3a2">better — fewer of both</text>`;
-
-  s+=`</svg>`;
-  document.getElementById("chart").innerHTML = s;
-}
-render(false);
-document.getElementById("toggle").addEventListener("change", e=> render(e.target.checked));
+const ax=X(qMin+(qMax-qMin)*0.46), ay=Y(7e6);
+s+=`<line x1="${ax.toFixed(0)}" y1="${(ay-18).toFixed(0)}" x2="${(ax-44).toFixed(0)}" y2="${(ay+34).toFixed(0)}" stroke="#8fb3a2" stroke-width="1.4" marker-end="url(#arr)"/>`;
+s+=`<text x="${(ax+4).toFixed(0)}" y="${(ay-22).toFixed(0)}" font-size="11" fill="#8fb3a2">better — fewer of both</text>`;
+s+=`</svg>`;
+document.getElementById("chart").innerHTML = s;
 
 document.getElementById("src").innerHTML =
-  "data sources · competitor rows from the public ecdsa.fail submission tooltips (18 Jun 2026); "+
-  "<b style='color:#8fb3a2'>1caf521 solver is unverified</b> — confirm before citing; "+
-  "our rows are Storm-harness local trusted-eval results (0/0/0 over 9024 shots), submission status to ecdsa.fail unconfirmed. "+
-  "academic reference points (Google QAI, Schrottenloher) are NOT included — add with exact figures from source. "+
-  "this is an illustrative redesign of the trajectory chart for clarity, not the official board. "+
-  "<a href='https://www.ecdsa.fail/'>ecdsa.fail</a>";
+  `record rows from the public ecdsa.fail submissions (${ASOF}); 1caf521 solver unverified · baseline ~32.3M gates is the published Trail of Bits trailmix figure (approx). illustrative redesign of the trajectory chart, not the official board · <a href="https://www.ecdsa.fail/">ecdsa.fail</a>`;
 </script>
 </body>
 </html>
