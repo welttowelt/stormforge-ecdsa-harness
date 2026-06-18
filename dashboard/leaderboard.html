@@ -65,6 +65,7 @@ const ASOF = "18 Jun 2026";
 
 const submissions = [
   {solver:"Trail of Bits", qubits:1050, toffoli:32300000, baseline:true},
+  {solver:"nasqret",   qubits:959,  toffoli:69124073},
   {solver:"nasqret",   qubits:965,  toffoli:34069641},
   {solver:"jieyilong", qubits:968,  toffoli:33476041},
   {solver:"jieyilong", qubits:973,  toffoli:28328177},
@@ -103,7 +104,7 @@ const front = live.filter(d=>d.frontier).sort((a,b)=>a.qubits-b.qubits);
 let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Qubit versus gate-count record frontier for secp256k1 point-add as of ${ASOF}. The frontier runs from ${fewestQ.solver} at ${fewestQ.qubits} qubits down to ${fewestT.solver} at ${fewestT.qubits} qubits and ${fmtT(fewestT.toffoli)} gates, below an earlier ${baseline.qubits}-qubit baseline.">`;
 s += `<defs><marker id="arr" markerWidth="9" markerHeight="9" refX="6" refY="4.5" orient="auto"><path d="M1,1 L7,4.5 L1,8" fill="none" stroke="#8fb3a2" stroke-width="1.4"/></marker></defs>`;
 
-[2e6,5e6,10e6,30e6].forEach(t=>{const y=Y(t);
+[2e6,10e6,30e6,70e6].forEach(t=>{const y=Y(t);
   s+=`<line x1="${M.l}" y1="${y.toFixed(1)}" x2="${M.l+pw}" y2="${y.toFixed(1)}" stroke="var(--grid)"/>`;
   s+=`<text x="${M.l-8}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="11" fill="#6f9384">${fmtT(t)}</text>`;});
 s+=`<text x="${M.l-38}" y="${M.t-14}" font-size="11" fill="#8fb3a2">gates (log)</text>`;
@@ -118,8 +119,9 @@ s+=`<text x="${(bx+9).toFixed(0)}" y="${(by+4).toFixed(0)}" font-size="11" fill=
 s+=`<path d="${front.map((d,i)=>(i?'L':'M')+X(d.qubits).toFixed(1)+','+Y(d.toffoli).toFixed(1)).join(' ')}" fill="none" stroke="var(--accent)" stroke-width="2.5"/>`;
 front.forEach(d=> s+=`<circle cx="${X(d.qubits).toFixed(1)}" cy="${Y(d.toffoli).toFixed(1)}" r="6" fill="var(--rec)"/>`);
 
-const labels=[{d:fewestQ,ly:M.t+30},{d:live.find(d=>d.qubits===973),ly:M.t+50},{d:fewestT,right:true}];
+const labels=[{d:fewestQ,direct:true},{d:live.find(d=>d.qubits===973),ly:M.t+50},{d:fewestT,right:true}];
 labels.forEach(L=>{ if(!L.d) return; const d=L.d;
+  if(L.direct){ s+=`<text x="${(X(d.qubits)+11).toFixed(0)}" y="${(Y(d.toffoli)+4).toFixed(0)}" text-anchor="start" font-size="11" fill="#e9f5ee">${d.solver} · ${d.qubits}q</text>`; return; }
   const lx = L.right ? X(d.qubits)-10 : M.l+pw+8;
   const ly = L.right ? Y(d.toffoli)-2 : L.ly;
   if(!L.right) s+=`<line x1="${X(d.qubits).toFixed(1)}" y1="${Y(d.toffoli).toFixed(1)}" x2="${(lx-4).toFixed(0)}" y2="${ly}" stroke="#b4e6cd" stroke-width="0.6" stroke-opacity="0.4"/>`;
@@ -132,7 +134,7 @@ s+=`</svg>`;
 document.getElementById("chart").innerHTML = s;
 
 document.getElementById("src").innerHTML =
-  `record rows from the public ecdsa.fail submissions (${ASOF}), including rejected low-Q public rows; q×t tip commit 1caf521 is mpjunior92 · baseline ~32.3M gates is the published Trail of Bits trailmix figure (approx). illustrative redesign of the trajectory chart, not the official board · <a href="team.html">team Storm</a> · <a href="https://www.ecdsa.fail/">ecdsa.fail</a>`;
+  `record rows from the public ecdsa.fail submissions (${ASOF}), including rejected low-Q public rows (the 959q corner trades gates for qubits — the sub-1000 challenge disregards gate count); q×t tip commit 1caf521 is mpjunior92 · baseline ~32.3M gates is the published Trail of Bits trailmix figure (approx). illustrative redesign of the trajectory chart, not the official board · <a href="team.html">team Storm</a> · <a href="https://www.ecdsa.fail/">ecdsa.fail</a>`;
 </script>
 </body>
 </html>
