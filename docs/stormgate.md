@@ -41,6 +41,23 @@ The safe public claim is narrow:
 
 This makes `stormgate` a useful gate, not a proof of cleanliness by itself.
 
+## Redsky Hardening - 2026-06-20
+
+The retake post-mortem added two hard rules to the `stormgate` contract:
+
+- `stormgate` search must fail closed unless the runner is given at least one
+  current-base full-clean canary through private validation state. The canary
+  value is not published here; the public contract is that the predicate must
+  preserve a canary derived from the current circuit/base before any search
+  starts.
+- Prefilter-only output must use `PREFILTER_SURVIVOR` or an equivalent
+  evidence label. Reserve `FULL_CLEAN` / `clean 0/0/0` language for trusted
+  validation or platform promotion.
+
+This closes the stale-canary class: an old clean nonce can become dirty after a
+base change, so a remembered value is never enough. The canary has to travel
+with the exact source, op stream, predicate config, and validation record.
+
 ## Gate Contract
 
 Use these labels consistently:
@@ -74,6 +91,8 @@ Before a `stormgate` predicate can be treated as production:
 5. It must keep all unresolved survivors labeled `Prefilter`.
 6. It must send every score-relevant survivor to official validation before the
    submit gate opens.
+7. It must fail closed if no current-base canary is supplied.
+8. It must not print prefilter-only rows as `CLEAN`.
 
 ## Public Boundary
 

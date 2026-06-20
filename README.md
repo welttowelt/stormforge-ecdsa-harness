@@ -114,6 +114,9 @@ Audit loop: [docs/audit-loop.md](docs/audit-loop.md).
 
 Prefilter gate pattern: [docs/stormgate.md](docs/stormgate.md).
 
+Latest stormgate Redsky audit:
+[docs/redsky-stormgate-audit-2026-06-20.md](docs/redsky-stormgate-audit-2026-06-20.md).
+
 ## What This Repo Does Not Contain
 
 - Live `ecdsafail-hunt-ops` state.
