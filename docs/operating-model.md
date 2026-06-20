@@ -4,6 +4,24 @@ Storm is an operator layer for agentic benchmark research. It assumes the
 base benchmark and challenge already exist, then adds coordination discipline
 around agents, evidence, compute, and publication.
 
+The production name for this operating model is the STORM harness in production.
+The live controller stays private; this repo publishes the same workflow as
+docs, templates, fixture data, and release checks.
+
+## Production Controller
+
+In production, STORM is not only a dashboard or prompt pack. It is the local
+controller that:
+
+- refreshes public frontier state before every route decision,
+- reads and ACKs a shared worker mailbox,
+- keeps one active route unless a route packet says otherwise,
+- runs source checks, canaries, benchmark validators, and submission-note gates,
+- dispatches CPU/GPU work only after validator and kill-gate checks pass,
+- labels every scanner hit as `Prefilter` until trusted validation returns
+  clean `0/0/0`,
+- routes strategic-goal packets back through the mailbox so workers converge.
+
 ## Roles
 
 - Research lead: ranks routes, refreshes the frontier, writes route packets, and
@@ -15,19 +33,19 @@ around agents, evidence, compute, and publication.
   one creative alternative, and a falsifiable decision.
 
 Roles can be run by separate agents or by one agent explicitly switching hats.
-The important property is that each claim is pressure-tested before it becomes
-state.
+Each claim is pressure-tested before it becomes state.
 
 ## Cycle Order
 
 1. Refresh the live benchmark/current target.
 2. Read the shared mailbox and log ACK/read receipts.
-3. Review active route packet and evidence label.
-4. Run cheap local validation or source inspection.
+3. Review the active route packet and evidence label.
+4. Run cheap local validation, source inspection, or canary checks.
 5. Run skeptic/RCI pass.
 6. Dispatch compute only with a validated compute request.
 7. Harvest results and downgrade all raw hits to `Prefilter`.
-8. Open submit gate only after official local validation and fresh score check.
+8. Run trusted validation on score-relevant survivors.
+9. Open submit gate only after official local validation and fresh score check.
 
 ## Evidence Labels
 
@@ -76,9 +94,8 @@ Dashboards and shared boards are status surfaces only. They may show:
 - evidence label,
 - worker status,
 - aggregate counts,
-- sanitized read receipts,
+- redacted read receipts,
 - fixture or public leaderboard data.
 
 They must not show endpoints, ports, credentials, raw logs, unreleased nonces, or
 private diffs.
-

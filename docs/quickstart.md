@@ -61,9 +61,10 @@ Recommended local split:
 
 ```text
 public-template-repo/
-private-hunt-ops/
-private-mailbox-or-notes/
+private-storm-controller/
+private-worker-mailbox/
 private-runs-and-logs/
+private-fleet-config/
 ```
 
 ## 5. Update The Fixture Dashboard
@@ -108,6 +109,9 @@ For each route:
 5. Dispatch paid compute only if the route has a validator and kill gate.
 6. Treat scanner hits as `Prefilter`.
 7. Submit only after official local validation and a fresh frontier check.
+
+For the full production mapping, read
+`docs/production-shape.md`.
 
 If a worker fails twice, repeats the same approach, or claims completion without
 evidence, run `skills/pip-discipline.md` before the next attempt. It forces the

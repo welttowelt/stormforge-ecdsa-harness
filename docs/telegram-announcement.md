@@ -1,7 +1,7 @@
 # Telegram Announcement Draft
 
-hey frens, I cleaned up and open-sourced a sanitized version of my Storm
-setup.
+hey frens, I cleaned up and open-sourced the public release surface for my
+STORM harness.
 
 Repo:
 https://github.com/welttowelt/storm-ecdsa-harness
@@ -16,7 +16,10 @@ agent-readable code.
 
 My repo is the extra operator layer I built around it: mailbox coordination,
 ACK/read receipts, worker roles, route packets, validation gates, dashboard
-views, redaction checks, and credit discipline.
+views, redaction checks, and credit discipline. In production, the private
+controller also refreshes the frontier, reads the worker mailbox, gates
+CPU/GPU dispatch, and keeps scanner hits labeled `Prefilter` until trusted
+validation passes.
 
 It is fixture/demo only: no private logs, no endpoints, no nonces, no live
 routes.

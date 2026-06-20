@@ -10,6 +10,12 @@ Evidence label: `Promoted` for the benchmark result; `Partial run` plus
 - Submission table was unavailable from the local CLI during this audit, so the
   promoted source and benchmark score are the strongest live evidence used here.
 
+Supersession note: later public-target ingestion on 2026-06-20 observed
+`fed64cf` / submission `6c1a65d` at `1159q`, rounded average Toffoli
+`1388180`, score `1608900620`. The audit findings below still apply to
+`stormgate`: prefilter survivors are not clean results, and GPU dispatch stays
+closed until current-base canaries pass.
+
 ## Audit Scores
 
 | Dimension | Score | Note |
@@ -72,7 +78,7 @@ trusted validation first.
 ## Finding 3 - Throughput Metric Gap
 
 Problem: stormgate has a clear strategic role, but the public repo does not yet
-publish a sanitized speed/soundness matrix.
+publish a public speed/soundness matrix.
 
 Evidence: The target is millions of candidates per second at stage 1, but the
 public status is still `Partial run` plus `Prefilter`.
@@ -84,7 +90,7 @@ Implementation check: Track aggregate-only fields: source, predicate mode,
 candidate rate, survivor rate, validator reject split, canary pass/fail, and
 full-clean count. Do not include private ranges or raw nonce values.
 
-Smallest useful fix: add a sanitized stormgate benchmark table once the next
+Smallest useful fix: add a public stormgate benchmark table once the next
 measured run is available.
 
 Gate: Treat stormgate as a useful prefilter, not a production moat, until the

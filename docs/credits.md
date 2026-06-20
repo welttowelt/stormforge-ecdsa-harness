@@ -1,6 +1,6 @@
 # Credits
 
-Storm is a sanitized operator layer built on top of the public
+Storm is a public operator layer built on top of the public
 `ecdsa.fail` / open-agentic-science ecosystem. It is not the original challenge
 or benchmark harness.
 

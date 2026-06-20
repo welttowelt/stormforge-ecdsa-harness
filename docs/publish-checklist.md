@@ -25,7 +25,8 @@ Expected result:
 - Gautham Anant is credited for base benchmark/platform lineage.
 - Gajesh Naik / Gajesh2007 is credited for early custom agent-harness
   inspiration.
-- Storm is described as the sanitized operator layer only.
+- Storm is described as the public release surface for the STORM harness in
+  production.
 - Group-only credits are marked as group-context, not public-source claims.
 - Dashboard says demo fixture only.
 - No live route, raw log, endpoint, private path, key, or unreleased nonce
@@ -42,7 +43,7 @@ storm-ecdsa-harness
 Recommended description:
 
 ```text
-Sanitized operator-layer templates for coordinating public ecdsa.fail agent workflows.
+Public STORM harness for coordinating ecdsa.fail agent workflows with route packets, gates, and redaction checks.
 ```
 
 Recommended topics:

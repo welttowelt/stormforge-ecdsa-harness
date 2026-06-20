@@ -12,7 +12,7 @@
 - Current target: public frontier refreshed by the lead
 - Active route: demo-route-current-target-first
 - Evidence label: Source fact plus Inference
-- Source: public benchmark plus sanitized route packet
+- Source: public benchmark plus public-safe route packet
 
 ## Task
 

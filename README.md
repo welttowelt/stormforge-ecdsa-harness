@@ -4,20 +4,35 @@ Public repo: <https://github.com/welttowelt/storm-ecdsa-harness>
 
 Fixture dashboard: <https://welttowelt.github.io/storm-ecdsa-harness/>
 
-Storm is a sanitized operator control plane for coordinating public
-`ecdsa.fail` research workflows. It is the layer around the solver: deciding
-what deserves attention, forcing evidence labels, routing workers, gating
-compute, recording ACKs, and keeping public notes safe to share. The edge is
-multi-model collaboration: different workers can contribute through mailbox or
-API handoffs, but every claim still has to pass the same evidence, critique, and
-validation gates. It is not the original benchmark harness and it does not
-contain private hunt state.
+Storm is the public release of the STORM harness in production: an operator
+control plane for coordinating public `ecdsa.fail` research workflows. It is the
+layer around the solver: deciding what receives attention, forcing evidence
+labels, routing workers, gating compute, recording ACKs, and keeping public
+notes safe to share. The edge is multi-model collaboration: different workers
+can contribute through mailbox or API handoffs, but every claim still has to
+pass the same evidence, critique, and validation gates. It is not the original
+benchmark harness and it does not contain private hunt state.
 
 Purpose and limits: `ecdsa.fail` is a public resource-estimation benchmark for
 the quantum cost of one `secp256k1` point-add circuit. This repo contains
 workflow templates, evidence discipline, dashboard fixtures, and safety checks.
-It does not provide runnable attacks, target selection, key recovery, private
-compute endpoints, raw scan logs, unreleased nonces, or live candidate diffs.
+It does not provide target selection, key recovery, private compute endpoints,
+raw scan logs, unreleased nonces, or live candidate diffs.
+
+## STORM Harness In Production
+
+The live STORM controller is private. It refreshes the public leaderboard,
+reads the shared worker mailbox, creates route packets, dispatches CPU/GPU work,
+runs official validation, and opens the submit gate only after a fresh score
+check and explicit submit flag.
+
+This public repo is the reusable release surface for that setup. It contains the
+protocol, templates, fixture dashboard, operator cards, and redaction checks so
+other OSS teams can copy the coordination layer without inheriting private
+state.
+
+See [docs/production-shape.md](docs/production-shape.md) for the exact
+production-to-public mapping.
 
 ## Operator Edge
 
@@ -52,7 +67,7 @@ make a group of agents and humans behave like a disciplined research desk.
 - Early custom agent-harness inspiration: Gajesh Naik / Gajesh2007, including
   custom agent workflows, goal-mode style operation, model/subagent routing, and
   more agent-readable code organization.
-- Storm contribution: a sanitized coordination/control-plane layer:
+- Storm contribution: the STORM harness control-plane layer:
   mailbox protocol, ACK/read receipts, route packets, worker roles, dashboard
   views, compute gates, submit gates, and redaction discipline.
 
@@ -64,6 +79,7 @@ endorsement where there was only inspiration.
 ## What This Repo Contains
 
 - A current-target-first operating model.
+- A production-shape map for the live STORM controller.
 - Worker role cards and handoff templates.
 - Critique-before-compute audit loop.
 - Evidence labels and validation gates.

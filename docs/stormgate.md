@@ -1,7 +1,7 @@
 # stormgate
 
 `stormgate` is the public-safe name for the prefilter and validation gate used
-around `ecdsa.fail` island-search work.
+inside the STORM harness in production.
 
 Evidence label: `Partial run` plus `Prefilter`.
 
@@ -35,9 +35,12 @@ The safe public claim is narrow:
 - The GPU wrapper now fail-closes if a TrailMix jump-2 state is searched with a
   non-TrailMix mode, preventing the stale state/mode mismatch that caused a
   false-negative canary path.
-- A source-baked 1162q tail retake promoted at check time with score
-  `1614059832` from source commit `94d44be`. `stormgate` helped the
-  search/triage lane; the promoted source delta is the baked tail nonce retake.
+- Public frontier ingestion later observed a promoted `fed64cf` source row,
+  submission `6c1a65d`, at `1159q` and rounded average Toffoli `1388180`
+  (score `1608900620`) on 2026-06-20. That is public leaderboard state, not a
+  `stormgate` proof.
+- `stormgate` is currently a dispatch and validation gate. GPU prefilter output
+  remains quarantined unless current-base clean and dirty canary artifacts exist.
 
 This makes `stormgate` a useful gate, not a proof of cleanliness by itself.
 

@@ -31,6 +31,7 @@ for path in \
   templates/route-packet.md \
   templates/compute-request.md \
   templates/public-note.md \
+  docs/production-shape.md \
   examples/audit-card.example.md \
   examples/operator-card.example.md \
   examples/mailbox-entry.example.md \
@@ -55,6 +56,9 @@ need_text templates/mailbox-entry.md "purpose limits" "Purpose/limits"
 need_text templates/mailbox-entry.md "read receipt requested" "Read receipt requested"
 need_text templates/public-note.md "purpose and limits" "Purpose And Limits"
 need_text templates/public-note.md "evidence label" "Evidence label"
+need_text docs/production-shape.md "storm production" "STORM harness in production"
+need_text docs/production-shape.md "prefilter label" "Prefilter"
+need_text docs/production-shape.md "private boundary" "private fleet config"
 
 need_text examples/operator-card.example.md "falsifiable decision" "Falsifiable decision"
 need_text examples/audit-card.example.md "rci tony" "RCI/Tony"
@@ -64,7 +68,7 @@ need_text examples/mailbox-entry.example.md "read receipt requested" "Read recei
 need_text examples/route-packet.example.md "stop condition" "Stop condition"
 need_text examples/compute-request.example.md "zero paid compute" "zero"
 need_text examples/public-note.example.md "not a candidate" "not a candidate"
-need_text dashboard/fixtures/status.json "demo fixture" "demo fixture|fixture data"
+need_text dashboard/fixtures/status.json "public fixture" "public fixture|fixture data"
 
 if [ "$fail" -ne 0 ]; then
   exit 1
