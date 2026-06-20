@@ -23,7 +23,8 @@ candidates per second, with CPU work reserved for a much smaller survivor set.
 
 The safe public claim is narrow:
 
-- The accepted clean canary is preserved by the current `stormgate` prototype.
+- The accepted clean canary is preserved by the current local `stormgate`
+  prototype.
 - The TrailMix jump-2 width/convergence screen rejects known GCD hard failures.
 - The apply pseudo-Mersenne fold-risk screen rejects a subset of known dirty
   apply-path survivors.
@@ -31,6 +32,12 @@ The safe public claim is narrow:
   trusted validation.
 - A separate fused-fold heuristic was tested and rejected because it false
   rejected the accepted clean canary.
+- The GPU wrapper now fail-closes if a TrailMix jump-2 state is searched with a
+  non-TrailMix mode, preventing the stale state/mode mismatch that caused a
+  false-negative canary path.
+- A source-baked 1162q tail retake promoted at check time with score
+  `1614059832` from source commit `94d44be`. `stormgate` helped the
+  search/triage lane; the promoted source delta is the baked tail nonce retake.
 
 This makes `stormgate` a useful gate, not a proof of cleanliness by itself.
 
