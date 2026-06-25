@@ -89,6 +89,7 @@ endorsement where there was only inspiration.
 - A fixture-only dashboard for operator status.
 - A redaction checklist and automated redaction scan.
 - Public-credit policy for community-derived ideas.
+- Repo-local Codex skill bridges for ECDSA workflow agents.
 
 ## Skill Cards
 
@@ -108,9 +109,107 @@ agent instructions or used as a preflight before route work:
   after repeated failure, passive handoff, or unverified completion claims. This
   repo imports only the local prompt-card discipline, not plugin hooks,
   telemetry, feedback upload, or remote prompt loading.
+- `skills/frontier-lock.md`: refresh and record the current public frontier
+  before route, compute, note, or submit decisions.
+- `skills/validation-submit-gate.md`: keep evidence labels, trusted
+  validation, and submit-gate claims separate.
+- `skills/route-compute-gate.md`: require owner, predicate, validator, budget,
+  and stop condition before CPU/GPU dispatch.
+- `skills/multi-agent-handoff.md`: make cross-worker handoffs explicit with
+  ACKs, validators, and kill gates.
+- `skills/circuit-diff-mining.md`: mine recent promoted diffs into bounded
+  candidate probes without stale knob copying.
+- `skills/submission-forensics.md`: deep-audit public submissions, notes,
+  promoted diffs, and adjacent frontier moves without private-state leakage or
+  credit overclaiming.
+- `skills/bluesky-route-salvage.md`: find the smallest falsifiable experiment
+  that preserves upside before a route is killed.
+- `skills/redsky-frontier-audit.md`: run adversarial frontier, legality,
+  evidence-label, compute, and submit-gate checks.
+- `skills/ecdsafail-cli-ops.md`: operate the `ecdsafail` CLI with worktree,
+  credential, sync/reset, validation, and submit discipline.
+- `skills/stormgate-prefilter.md`: keep prefilter, canary, survivor-label, and
+  trusted-validation boundaries explicit.
+- `skills/paper-gidney-constant-workspace-adder.md`: apply Gidney 2025
+  constant-workspace adders only after a toy proof and one-callsite residual
+  gate.
+- `skills/paper-mbu-modular-arithmetic.md`: turn measured-workspace arithmetic
+  cleanup into an explicit phase-correction proof obligation.
+- `skills/paper-hrs-dirty-constant-adder.md`: use HRS dirty-ancilla adders as a
+  disciplined borrowed-host route, not as zero scratch.
+- `skills/paper-gidney-temporary-logical-and.md`: evaluate temporary logical-AND
+  erase patterns for uncompute and Toffoli budgeting.
+- `skills/paper-haner-ecdlp-circuits.md`: compare point-add route ideas against
+  established ECDLP Q/T/depth tradeoffs.
+- `skills/paper-schrottenloher-point-addition.md`: map 2026 secp256k1
+  point-addition architecture ideas into local TLM invariants.
+- `skills/paper-luo-register-sharing-eea.md`: explore compact
+  register-sharing EEA ideas without hiding decompression peaks.
 
 Codex-style agents can also discover the PIP and audit cards through the
 repo-local bridges under `.agents/skills/`.
+
+## How To Call The Skills
+
+In Codex or another skill-aware agent, call a repo-local skill by name:
+
+```text
+Use frontier-lock.
+Use bluesky-route-salvage on this route.
+Use redsky-frontier-audit before compute.
+Use ecdsafail-cli-ops and validation-submit-gate before submit.
+```
+
+The bridge names are:
+
+- `nasqret-playbook`
+- `deepseek-pressure-test`
+- `pip-discipline`
+- `frontier-lock`
+- `validation-submit-gate`
+- `route-compute-gate`
+- `multi-agent-handoff`
+- `circuit-diff-mining`
+- `submission-forensics`
+- `bluesky-route-salvage`
+- `redsky-frontier-audit`
+- `ecdsafail-cli-ops`
+- `stormgate-prefilter`
+- `paper-gidney-constant-workspace-adder`
+- `paper-mbu-modular-arithmetic`
+- `paper-hrs-dirty-constant-adder`
+- `paper-gidney-temporary-logical-and`
+- `paper-haner-ecdlp-circuits`
+- `paper-schrottenloher-point-addition`
+- `paper-luo-register-sharing-eea`
+
+Useful global skills for ECDSA work, when installed in the agent environment:
+
+- `redsky`: deep ECDSA.fail frontier-solving audit.
+- `ecdsafail-cli`: detailed CLI syntax for benchmark, run, submit, notes, sync,
+  reset, and skill install.
+
+Common call chains:
+
+- Frontier shift: `frontier-lock` -> `nasqret-playbook` ->
+  `circuit-diff-mining`.
+- New route: `frontier-lock` -> `bluesky-route-salvage` ->
+  `redsky-frontier-audit` -> `route-compute-gate`.
+- External critique: `deepseek-pressure-test` -> `redsky-frontier-audit`.
+- Public submission audit: `frontier-lock` -> `submission-forensics` ->
+  `circuit-diff-mining`.
+- Prefilter/search work: `frontier-lock` -> `stormgate-prefilter` ->
+  `route-compute-gate` -> `validation-submit-gate`.
+- Submit attempt: `frontier-lock` -> `ecdsafail-cli-ops` ->
+  `validation-submit-gate`.
+- Worker handoff: `multi-agent-handoff` plus whichever route or validation card
+  owns the task.
+- Paper-driven lower-q adder work: `paper-gidney-constant-workspace-adder` ->
+  `paper-mbu-modular-arithmetic` -> `q1152-structural-core` or
+  `structural-qubit-cut`.
+- Paper-driven architecture work: `paper-haner-ecdlp-circuits` ->
+  `paper-schrottenloher-point-addition` ->
+  `paper-luo-register-sharing-eea`, then reduce the idea to one local invariant.
 
 ## Quickstart
 

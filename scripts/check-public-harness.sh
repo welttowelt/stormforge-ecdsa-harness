@@ -44,6 +44,46 @@ for path in \
   examples/route-packet.example.md \
   examples/compute-request.example.md \
   examples/public-note.example.md \
+  skills/nasqret-playbook.md \
+  skills/deepseek-pressure-test.md \
+  skills/pip-discipline.md \
+  skills/frontier-lock.md \
+  skills/validation-submit-gate.md \
+  skills/route-compute-gate.md \
+  skills/multi-agent-handoff.md \
+  skills/circuit-diff-mining.md \
+  skills/submission-forensics.md \
+  skills/bluesky-route-salvage.md \
+  skills/redsky-frontier-audit.md \
+  skills/ecdsafail-cli-ops.md \
+  skills/stormgate-prefilter.md \
+  skills/paper-gidney-constant-workspace-adder.md \
+  skills/paper-mbu-modular-arithmetic.md \
+  skills/paper-hrs-dirty-constant-adder.md \
+  skills/paper-gidney-temporary-logical-and.md \
+  skills/paper-haner-ecdlp-circuits.md \
+  skills/paper-schrottenloher-point-addition.md \
+  skills/paper-luo-register-sharing-eea.md \
+  .agents/skills/nasqret-playbook/SKILL.md \
+  .agents/skills/deepseek-pressure-test/SKILL.md \
+  .agents/skills/pip-discipline/SKILL.md \
+  .agents/skills/frontier-lock/SKILL.md \
+  .agents/skills/validation-submit-gate/SKILL.md \
+  .agents/skills/route-compute-gate/SKILL.md \
+  .agents/skills/multi-agent-handoff/SKILL.md \
+  .agents/skills/circuit-diff-mining/SKILL.md \
+  .agents/skills/submission-forensics/SKILL.md \
+  .agents/skills/bluesky-route-salvage/SKILL.md \
+  .agents/skills/redsky-frontier-audit/SKILL.md \
+  .agents/skills/ecdsafail-cli-ops/SKILL.md \
+  .agents/skills/stormgate-prefilter/SKILL.md \
+  .agents/skills/paper-gidney-constant-workspace-adder/SKILL.md \
+  .agents/skills/paper-mbu-modular-arithmetic/SKILL.md \
+  .agents/skills/paper-hrs-dirty-constant-adder/SKILL.md \
+  .agents/skills/paper-gidney-temporary-logical-and/SKILL.md \
+  .agents/skills/paper-haner-ecdlp-circuits/SKILL.md \
+  .agents/skills/paper-schrottenloher-point-addition/SKILL.md \
+  .agents/skills/paper-luo-register-sharing-eea/SKILL.md \
   dashboard/fixtures/status.json; do
   need_file "$path"
 done
@@ -84,6 +124,20 @@ need_text examples/route-packet.example.md "stop condition" "Stop condition"
 need_text examples/compute-request.example.md "zero paid compute" "zero"
 need_text examples/public-note.example.md "not a candidate" "not a candidate"
 need_text dashboard/fixtures/status.json "public fixture" "public fixture|fixture data"
+need_text skills/bluesky-route-salvage.md "bluesky salvage" "Bluesky salvage"
+need_text skills/redsky-frontier-audit.md "redsky audit" "Redsky audit"
+need_text skills/ecdsafail-cli-ops.md "ecdsafail command" "ecdsafail benchmark"
+need_text skills/stormgate-prefilter.md "prefilter label" "stage-1 survivor"
+need_text skills/paper-gidney-constant-workspace-adder.md "gidney source" "arXiv:2507.23079"
+need_text skills/paper-mbu-modular-arithmetic.md "mbu phase cleanup" "phase correction"
+need_text skills/paper-hrs-dirty-constant-adder.md "dirty host" "not scratch"
+need_text skills/paper-gidney-temporary-logical-and.md "temporary logical and" "temporary logical-AND"
+need_text skills/paper-haner-ecdlp-circuits.md "ecdlp tradeoff" "Q/T/depth"
+need_text skills/paper-schrottenloher-point-addition.md "secp256k1" "secp256k1"
+need_text skills/paper-luo-register-sharing-eea.md "register sharing" "register-sharing EEA"
+need_text skills/nasqret-playbook.md "route slate" "route slate"
+need_text skills/deepseek-pressure-test.md "pressure test" "pressure-test"
+need_text skills/pip-discipline.md "pip discipline" "PIP Evidence Discipline"
 
 if [ "$fail" -ne 0 ]; then
   exit 1
