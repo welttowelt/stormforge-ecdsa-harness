@@ -160,6 +160,9 @@ agent instructions or used as a preflight before route work:
 - `skills/paper-wire-recycling-lifetime-graph.md`: apply wire-recycling,
   SQUARE, and Reqomp lifetime-graph discipline to free-pool aliasing and
   stale-dead-drop failures.
+- `skills/paper-scalable-memory-recycling.md`: prevent lower-Q primitive
+  swaps from silently changing dynamic headroom schedules; require schedule
+  ledgers, frozen baseline replay, and explicit rebaked tables.
 
 Codex-style agents can also discover the PIP and audit cards through the
 repo-local bridges under `.agents/skills/`.
@@ -204,6 +207,7 @@ The bridge names are:
 - `paper-roetteler-ecdlp-resource-estimate`
 - `paper-garn-kan-windowed-binary-ecdlp`
 - `paper-wire-recycling-lifetime-graph`
+- `paper-scalable-memory-recycling`
 
 Useful global skills for ECDSA work, when installed in the agent environment:
 
@@ -235,6 +239,9 @@ Common call chains:
 - Free-pool or stale-dead-drop integration failure:
   `paper-wire-recycling-lifetime-graph` -> `redsky-frontier-audit` ->
   `validation-submit-gate`.
+- Schedule-coupled lower-Q primitive:
+  `paper-scalable-memory-recycling` -> `frontier-lock` ->
+  `structural-qubit-cut` -> `validation-submit-gate`.
 - Peak host borrowing: `paper-conditionally-clean-ancillae` ->
   `fold-carry-rearchitecture` -> `exact-support-invariant-miner`.
 - Zero-ancilla suffix fallback: `paper-remaud-ancilla-free-adder` ->
