@@ -149,6 +149,8 @@ agent instructions or used as a preflight before route work:
   Khattar-Gidney conditionally-clean cascade route for exact peak-carry cuts.
 - `skills/paper-conditionally-clean-ancillae.md`: use Khattar/Gidney
   conditionally clean ancillae only with a branch-clean proof.
+- `skills/paper-reversible-pebbling-memory-management.md`: turn lower-Q
+  cleanup/recompute ideas into explicit peak DAG and stale-drop gates.
 - `skills/paper-remaud-ancilla-free-adder.md`: evaluate no-ancilla adder
   suffixes as lower-Q pressure relief with a strict Toffoli gate.
 - `skills/paper-takahashi-no-ancilla-adder.md`: use classic no-ancilla addition

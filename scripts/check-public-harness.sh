@@ -38,6 +38,7 @@ for path in \
   .agents/skills/bluesky-audit/SKILL.md \
   .agents/skills/redsky-audit/SKILL.md \
   docs/production-shape.md \
+  scripts/pebble-memory-ledger.sh \
   examples/audit-card.example.md \
   examples/operator-card.example.md \
   examples/mailbox-entry.example.md \
@@ -66,6 +67,7 @@ for path in \
   skills/paper-luo-register-sharing-eea.md \
   skills/conditionally-clean-cascade-cut.md \
   skills/paper-conditionally-clean-ancillae.md \
+  skills/paper-reversible-pebbling-memory-management.md \
   skills/paper-remaud-ancilla-free-adder.md \
   skills/paper-takahashi-no-ancilla-adder.md \
   skills/paper-roetteler-ecdlp-resource-estimate.md \
@@ -94,6 +96,7 @@ for path in \
   .agents/skills/paper-luo-register-sharing-eea/SKILL.md \
   .agents/skills/conditionally-clean-cascade-cut/SKILL.md \
   .agents/skills/paper-conditionally-clean-ancillae/SKILL.md \
+  .agents/skills/paper-reversible-pebbling-memory-management/SKILL.md \
   .agents/skills/paper-remaud-ancilla-free-adder/SKILL.md \
   .agents/skills/paper-takahashi-no-ancilla-adder/SKILL.md \
   .agents/skills/paper-roetteler-ecdlp-resource-estimate/SKILL.md \
@@ -130,6 +133,7 @@ need_text .agents/skills/redsky-audit/SKILL.md "bridge" "Codex-discoverable brid
 need_text docs/production-shape.md "storm production" "STORM harness in production"
 need_text docs/production-shape.md "prefilter label" "Prefilter"
 need_text docs/production-shape.md "private boundary" "private fleet config"
+need_text scripts/pebble-memory-ledger.sh "pebble ledger output" "Reversible pebbling memory gate"
 
 need_text examples/operator-card.example.md "falsifiable decision" "Falsifiable decision"
 need_text examples/audit-card.example.md "rci tony" "RCI/Tony"
@@ -153,6 +157,7 @@ need_text skills/paper-schrottenloher-point-addition.md "secp256k1" "secp256k1"
 need_text skills/paper-luo-register-sharing-eea.md "register sharing" "register-sharing EEA"
 need_text skills/conditionally-clean-cascade-cut.md "conditionally clean cascade" "conditionally-clean cascade"
 need_text skills/paper-conditionally-clean-ancillae.md "conditionally clean" "conditionally clean"
+need_text skills/paper-reversible-pebbling-memory-management.md "reversible pebbling" "reversible pebbling"
 need_text skills/paper-remaud-ancilla-free-adder.md "ancilla free" "no ancilla"
 need_text skills/paper-takahashi-no-ancilla-adder.md "no ancilla baseline" "no-ancilla"
 need_text skills/paper-roetteler-ecdlp-resource-estimate.md "prime field" "prime-field ECDLP"
