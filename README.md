@@ -145,6 +145,18 @@ agent instructions or used as a preflight before route work:
   point-addition architecture ideas into local TLM invariants.
 - `skills/paper-luo-register-sharing-eea.md`: explore compact
   register-sharing EEA ideas without hiding decompression peaks.
+- `skills/conditionally-clean-cascade-cut.md`: test the Nie-Zi-Sun /
+  Khattar-Gidney conditionally-clean cascade route for exact peak-carry cuts.
+- `skills/paper-conditionally-clean-ancillae.md`: use Khattar/Gidney
+  conditionally clean ancillae only with a branch-clean proof.
+- `skills/paper-remaud-ancilla-free-adder.md`: evaluate no-ancilla adder
+  suffixes as lower-Q pressure relief with a strict Toffoli gate.
+- `skills/paper-takahashi-no-ancilla-adder.md`: use classic no-ancilla addition
+  as a suffix-only fallback baseline.
+- `skills/paper-roetteler-ecdlp-resource-estimate.md`: ground prime-field ECDLP
+  architecture ideas in gate-level point-add validation.
+- `skills/paper-garn-kan-windowed-binary-ecdlp.md`: borrow exact exceptional-case
+  and window/table discipline without direct field-porting.
 
 Codex-style agents can also discover the PIP and audit cards through the
 repo-local bridges under `.agents/skills/`.
@@ -182,6 +194,12 @@ The bridge names are:
 - `paper-haner-ecdlp-circuits`
 - `paper-schrottenloher-point-addition`
 - `paper-luo-register-sharing-eea`
+- `conditionally-clean-cascade-cut`
+- `paper-conditionally-clean-ancillae`
+- `paper-remaud-ancilla-free-adder`
+- `paper-takahashi-no-ancilla-adder`
+- `paper-roetteler-ecdlp-resource-estimate`
+- `paper-garn-kan-windowed-binary-ecdlp`
 
 Useful global skills for ECDSA work, when installed in the agent environment:
 
@@ -207,9 +225,18 @@ Common call chains:
 - Paper-driven lower-q adder work: `paper-gidney-constant-workspace-adder` ->
   `paper-mbu-modular-arithmetic` -> `q1152-structural-core` or
   `structural-qubit-cut`.
+- Conditionally-clean cascade cut: `conditionally-clean-cascade-cut` ->
+  `paper-conditionally-clean-ancillae` -> `fold-carry-rearchitecture` ->
+  `exact-support-invariant-miner`.
+- Peak host borrowing: `paper-conditionally-clean-ancillae` ->
+  `fold-carry-rearchitecture` -> `exact-support-invariant-miner`.
+- Zero-ancilla suffix fallback: `paper-remaud-ancilla-free-adder` ->
+  `paper-takahashi-no-ancilla-adder` -> `route-compute-gate`.
 - Paper-driven architecture work: `paper-haner-ecdlp-circuits` ->
   `paper-schrottenloher-point-addition` ->
-  `paper-luo-register-sharing-eea`, then reduce the idea to one local invariant.
+  `paper-luo-register-sharing-eea` ->
+  `paper-roetteler-ecdlp-resource-estimate`, then reduce the idea to one local
+  invariant.
 
 ## Quickstart
 

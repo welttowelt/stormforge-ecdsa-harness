@@ -64,6 +64,12 @@ for path in \
   skills/paper-haner-ecdlp-circuits.md \
   skills/paper-schrottenloher-point-addition.md \
   skills/paper-luo-register-sharing-eea.md \
+  skills/conditionally-clean-cascade-cut.md \
+  skills/paper-conditionally-clean-ancillae.md \
+  skills/paper-remaud-ancilla-free-adder.md \
+  skills/paper-takahashi-no-ancilla-adder.md \
+  skills/paper-roetteler-ecdlp-resource-estimate.md \
+  skills/paper-garn-kan-windowed-binary-ecdlp.md \
   .agents/skills/nasqret-playbook/SKILL.md \
   .agents/skills/deepseek-pressure-test/SKILL.md \
   .agents/skills/pip-discipline/SKILL.md \
@@ -84,6 +90,12 @@ for path in \
   .agents/skills/paper-haner-ecdlp-circuits/SKILL.md \
   .agents/skills/paper-schrottenloher-point-addition/SKILL.md \
   .agents/skills/paper-luo-register-sharing-eea/SKILL.md \
+  .agents/skills/conditionally-clean-cascade-cut/SKILL.md \
+  .agents/skills/paper-conditionally-clean-ancillae/SKILL.md \
+  .agents/skills/paper-remaud-ancilla-free-adder/SKILL.md \
+  .agents/skills/paper-takahashi-no-ancilla-adder/SKILL.md \
+  .agents/skills/paper-roetteler-ecdlp-resource-estimate/SKILL.md \
+  .agents/skills/paper-garn-kan-windowed-binary-ecdlp/SKILL.md \
   dashboard/fixtures/status.json; do
   need_file "$path"
 done
@@ -135,6 +147,12 @@ need_text skills/paper-gidney-temporary-logical-and.md "temporary logical and" "
 need_text skills/paper-haner-ecdlp-circuits.md "ecdlp tradeoff" "Q/T/depth"
 need_text skills/paper-schrottenloher-point-addition.md "secp256k1" "secp256k1"
 need_text skills/paper-luo-register-sharing-eea.md "register sharing" "register-sharing EEA"
+need_text skills/conditionally-clean-cascade-cut.md "conditionally clean cascade" "conditionally-clean cascade"
+need_text skills/paper-conditionally-clean-ancillae.md "conditionally clean" "conditionally clean"
+need_text skills/paper-remaud-ancilla-free-adder.md "ancilla free" "no ancilla"
+need_text skills/paper-takahashi-no-ancilla-adder.md "no ancilla baseline" "no-ancilla"
+need_text skills/paper-roetteler-ecdlp-resource-estimate.md "prime field" "prime-field ECDLP"
+need_text skills/paper-garn-kan-windowed-binary-ecdlp.md "binary field" "binary-field"
 need_text skills/nasqret-playbook.md "route slate" "route slate"
 need_text skills/deepseek-pressure-test.md "pressure test" "pressure-test"
 need_text skills/pip-discipline.md "pip discipline" "PIP Evidence Discipline"
