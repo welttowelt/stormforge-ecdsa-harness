@@ -1,0 +1,84 @@
+# Skill: q1153 Peak Structural Map + Ancilla-Garbage Kill-Test (ecdsa.fail secp256k1)
+
+Use when attempting ANY qubit-width (peak) cut on the ecdsa.fail secp256k1 reversible EC point-add
+circuit (peak 1153), or when diagnosing nonce-independent full-circuit dirt after a fold-suffix edit.
+This is the durable structural map + kill-test from 2 cycles of adversarial paper-mining — it tells you
+in advance which cuts CAN'T work and why, so you stop re-walking dead space.
+
+## The peak anatomy (the one fact every candidate must pass)
+
+Peak 1153 is NOT a single adder's ripple carries. It is **4 INTER-CHUNK boundary `cout` ancillae**
+(`carries` Vec, arith.rs:834) of a graduated staircase [4,3,2,1] that must COEXIST because
+`controlled_add_const_chunked_graduated_off` runs ALL forward chunks first, then reverse-erases
+(arith.rs:836-846), and each reverse-erase reads `carries[j-1]` as a LIVE quantum carry-in (`cin_ref`,
+arith.rs:842). entry_active 1149 + 4 carries = 1153. Nine other phases sit at a 1152 floor; ONLY
+`tlm_apply_inverse_mod_sub_fold` is +1.
+
+CONSEQUENCE: per-adder single-ancilla tricks (CDKM, Cuccaro) and ripple-carry-elimination papers
+(Remaud-Vandaele arXiv:2402.18594) DO NOT HELP — our carries are a **deferred-erase boundary
+structure**, not a ripple. Reject any candidate that assumes a ripple.
+
+## The ancilla-garbage kill-test (nonce-independent 9024/141/141)
+
+After a fold-suffix edit, full-circuit eval of `9024 cls / 141 pha / 141 anc`, identical across ALL
+Fiat-Shamir nonces incl. random, is the signature of an **INEXACT wide-suffix dirty-borrow restore**
+(phase-ordering / wrong borrow axis) — i.e. a **palindrome violation**. It is reproduced by:
+`TLM_FORCE_DIRTY_SUFFIX=1`, the Gidney-2507.23079 Fig-5 dirty-borrow port, per-call g-reduction,
+spooky-pebbling mid-circuit Hadamard, HRS17 on a branching suffix, Zhang-Cho-Lee-Seo forced on nested
+carries. Any candidate whose restore is NOT a literal unitary inverse over a flat linear adder trips it.
+**THE DIFFERENTIATOR:** is the restore unitary-invertible BY CONSTRUCTION (conditionally-clean
+[Khattar-Gidney], Bennett compute-copy-uncompute) → safe; or inexact (dirty-borrow, MBU on entangled
+wires, ghosting) → this wall. (See also `circuit-edit-integration-safety.md` for the cheap
+stale-index/free-pool falsifier ladder before declaring it this wall.)
+
+## MBU is ALREADY baked in; the peak carries are NON-MBU-able
+
+The repo already measurement-uncomputes (hmr + cz_if_bit/cz/ccz deferred-phase) every INTERNAL carry of
+the +f fold (const_chunk_add_clean arith.rs:666-685; clean_add_threaded_opt arith.rs:196-230;
+controlled_erase_carry_gated_const arith.rs:793-810). The boundary `cout` carries at the PEAK are
+structurally **NON-MBU-able**: each is the coherent quantum carry-in of the NEXT forward chunk
+(arith.rs:649-659: `cx(cin_ref,a[i]); ccx(a[i],cin_ref,cout_ref)`). Measuring it destroys the downstream
+carry-in superposition — a **forward data-dependency wall MORE fundamental than the reverse-erase
+liveness**. Candidates re-proposing Gidney-2018 MBU / Luongo-Miti on these carries duplicate
+already-shipped optimizations targeting the wrong (non-MBU-able) carries. (The Gidney-2507.23079 Fig-5
+port hits this: isolation-clean, full-circuit 9024/141/141.)
+
+## Toffoli-axis vs width-axis confusion = the #1 finding-bug source
+
+Gidney-2018 (temporary logical-AND), Luongo-Miti MBU, and Remaud-Vandaele ancilla-free adder reduce
+**TOFFOLI COUNT / DEPTH, NOT peak qubit width**. The score is `avg_Toffoli × peak_qubits`. On a graduated
+suffix of width n≤4, these asymptotic constructions blow up the Toffoli factor (O(n log n) vs ~8
+CCX/chunk) → score-NEUTRAL or score-NEGATIVE. **Only conditionally-clean (Khattar-Gidney) and the
+terminal-carry drop (already wired as TLM_GRAD_FINAL_NO_COUT) touch the WIDTH axis on the peak carries.**
+
+## The dead-bit-borrow precondition (universal gate for resident-bit reuse)
+
+Any technique that borrows/reuses a RESIDENT bit during the fold (conditionally-clean cascade, dirty
+borrow, recompute-later) needs ≥1 RESIDENT bit that is DEAD across the entire fold plateau. The plateau
+(`tlm_apply_inverse_mod_sub_fold` inside `apply_step_reverse` inside `reverse_gcd_jump`) sits in the
+apply pipeline where codec-tape(406) / divstep-flags(4) / shrunk-GCD-u(91) are ALL LIVE. The divstep
+SYMBOL bits are deliberately DROPPED before the apply (gcd.rs ~760) so they are NOT resident at the peak
+and CANNOT be borrowed. **MANDATORY first step for any borrowed-bit technique:** a per-op active-timeline
+liveness scan during the fold to find/confirm a verified-dead resident bit. Without one, every
+resident-bit-reuse route dies for lack of a target.
+
+## The one surviving value-safe candidate (cycle 2)
+
+Conditionally-clean borrowed ancilla for ONLY the j=0 (first) carry — Khattar & Gidney, "Rise of
+conditionally clean ancillae," Quantum 9:1752 (2025) / arXiv:2407.17966. Replace the j=0 `alloc_qubit()`
+(arith.rs:834) with a conditionally-clean handle to a verified-dead resident bit (Khattar-Gidney
+AND-accumulator). Ceiling = **1152 (one carry only)** — cascaded cuts blocked by the live cout_{j-1}
+carry-in read. value-exact BY CONSTRUCTION (unitary-invertible). TWO blockers: (i) the dead-resident-bit
+precondition is unverified (run the liveness scan first); (ii) the builder only exposes
+`loan_zero_qubit` (assumes |0>) — needs a NEW unknown-state-borrow op, or the port silently falls back
+to dirty-borrow and dies. Caveat: per the findability-wall memory, q1152 value-exact beats are
+UNFINDABLE on the live frontier (cls floor >18 → islands too rare) — a correctness win that may not yield
+a submittable #1 this window.
+
+## Credit
+
+Synthesized from qcut-paper-mining workflow cycles 1-2 (2026-06-25): 58 papers screened, 55 closed.
+Key sources: Khattar & Gidney arXiv:2407.17966 (Quantum 9:1752); Gidney arXiv:2507.23079;
+Nie-Zi-Sun arXiv:2402.05053; Remaud-Vandaele arXiv:2402.18594; Schrottenloher space-optimized mod-arith.
+Companion skills: `conditionally-clean-cascade-cut.md`, `circuit-edit-integration-safety.md`. Do not
+imply copied code.
