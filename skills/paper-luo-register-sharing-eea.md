@@ -36,6 +36,28 @@ peaks that erase the qubit win.
 4. Count decompression and routing scratch explicitly.
 5. Promote only if peak and score both improve locally.
 
+## Software Gate
+
+Use `scripts/resident-footprint-ledger.sh` on a `TLM_FFG` trace before changing
+architecture. It tells you whether a lower tier needs a local carry cut or a
+plateau-wide resident-footprint reduction.
+
+```bash
+scripts/resident-footprint-ledger.sh \
+  --trace /tmp/codex_alloc_near_1145.err \
+  --frontier 1577850522 \
+  --q 1147 \
+  --target-q 1146 \
+  --route q1147-clean
+```
+
+If one-callsite adder/comparator cuts leave the max peak unchanged, apply the
+Luo paper only as a resident-register sharing prompt: prove which live register
+can be represented more compactly across every above-target call, then audit
+the decompression peak.
+
+## 2026-06-26 Application
+
 ## Output
 
 ```text
@@ -46,6 +68,15 @@ Luo register-sharing EEA:
 - Hidden scratch audit:
 - Decision: prototype / narrow / park
 ```
+
+Current q1147 lower-Q trace:
+
+- target q1146 requires a uniform 1-qubit reduction across the max inverse-fold
+  plateau, not just a comparator or adder micro-cut;
+- the relevant rows are the max `tlm_apply_inverse_mod_sub_fold` calls, with
+  entry-active around 1105..1109 and local peak 1147;
+- if a register-sharing idea hides even one decompression qubit inside those
+  calls, it gives back the entire q cut.
 
 ## Kill Gate
 

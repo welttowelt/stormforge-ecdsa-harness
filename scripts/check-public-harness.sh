@@ -40,6 +40,7 @@ for path in \
   docs/production-shape.md \
   scripts/pebble-memory-ledger.sh \
   scripts/vandaele-comparator-ledger.sh \
+  scripts/resident-footprint-ledger.sh \
   examples/audit-card.example.md \
   examples/operator-card.example.md \
   examples/mailbox-entry.example.md \
@@ -138,6 +139,7 @@ need_text docs/production-shape.md "prefilter label" "Prefilter"
 need_text docs/production-shape.md "private boundary" "private fleet config"
 need_text scripts/pebble-memory-ledger.sh "pebble ledger output" "Reversible pebbling memory gate"
 need_text scripts/vandaele-comparator-ledger.sh "vandaele ledger output" "Vandaele comparator gate"
+need_text scripts/resident-footprint-ledger.sh "resident footprint output" "Resident footprint gate"
 
 need_text examples/operator-card.example.md "falsifiable decision" "Falsifiable decision"
 need_text examples/audit-card.example.md "rci tony" "RCI/Tony"
