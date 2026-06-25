@@ -51,6 +51,30 @@ you added → those allocs/vents are the leak source.
 If all three are ruled out, THEN emit the first-divergence shot + first mismatching output bit + first
 nonzero ancilla bit to localize a genuine schedule/shift bug.
 
+### Refined Gidney q1152 branch (2026-06-25)
+
+In the 4cd1b2f production-adjacent Gidney tree, raw/no-drop did **not** restore
+correctness but did reduce the failure to `12 cls / 12 pha / 0 anc` over 9024
+shots. A schedule ledger then showed:
+
+```text
+final_g_diffs=0
+headroom_diffs=0
+phase_diffs=0
+local_peak_diffs=214
+```
+
+So for this class, do not stop at "stale `.idx` confirmed" merely because
+`anc` clears. If raw/no-drop leaves value/phase dirt and the schedule ledger is
+identical, the next production branch is:
+
+1. first-divergence probe at the first failing shot;
+2. free-pool vs forced-fresh-high-ID A/B for the suspect transient family;
+3. lifetime graph for any ID whose high-ID A/B changes the failure;
+4. park as primitive/footprint divergence if high-ID does not change it.
+
+Do not send such a build to scanner until this branch is clean.
+
 ## Output
 
 For a wired-in primitive: a clean/disambiguated full-circuit result, plus which of the 3 causes applied

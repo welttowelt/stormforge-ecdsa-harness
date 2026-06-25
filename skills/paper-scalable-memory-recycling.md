@@ -88,6 +88,40 @@ If Gate A passes but Gate B fails, debug integration or qubit-lifetime
 coupling. If Gate B passes but rebaked mode fails, debug the schedule table,
 not the adder.
 
+### Production q1152 update from 2026-06-25
+
+Codex-Vector applied this gate to a 4cd1b2f production-adjacent Gidney
+no-drop checkout with the production Gidney switch:
+
+```bash
+TLM_GIDNEY_3CLEAN_SUFFIX=1 \
+DROP_DEAD_ROBUST_DISABLE=1 \
+DROP_DEAD_ROBUST_SECOND=0 \
+TRACE_TLM_PROFILE=1 \
+TRACE_TLM_FFG_SCHEDULE=1 \
+PROFILE_ACTIVE_TIMELINE=1 \
+TRACE_PHASE_ACTIVE=1 \
+./target/release/build_circuit
+```
+
+Result:
+
+```text
+baseline raw/no-drop: peak=1153 emitted_ops=10220962
+gidney raw/no-drop:   peak=1152 emitted_ops=10247575
+schedule rows:        601 baseline / 601 gidney
+final_g_diffs:        0
+headroom_diffs:       0
+phase_diffs:          0
+trusted eval:         12 cls / 12 pha / 0 anc over 9024 shots, first shot=948
+```
+
+Decision for this exact tree: the Gidney q1152 failure is **not** an FFG
+schedule-rebake problem. The schedule decisions are identical; only local
+active pressure drops. Do not spend scanner/pod time on this route as a
+"rebake the FFG table" task. Move to first-divergence plus lifetime/free-pool
+A/B on the Gidney transient family, or park the Fig-5 suffix.
+
 ## Output
 
 ```text
@@ -99,7 +133,7 @@ Memory recycling / schedule-coupling:
 - Active-timeline delta:
 - Rebaked schedule changes:
 - Residual class:
-- Decision: freeze / rebake / park
+- Decision: freeze / rebake / lifetime-debug / park
 ```
 
 ## Kill Gate

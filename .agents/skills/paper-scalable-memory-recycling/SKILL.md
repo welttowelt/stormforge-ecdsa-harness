@@ -13,5 +13,10 @@ Before widening a local lower-Q primitive whose allocation pattern can change
 dynamic headroom or downstream schedule decisions, read that card and follow
 its invariant, procedure, output, and kill gate.
 
+Production note: the 2026-06-25 q1152 Gidney no-drop check had identical
+`final_g` and headroom rows versus baseline but still failed trusted eval with
+`12 cls / 12 pha / 0 anc`. When that signature appears, skip schedule rebake
+and go directly to first-divergence plus lifetime/free-pool A/B.
+
 This bridge is local-only. It does not load private chat logs, private
 endpoints, raw logs, nonces, telemetry, or always-on behavior.
