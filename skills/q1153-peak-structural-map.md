@@ -5,6 +5,20 @@ circuit (peak 1153), or when diagnosing nonce-independent full-circuit dirt afte
 This is the durable structural map + kill-test from 2 cycles of adversarial paper-mining — it tells you
 in advance which cuts CAN'T work and why, so you stop re-walking dead space.
 
+## ⚠️ CORRECTION (live TRACE_ALLOC_NEAR_PEAK, 2026-06-25, cascade pilot — trumps the anatomy below on the peak SITE)
+
+The marginal +1 (1152→1153) is **NOT** the graduated-suffix boundary `cout` stack (arith.rs:826-838)
+claimed in the anatomy below. It is the **INTERNAL carry `int` of `const_chunk_add_clean`** (arith.rs:646,
+~:810), ops_idx=2682127, phase `tlm_apply_inverse_mod_sub_fold` — the ONLY `free_pool=0` alloc in the
+fold (all 1153 ids live quantum data; no donor to borrow — force-borrow trips `Op::validate`'s aliasing
+guard). Peak 1153 is therefore a **HARD RIPPLE-CARRY FLOOR**: all s-1 carries of a chunk are
+simultaneously live; there is no transient borrow slot inside a stage. The conditionally-clean cascade
+(Rank-1 below) is **CLOSED**: a synthesized-`|0>` donor costs +13,319 CCX (Toffoli penalty eats the
+1-qubit win → score worse) AND force-borrow hits 9024/141/141 (garbage wall). Only a NON-RIPPLE adder
+(Gidney Fig-2 vented-streaming) or an algebraic re-factor (pair-complete / Schrottenloher modmul width)
+can break the floor. The kill-test / MBU-baked-in / toffoli-vs-width / dead-bit-borrow sections below
+remain valid; only the peak SITE (internal carry, not boundary cout) is corrected.
+
 ## The peak anatomy (the one fact every candidate must pass)
 
 Peak 1153 is NOT a single adder's ripple carries. It is **4 INTER-CHUNK boundary `cout` ancillae**
@@ -62,7 +76,7 @@ and CANNOT be borrowed. **MANDATORY first step for any borrowed-bit technique:**
 liveness scan during the fold to find/confirm a verified-dead resident bit. Without one, every
 resident-bit-reuse route dies for lack of a target.
 
-## The one surviving value-safe candidate (cycle 2)
+## The one surviving value-safe candidate (cycle 2) — CLOSED by cascade pilot (2026-06-25)
 
 Conditionally-clean borrowed ancilla for ONLY the j=0 (first) carry — Khattar & Gidney, "Rise of
 conditionally clean ancillae," Quantum 9:1752 (2025) / arXiv:2407.17966. Replace the j=0 `alloc_qubit()`

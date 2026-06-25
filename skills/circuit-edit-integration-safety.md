@@ -68,4 +68,23 @@ Synthesized from the live ecdsa.fail secp256k1 Gidney-Fig-5 integration investig
 including Codex-Vector's stale-dead-drop falsifier and the free-pool-aliasing diagnosis. Related:
 Gidney, "A Classical-Quantum Adder with Constant Workspace and Linear Gates," arXiv:2507.23079 (2025);
 Khattar & Gidney, "Rise of conditionally clean ancillae," arXiv:2407.17966 (2025). Companion to
-`conditionally-clean-cascade-cut.md`. To be extended with allocation/reuse-literature citations.
+`conditionally-clean-cascade-cut.md` and `q1153-peak-structural-map.md`.
+
+## Why this is a compiler bug, not a circuit-design problem
+
+The blocker is fundamentally an ENGINEERING / compiler-correctness defect — no paper gives a new gate
+that fixes it. Governing principle: **every pass that edits the op stream (dead-gate elimination,
+template matching, peephole cancellation, adder substitution) must recompute its analyses from the
+post-edit stream. A precomputed op-index is valid ONLY for the exact stream it was computed on; applying
+it to a mutated stream is a stale-analysis bug, indistinguishable from use-after-free.** Nonce-independent
+dirt is the fingerprint (rules out runtime/probabilistic/physics causes). "141 phase = 141 vents" is the
+smoking gun: each aliased vent deposits a structurally-determined phase flip on the wrong register.
+
+## Verified sources
+
+- **Dead Gate Elimination** — Chen/Mendl/Seidl, ICCS 2025, arXiv:2504.12729 (demo github.com/i2-tum/demo-dead-gate-elimination). This IS the source of `DROP_DEAD_ROBUST`; its correctness is scoped to the CURRENT program's measurement structure, not a reusable index → applying a baseline index to a modified stream is outside the guarantee (step 1 of the ladder is the literal falsifier).
+- **Qubit Recycling Revisited** — Jiang, PLDI 2024, doi:10.1145/3656428. Free-pool/ID-reuse correctness: qubit dependency graph (QDG), recycling valid iff `→∘↪` acyclic; a recycled ID aliases a live qubit iff a `discard[q]→alloc[q′]` reuse edge loops (q′ still live). Prior verified compilers "do not directly apply" to recycling → a bare free-pool allocator has no backstop (step 2). Localize: for each vent, is any alloc's recycled ID in the live-set of an active logical register at vent time?
+- **Spooky Pebble Games and Irreversible Uncomputation** — Gidney, 2019, algassert.com/post/1905. Source of venting; a vented qubit must be Z-redundant (Z-basis function ONLY of values live at vent time). Else the `|−>` branch phase-flips whatever actually controls the bit-flips (the aliased register) → nonce-independent phase dirt. Explains 141=141.
+- **Measurement-Based Uncomputation for Modular Arithmetic** — arXiv:2407.20167 (2024). Formal MBU correctness for our domain; re-derive the precondition on the INTEGRATED circuit, not the isolated adder.
+- **Advantages of using relative-phase Toffoli gates** — Maslov, Phys. Rev. A 93, 022311 (2016), arXiv:1508.03273. Relative-phase gates correct ONLY in matched compute/uncompute pairs; integration breaks the pairing → 0/0/0 selftest vs phase dirt integrated.
+- **Verified Compilation of Space-Efficient Reversible Circuits** — Amy/Roetteler/Svore, CAV 2017, doi:10.1007/978-3-319-63390-9_1. Space-efficient allocation REQUIRES verification; an unchecked free-pool is the defect class. (ECDLP literature documents no "nonce-independent integration dirt" — confirming it is a build-pipeline defect.)
