@@ -43,12 +43,34 @@ resident floor** — a WIDTH-1 ripple. This closes every adder trick:
 **THE PEAK +1 IS LOAD-BEARING**: int[0] of the s=2 chunk + the boundary `cout` (deferred-erase into the
 next chunk's carry-in). No adder substitution removes it.
 
-**ONLY REMAINING STRUCTURAL LEVERS** (all hard/unproven): (1) **pair-complete simplification**; (2)
-**Schrottenloher modmul/modadd width** (algebraic re-factor of the resident base, not the carry); (3)
-**staircase-reshape** — restructure the graduated staircase so the peak chunk is WIDE (s≥4), where the
-banked value-exact Fig-2/Fig-5 adders WOULD help (Fig-2 selftest banked in worktree for this). Until one
-of these lands, the q1153 peak cut is EXHAUSTED and the nonce-variance island hunt (Akash) is the only
-live #1 path.
+## The 3 gates to pre-filter ANY q-cut candidate (cycle 3 — would have killed Fig-2/5/cascade pre-build)
+
+1. **RESTORE-MECHANISM TRIAGE (universal differentiator).** The 9024/141/141 wall = structural palindrome
+   violation. Two buckets: **SAFE** = restore unitary-invertible BY CONSTRUCTION (exact unitary adder
+   like Remaud-Vandaele arXiv:2501.16802, conditionally-clean dagger cascade Khattar-Gidney, Bennett
+   compute-copy-uncompute); **KILLER** = inexact restore (dirty-borrow + reverse on entangled/wide
+   register, MBU on a still-live control, ghosting, probabilistic carry truncation). Route every
+   candidate through this filter BEFORE any island compute. (This is why RV ranks safest yet still dies
+   on gate 2/3.)
+2. **DEPENDENCY-FLOOR LAW.** A ripple adder of stage-width s needs s−1 carries simultaneously live; any
+   adder needs ≥2 carries for s=2 (c_1 feeds c_2=cout). When the global peak is a WIDTH-1 (s=2) ripple
+   floor (all carries live, free_pool=0, no transient borrow slot, force-borrow trips the aliasing
+   guard), **NO adder substitution can reduce it** — the floor IS the data-dependency DAG. This closes
+   Fig-2 vented-streaming, conditionally-clean cascade, dirty-borrow, AND ancilla-free ladder (RV) at the
+   peak in one shot. The ONLY escape is a STAIRCASE-RESHAPE making the peak chunk wide (s≥4), where
+   adder tricks become below-peak-irrelevant or actually applicable.
+3. **PRODUCT-TEST GATE.** Score = avg_Toffoli × peak_qubits. Gate every candidate on
+   `round(new_avg_Toffoli) × new_peak < round(old_avg_Toffoli) × old_peak`, NOT width alone. Asymptotic
+   adders (Gidney-2018, Luongo-Miti, RV — O(n log n) gates) BLOW UP the Toffoli factor vs ~8 CCX/chunk
+   ripple at narrow n≤4-10 → score-NEGATIVE even when they nominally cut width. Adders/incrementers/MBU
+   almost always lose the product at narrow n because the constant-factor loss precedes the asymptotic win.
+
+DECISIVE CONCLUSION: for the current architecture, 1153 is effectively the structural width floor —
+adder substitution is EXHAUSTED (gates 1-3 kill every known route at the peak). The only theoretical
+escapes are staircase-reshape (gate-2 escape), algebraic resident-base shrink (pair-complete /
+Schrottenloher modmul width — cycle-3 found NO concretely-promising paper, 29/30 closed), or the Gidney
+Fig-5 cut landed via fleet island-hunt + value-exact drops. The nonce-variance island hunt (Akash) is
+the tractable live #1 path.
 
 ## The peak anatomy (the one fact every candidate must pass)
 
