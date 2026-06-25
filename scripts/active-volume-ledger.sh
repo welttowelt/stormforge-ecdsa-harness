@@ -85,6 +85,7 @@ awk -v route="$route" \
     entry[n] = field("entry_active") + 0;
     peak[n] = field("local_peak") + 0;
     ops[n] = field("ops") + 0;
+    nearest_tape[n] = last_tape == "" ? "none" : last_tape;
     if (peak[n] > max_peak) {
       max_peak = peak[n];
       max_peak_call = call[n];
@@ -106,6 +107,8 @@ awk -v route="$route" \
       tape_above++;
       if (iter != "") tape_iters[iter] = 1;
     }
+    last_tape = sprintf("direction=%s stage=%s i=%s active=%d tape=%d pending=%d win=%s codec=%s",
+      field("direction"), field("stage"), iter, active, tape, pending, field("win_idx"), codec);
   }
   END {
     for (i = 1; i <= n; i++) {
@@ -124,6 +127,7 @@ awk -v route="$route" \
         row_over[above] = over;
         row_span[above] = span;
         row_weighted[above] = weighted;
+        row_tape[above] = nearest_tape[i];
         calls = append(calls, call[i]);
         if (over > max_over) max_over = over;
       }
@@ -163,9 +167,10 @@ awk -v route="$route" \
         }
         if (best == 0) break;
         used[best] = 1;
-        printf "  rank=%d call=%s phase=%s g=%d entry=%d peak=%d over=%d span_ops=%d pressure=%d\n",
+        printf "  rank=%d call=%s phase=%s g=%d entry=%d peak=%d over=%d span_ops=%d pressure=%d nearest_tape={%s}\n",
           rank, row_call[best], row_phase[best], row_g[best], row_entry[best],
-          row_peak[best], row_over[best], row_span[best], row_weighted[best];
+          row_peak[best], row_over[best], row_span[best], row_weighted[best],
+          row_tape[best];
       }
     }
   }

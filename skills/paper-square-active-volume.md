@@ -52,6 +52,8 @@ The ledger must report:
 
 - q tier and max average Toffoli for that tier;
 - all above-target FFG rows and the worst rows by pressure;
+- nearest tape/context rows for each printed pressure row when `TLM_TAPE` rows
+  are present;
 - whether tape/transcript rows overlap the same target;
 - a decision to continue only if the candidate covers the high-pressure rows.
 
@@ -62,6 +64,8 @@ The ledger must report:
    `TRACE_TLM_TAPE_ALL=1`.
 3. Run `scripts/active-volume-ledger.sh`.
 4. State the candidate's coverage in terms of the ledger's top pressure rows.
+   For transcript routes, use the nearest tape context to name the exact
+   window/pending state that must lose a resident bit.
 5. Combine with `paper-reqomp-space-constrained-uncompute`:
    hidden scratch inside a high-pressure row subtracts from the cut.
 6. Only then edit the circuit and run count/residual/eval/benchmark gates.
