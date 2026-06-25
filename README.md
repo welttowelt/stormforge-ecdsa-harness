@@ -151,6 +151,9 @@ agent instructions or used as a preflight before route work:
   conditionally clean ancillae only with a branch-clean proof.
 - `skills/paper-reversible-pebbling-memory-management.md`: turn lower-Q
   cleanup/recompute ideas into explicit peak DAG and stale-drop gates.
+- `skills/paper-vandaele-optimal-comparator.md`: apply Vandaele 2026
+  comparator/incrementer circuits only after proving the comparator is the
+  peak source or pairing it with the co-peak carry floor.
 - `skills/paper-remaud-ancilla-free-adder.md`: evaluate no-ancilla adder
   suffixes as lower-Q pressure relief with a strict Toffoli gate.
 - `skills/paper-takahashi-no-ancilla-adder.md`: use classic no-ancilla addition
@@ -206,6 +209,8 @@ The bridge names are:
 - `paper-luo-register-sharing-eea`
 - `conditionally-clean-cascade-cut`
 - `paper-conditionally-clean-ancillae`
+- `paper-reversible-pebbling-memory-management`
+- `paper-vandaele-optimal-comparator`
 - `paper-remaud-ancilla-free-adder`
 - `paper-takahashi-no-ancilla-adder`
 - `paper-roetteler-ecdlp-resource-estimate`
@@ -247,6 +252,8 @@ Common call chains:
 - Schedule-coupled lower-Q primitive:
   `paper-scalable-memory-recycling` -> `frontier-lock` ->
   `structural-qubit-cut` -> `validation-submit-gate`.
+- Comparator peak pressure: `paper-vandaele-optimal-comparator` ->
+  `q1152-structural-core` -> `exact-support-invariant-miner`.
 - Peak host borrowing: `paper-conditionally-clean-ancillae` ->
   `fold-carry-rearchitecture` -> `exact-support-invariant-miner`.
 - Zero-ancilla suffix fallback: `paper-remaud-ancilla-free-adder` ->
