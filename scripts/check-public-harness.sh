@@ -70,6 +70,7 @@ for path in \
   skills/paper-takahashi-no-ancilla-adder.md \
   skills/paper-roetteler-ecdlp-resource-estimate.md \
   skills/paper-garn-kan-windowed-binary-ecdlp.md \
+  skills/paper-wire-recycling-lifetime-graph.md \
   .agents/skills/nasqret-playbook/SKILL.md \
   .agents/skills/deepseek-pressure-test/SKILL.md \
   .agents/skills/pip-discipline/SKILL.md \
@@ -96,6 +97,7 @@ for path in \
   .agents/skills/paper-takahashi-no-ancilla-adder/SKILL.md \
   .agents/skills/paper-roetteler-ecdlp-resource-estimate/SKILL.md \
   .agents/skills/paper-garn-kan-windowed-binary-ecdlp/SKILL.md \
+  .agents/skills/paper-wire-recycling-lifetime-graph/SKILL.md \
   dashboard/fixtures/status.json; do
   need_file "$path"
 done
@@ -153,6 +155,7 @@ need_text skills/paper-remaud-ancilla-free-adder.md "ancilla free" "no ancilla"
 need_text skills/paper-takahashi-no-ancilla-adder.md "no ancilla baseline" "no-ancilla"
 need_text skills/paper-roetteler-ecdlp-resource-estimate.md "prime field" "prime-field ECDLP"
 need_text skills/paper-garn-kan-windowed-binary-ecdlp.md "binary field" "binary-field"
+need_text skills/paper-wire-recycling-lifetime-graph.md "wire recycling" "lifetime graph"
 need_text skills/nasqret-playbook.md "route slate" "route slate"
 need_text skills/deepseek-pressure-test.md "pressure test" "pressure-test"
 need_text skills/pip-discipline.md "pip discipline" "PIP Evidence Discipline"

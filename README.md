@@ -157,6 +157,9 @@ agent instructions or used as a preflight before route work:
   architecture ideas in gate-level point-add validation.
 - `skills/paper-garn-kan-windowed-binary-ecdlp.md`: borrow exact exceptional-case
   and window/table discipline without direct field-porting.
+- `skills/paper-wire-recycling-lifetime-graph.md`: apply wire-recycling,
+  SQUARE, and Reqomp lifetime-graph discipline to free-pool aliasing and
+  stale-dead-drop failures.
 
 Codex-style agents can also discover the PIP and audit cards through the
 repo-local bridges under `.agents/skills/`.
@@ -200,6 +203,7 @@ The bridge names are:
 - `paper-takahashi-no-ancilla-adder`
 - `paper-roetteler-ecdlp-resource-estimate`
 - `paper-garn-kan-windowed-binary-ecdlp`
+- `paper-wire-recycling-lifetime-graph`
 
 Useful global skills for ECDSA work, when installed in the agent environment:
 
@@ -228,6 +232,9 @@ Common call chains:
 - Conditionally-clean cascade cut: `conditionally-clean-cascade-cut` ->
   `paper-conditionally-clean-ancillae` -> `fold-carry-rearchitecture` ->
   `exact-support-invariant-miner`.
+- Free-pool or stale-dead-drop integration failure:
+  `paper-wire-recycling-lifetime-graph` -> `redsky-frontier-audit` ->
+  `validation-submit-gate`.
 - Peak host borrowing: `paper-conditionally-clean-ancillae` ->
   `fold-carry-rearchitecture` -> `exact-support-invariant-miner`.
 - Zero-ancilla suffix fallback: `paper-remaud-ancilla-free-adder` ->
