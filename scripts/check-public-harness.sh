@@ -44,6 +44,7 @@ for path in \
   scripts/resident-footprint-ledger.sh \
   scripts/uncompute-window-ledger.sh \
   scripts/dirty-borrow-ledger.sh \
+  scripts/dialog-codec-entropy-ledger.sh \
   examples/audit-card.example.md \
   examples/operator-card.example.md \
   examples/mailbox-entry.example.md \
@@ -69,6 +70,7 @@ for path in \
   skills/paper-gidney-temporary-logical-and.md \
   skills/paper-haner-ecdlp-circuits.md \
   skills/paper-schrottenloher-point-addition.md \
+  skills/paper-schrottenloher-dialog-codec-audit.md \
   skills/paper-luo-register-sharing-eea.md \
   skills/conditionally-clean-cascade-cut.md \
   skills/paper-conditionally-clean-ancillae.md \
@@ -102,6 +104,7 @@ for path in \
   .agents/skills/paper-gidney-temporary-logical-and/SKILL.md \
   .agents/skills/paper-haner-ecdlp-circuits/SKILL.md \
   .agents/skills/paper-schrottenloher-point-addition/SKILL.md \
+  .agents/skills/paper-schrottenloher-dialog-codec-audit/SKILL.md \
   .agents/skills/paper-luo-register-sharing-eea/SKILL.md \
   .agents/skills/conditionally-clean-cascade-cut/SKILL.md \
   .agents/skills/paper-conditionally-clean-ancillae/SKILL.md \
@@ -153,6 +156,7 @@ need_text scripts/vandaele-comparator-ledger.sh "vandaele ledger output" "Vandae
 need_text scripts/resident-footprint-ledger.sh "resident footprint output" "Resident footprint gate"
 need_text scripts/uncompute-window-ledger.sh "reqomp ledger output" "Reqomp uncompute window gate"
 need_text scripts/dirty-borrow-ledger.sh "dirty borrow ledger output" "Dirty borrow entanglement gate"
+need_text scripts/dialog-codec-entropy-ledger.sh "dialog codec ledger output" "Dialog codec entropy gate"
 
 need_text examples/operator-card.example.md "falsifiable decision" "Falsifiable decision"
 need_text examples/audit-card.example.md "rci tony" "RCI/Tony"
@@ -173,6 +177,7 @@ need_text skills/paper-hrs-dirty-constant-adder.md "dirty host" "not scratch"
 need_text skills/paper-gidney-temporary-logical-and.md "temporary logical and" "temporary logical-AND"
 need_text skills/paper-haner-ecdlp-circuits.md "ecdlp tradeoff" "Q/T/depth"
 need_text skills/paper-schrottenloher-point-addition.md "secp256k1" "secp256k1"
+need_text skills/paper-schrottenloher-dialog-codec-audit.md "dialog codec entropy" "entropy lower bound"
 need_text skills/paper-luo-register-sharing-eea.md "register sharing" "register-sharing EEA"
 need_text skills/conditionally-clean-cascade-cut.md "conditionally clean cascade" "conditionally-clean cascade"
 need_text skills/paper-conditionally-clean-ancillae.md "conditionally clean" "conditionally clean"

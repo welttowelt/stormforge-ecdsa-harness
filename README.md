@@ -143,6 +143,9 @@ agent instructions or used as a preflight before route work:
   established ECDLP Q/T/depth tradeoffs.
 - `skills/paper-schrottenloher-point-addition.md`: map 2026 secp256k1
   point-addition architecture ideas into local TLM invariants.
+- `skills/paper-schrottenloher-dialog-codec-audit.md`: test
+  Schrottenloher dialog-codec compression ideas against entropy bounds before
+  lower-Q transcript edits.
 - `skills/paper-luo-register-sharing-eea.md`: explore compact
   register-sharing EEA ideas without hiding decompression peaks.
 - `skills/conditionally-clean-cascade-cut.md`: test the Nie-Zi-Sun /
@@ -211,6 +214,7 @@ The bridge names are:
 - `paper-gidney-temporary-logical-and`
 - `paper-haner-ecdlp-circuits`
 - `paper-schrottenloher-point-addition`
+- `paper-schrottenloher-dialog-codec-audit`
 - `paper-luo-register-sharing-eea`
 - `conditionally-clean-cascade-cut`
 - `paper-conditionally-clean-ancillae`
