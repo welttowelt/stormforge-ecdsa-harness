@@ -68,6 +68,13 @@ Known generic-live source families are tagged with `primitive_family`,
 source sites remain `UNKNOWN` and must receive a real source invariant before
 any circuit edit, residual, compute, alert, or submit step.
 
+When a fact stream preserves `TRACE_OP_SITES` context values, the miner decodes
+Gidney-family contexts into `trace_context_family`, `trace_context_call`, and
+`trace_context_bit`. This keeps q1152 binder rows from the threaded/hybrid
+adder and HMR erase paths separate in the NACK ledger, and lets the support
+checker close generic-live carry/sum/phase rows without hardcoding every
+callsite.
+
 For proof-routing runs, insert the support checker and ledger:
 
 ```bash
@@ -107,6 +114,7 @@ Each packet records:
 - op class and executed weight;
 - primitive family, support domain, falsifier template, and witness when known;
 - proof method, support status, support note, support hash, and witness hash;
+- decoded trace context family, call, and bit when available;
 - allocator unchanged flag;
 - proof kind and proof status;
 - expected average-Toffoli delta;

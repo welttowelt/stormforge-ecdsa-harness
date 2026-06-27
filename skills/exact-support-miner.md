@@ -30,6 +30,9 @@ Use fixture or public trace facts only.
    `python3 scripts/storm-exact-miner.py support-check --facts <facts.jsonl> --out <supported.jsonl>`.
    This marks known generic-live rows as counterexamples and keeps dirty-host
    rows unknown unless restoration, phase, and public certificate fields exist.
+   Preserve `TRACE_OP_SITES` context values when available; the miner decodes
+   Gidney threaded/hybrid adder contexts into family/call/bit fields so binder
+   rows can be ledgered without collapsing distinct callsites.
 4. Mine candidates:
    `python3 scripts/storm-exact-miner.py mine --facts <supported-or-facts.jsonl> --out <candidates.jsonl>`.
    For source-site TSVs without proof annotations, add
@@ -80,6 +83,7 @@ require one of:
 - a public support certificate proving a control is fixed or a target is dead;
 - an exact-remainder certificate;
 - a source counterexample witness that closes the row as generic-live.
+- decoded Gidney trace context plus a matching local carry/sum/phase witness.
 
 If the miner emits `COUNTEREXAMPLE`, record the NACK and move on. If it emits
 `UNKNOWN`, the next worker must supply a bounded invariant or falsifier before

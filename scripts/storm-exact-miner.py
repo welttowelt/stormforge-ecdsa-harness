@@ -323,6 +323,23 @@ SITE_CLASSIFIERS: dict[tuple[str, int], dict[str, str]] = {
 }
 
 
+TRACE_CONTEXT_FAMILIES: dict[int, str] = {
+    0x0100_0000: "ffg_prefix_carry",
+    0x0200_0000: "cuccaro_forward_carry",
+    0x0300_0000: "cuccaro_reverse_carry",
+    0x0500_0000: "gidney_thread_forward_carry",
+    0x0600_0000: "gidney_thread_boundary_carry",
+    0x0700_0000: "gidney_thread_sum",
+    0x0900_0000: "gidney_erase_ccz",
+    0x0A00_0000: "gidney_erase_capped_ccz",
+    0x1600_0000: "gidney_hybrid_forward_carry",
+    0x1700_0000: "gidney_hybrid_sum",
+    0x1800_0000: "gidney_hybrid_dirty_uncompute",
+    0x1900_0000: "gidney_hybrid_uncompute",
+    0x1A00_0000: "gidney_hybrid_low_sum",
+}
+
+
 class ExactMinerError(Exception):
     pass
 
@@ -511,6 +528,79 @@ def classify_source_site(source_location: str) -> dict[str, str]:
     return SITE_CLASSIFIERS.get(key, {})
 
 
+def parse_trace_context(context: str) -> int | None:
+    text = str(context or "").strip()
+    if not text or text.lower() in {"none", "unknown"}:
+        return None
+    try:
+        return int(text, 0)
+    except ValueError:
+        return None
+
+
+def decode_trace_context(context: str) -> dict[str, Any]:
+    value = parse_trace_context(context)
+    if value is None:
+        return {}
+    prefix = value & 0xFF00_0000
+    family = TRACE_CONTEXT_FAMILIES.get(prefix, "")
+    if not family:
+        return {"trace_context_value": f"0x{value:08x}"}
+    return {
+        "trace_context_value": f"0x{value:08x}",
+        "trace_context_family": family,
+        "trace_context_call": (value >> 8) & 0xFFFF,
+        "trace_context_bit": value & 0xFF,
+    }
+
+
+def classify_trace_context(context_info: dict[str, Any]) -> dict[str, str]:
+    family = str(context_info.get("trace_context_family", "") or "")
+    if not family:
+        return {}
+    call = context_info.get("trace_context_call", "")
+    bit = context_info.get("trace_context_bit", "")
+    label = f"decoded call={call} bit={bit}"
+    if family in {"gidney_thread_forward_carry", "gidney_hybrid_forward_carry"}:
+        return {
+            "primitive_family": f"{family}_live",
+            "support_domain": f"Gidney carry creation at {label}",
+            "falsifier_template": "choose local add inputs with both carry controls equal to 1",
+            "witness": f"{label}; a[i]=1, b[i]=1 makes the carry target toggle",
+        }
+    if family == "gidney_thread_boundary_carry":
+        return {
+            "primitive_family": "gidney_thread_boundary_carry_live",
+            "support_domain": f"Gidney threaded boundary carry at {label}",
+            "falsifier_template": "set ctrl=1 and the incoming top carry to 1",
+            "witness": f"{label}; ctrl=1 and top_carry=1 toggles cout",
+        }
+    if family in {"gidney_thread_sum", "gidney_hybrid_sum", "gidney_hybrid_low_sum"}:
+        return {
+            "primitive_family": f"{family}_live",
+            "support_domain": f"Gidney controlled sum at {label}",
+            "falsifier_template": "set ctrl=1 and the selected addend/parity bit to 1",
+            "witness": f"{label}; ctrl=1 and source bit=1 toggles the target sum bit",
+        }
+    if family in {"gidney_hybrid_dirty_uncompute", "gidney_hybrid_uncompute"}:
+        return {
+            "primitive_family": f"{family}_live",
+            "support_domain": f"Gidney carry uncompute at {label}",
+            "falsifier_template": "start from a live forward carry and skip its mirror uncompute",
+            "witness": f"{label}; the mirrored carry is required to restore the borrowed lane",
+            "restoration_obligation": "skipping leaves the carry or dirty-vent lane un-restored",
+        }
+    if family in {"gidney_erase_ccz", "gidney_erase_capped_ccz"}:
+        return {
+            "primitive_family": f"{family}_live",
+            "support_domain": f"Gidney HMR erase phase correction at {label}",
+            "falsifier_template": "set ctrl=1 and both comparator top terms to 1 under the HMR condition",
+            "witness": f"{label}; ctrl=ta=tb=1 stamps a required CCZ phase",
+            "phase_obligation": "omission is phase dirt unless a public phase-cancel certificate is supplied",
+        }
+    return {}
+
+
 def text_field(record: dict[str, Any], name: str, default: str = "") -> str:
     value = record.get(name, default)
     if value is None:
@@ -531,6 +621,7 @@ def normalize_fact(record: dict[str, Any], index: int, defaults: dict[str, str] 
     else:
         source_location = "unknown"
     context = str(record.get("branch_context", record.get("context", "")))
+    context_info = decode_trace_context(context)
     rank = str(record.get("rank", ""))
     first_idx = str(record.get("first_idx", ""))
     last_idx = str(record.get("last_idx", ""))
@@ -544,7 +635,10 @@ def normalize_fact(record: dict[str, Any], index: int, defaults: dict[str, str] 
         op_id = f"rank={rank or index};context={context or 'none'};span={first_idx or '?'}-{last_idx or '?'}"
     else:
         op_id = str(record.get("index", index))
-    classifier = classify_source_site(source_location)
+    classifier = {
+        **classify_trace_context(context_info),
+        **classify_source_site(source_location),
+    }
 
     fact = {
         "fact_id": stable_id("fact", frontier, stream_hash, op_id, source_location, op_class),
@@ -590,6 +684,18 @@ def normalize_fact(record: dict[str, Any], index: int, defaults: dict[str, str] 
         "support_note": text_field(record, "support_note", ""),
         "support_hash": text_field(record, "support_hash", ""),
         "witness_hash": text_field(record, "witness_hash", ""),
+        "trace_context_value": text_field(
+            record,
+            "trace_context_value",
+            str(context_info.get("trace_context_value", "")),
+        ),
+        "trace_context_family": text_field(
+            record,
+            "trace_context_family",
+            str(context_info.get("trace_context_family", "")),
+        ),
+        "trace_context_call": record.get("trace_context_call", context_info.get("trace_context_call", "")),
+        "trace_context_bit": record.get("trace_context_bit", context_info.get("trace_context_bit", "")),
         "value_max": record.get("value_max", ""),
         "modulus": record.get("modulus", ""),
     }
@@ -709,6 +815,10 @@ def build_candidate(fact: dict[str, Any], reason: str, proof_kind: str, proof_in
         "support_note": fact.get("support_note", ""),
         "support_hash": fact.get("support_hash", ""),
         "witness_hash": fact.get("witness_hash", ""),
+        "trace_context_value": fact.get("trace_context_value", ""),
+        "trace_context_family": fact.get("trace_context_family", ""),
+        "trace_context_call": fact.get("trace_context_call", ""),
+        "trace_context_bit": fact.get("trace_context_bit", ""),
         "fastest_falsifier": "derive the source invariant, then run a toy/support enumeration or trace witness before any circuit edit",
     }
 
@@ -752,6 +862,10 @@ def source_site_backlog_candidate(fact: dict[str, Any]) -> dict[str, Any]:
             "support_note": fact.get("support_note", ""),
             "support_hash": fact.get("support_hash", ""),
             "witness_hash": fact.get("witness_hash", ""),
+            "trace_context_value": fact.get("trace_context_value", ""),
+            "trace_context_family": fact.get("trace_context_family", ""),
+            "trace_context_call": fact.get("trace_context_call", ""),
+            "trace_context_bit": fact.get("trace_context_bit", ""),
         },
     )
 
@@ -922,6 +1036,9 @@ def ledger_key(packet: dict[str, Any]) -> str:
         "nack",
         packet.get("source_location", ""),
         packet.get("primitive_family", ""),
+        packet.get("trace_context_family", ""),
+        packet.get("trace_context_call", ""),
+        packet.get("trace_context_bit", ""),
         trace_span_key(packet.get("trace_span", {})),
     )
 
@@ -961,6 +1078,9 @@ def ledger_entry_from_packet(packet: dict[str, Any]) -> dict[str, Any]:
         "source_location": packet.get("source_location", ""),
         "primitive_family": packet.get("primitive_family", ""),
         "trace_span": packet.get("trace_span", {}),
+        "trace_context_family": packet.get("trace_context_family", ""),
+        "trace_context_call": packet.get("trace_context_call", ""),
+        "trace_context_bit": packet.get("trace_context_bit", ""),
         "witness_hash": packet.get("witness_hash", witness_hash(packet.get("witness", ""))),
         "proof_hash": packet.get("proof_hash", ""),
         "proof_kind": packet.get("proof_kind", ""),
