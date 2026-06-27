@@ -135,7 +135,10 @@ The v1 miner can certify or reject only simple public-safe obligations:
 
 Bare input statuses are not proof. `CERTIFIED` requires a public
 `support_certificate` or a built-in proof such as an exact-remainder range
-check; `COUNTEREXAMPLE` requires both a falsifier template and witness.
+check; `COUNTEREXAMPLE` requires both a falsifier template and witness. An
+external counterexample witness does not need a named `primitive_family`; the
+ledger key will use the source location, optional source hash, trace context,
+and trace span when the family is blank.
 
 Everything else is emitted as `UNKNOWN`. `UNKNOWN` packets are useful backlog,
 but they do not authorize compute, circuit edits, win language, alerting, or

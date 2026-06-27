@@ -87,7 +87,8 @@ require one of:
 
 Do not accept bare `support_status` as proof. A certified row needs a public
 certificate or built-in proof, and a counterexample row needs both a falsifier
-template and witness.
+template and witness. External counterexample evidence is allowed to omit
+`primitive_family`; certification rules are unchanged.
 
 If the miner emits `COUNTEREXAMPLE`, record the NACK and move on. If it emits
 `UNKNOWN`, the next worker must supply a bounded invariant or falsifier before

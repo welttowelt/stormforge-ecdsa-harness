@@ -249,6 +249,21 @@ need_text skills/pip-discipline.md "pip discipline" "PIP Evidence Discipline"
 need_text skills/exact-support-miner.md "exact miner" "storm-exact-miner.py"
 need_text .agents/skills/exact-support-miner/SKILL.md "bridge" "Codex-discoverable bridge"
 
+tmpdir="$(mktemp -d)"
+trap 'rm -rf "$tmpdir"' EXIT
+
+if ! python3 scripts/storm-exact-miner.py support-check \
+  --facts examples/support-facts.example.jsonl \
+  --out "$tmpdir/support.jsonl" >"$tmpdir/support.out" 2>"$tmpdir/support.err"; then
+  printf 'public_harness_check=fail exact_miner_support_check_failed\n' >&2
+  cat "$tmpdir/support.err" >&2
+  fail=1
+elif ! grep -q 'certified=0 unknown=1 counterexample=2' "$tmpdir/support.out"; then
+  printf 'public_harness_check=fail exact_miner_support_counts\n' >&2
+  cat "$tmpdir/support.out" >&2
+  fail=1
+fi
+
 if [ "$fail" -ne 0 ]; then
   exit 1
 fi

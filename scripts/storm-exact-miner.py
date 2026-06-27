@@ -767,6 +767,10 @@ def support_result_for_fact(fact: dict[str, Any]) -> dict[str, str]:
         status = "UNKNOWN"
         method = method or "manual_source_invariant"
         note = "CERTIFIED status ignored without support_certificate or built-in proof"
+    elif preset == "COUNTEREXAMPLE" and has_counterexample_evidence(fact):
+        status = "COUNTEREXAMPLE"
+        method = method or "external_source_counterexample"
+        note = note or "input witness falsifies this omission"
     elif preset == "COUNTEREXAMPLE":
         status = "UNKNOWN"
         method = method or "manual_source_invariant"
@@ -853,14 +857,20 @@ def build_candidate(fact: dict[str, Any], reason: str, proof_kind: str, proof_in
     }
 
 
+def has_counterexample_evidence(fact: dict[str, Any]) -> bool:
+    return bool(fact.get("falsifier_template") and fact.get("witness"))
+
+
 def has_source_counterexample(fact: dict[str, Any]) -> bool:
     family = str(fact.get("primitive_family", ""))
-    return bool(family and fact.get("falsifier_template") and fact.get("witness"))
+    return bool(family and has_counterexample_evidence(fact))
 
 
 def source_site_backlog_candidate(fact: dict[str, Any]) -> dict[str, Any]:
     support_status = status_field(fact.get("support_status", ""))
-    if has_source_counterexample(fact):
+    if has_source_counterexample(fact) or (
+        support_status == "COUNTEREXAMPLE" and has_counterexample_evidence(fact)
+    ):
         proof_kind = "source_counterexample"
         reason = "source-site-counterexample"
     elif support_status == "CERTIFIED" and fact.get("support_certificate"):
