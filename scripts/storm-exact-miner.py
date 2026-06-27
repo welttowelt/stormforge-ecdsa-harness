@@ -666,6 +666,13 @@ SOURCE_HASH_SITE_CLASSIFIERS: dict[tuple[str, int, str], dict[str, str]] = {
         "falsifier_template": "bind the scout row back to d44cad3 source and raw origin phases before treating it as a removable fused-fold CCX",
         "witness": "d44cad3 fused.rs:918 closes fold_call_reserve, an env-reserve helper with no circ.ccx/circuit emission; origin rows are kept fused-fold CCX in fold phases, so no executable source-hook exists here",
     },
+    ("fused.rs", 998, "699d76d17355db42"): {
+        "primitive_family": "fold_dnot_e_context_live",
+        "support_domain": "source-hash-bound fused fold d&!e derived-control context",
+        "falsifier_template": "choose a reached inverse-fold row where d=1, e=0, incoming fold carry=1, and the d&!e control is selected",
+        "witness": "line 998 is the d&!e derived-control setup; raw rows are kept inverse-fold CCX carry-chain operations, and d&!e=1 with carry=1 toggles the next fold carry",
+        "restoration_obligation": "the fold carry chain and later reverse cleanup depend on the derived d&!e control",
+    },
     ("comparator.rs", 57, "d1a924ee4e28795f"): {
         "primitive_family": "table_origin_not_op_site",
         "support_domain": "source-hash-bound COMPARE_CIN_STRUCTURAL_DEAD_RANGES table-origin row",
