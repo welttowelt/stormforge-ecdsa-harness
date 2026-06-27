@@ -610,6 +610,13 @@ SOURCE_HASH_SITE_CLASSIFIERS: dict[tuple[str, int, str], dict[str, str]] = {
         "witness": "a[i]=1 and cin_ref=1 toggles cout_ref; omission loses the const-chunk carry into later sum/cleanup",
         "restoration_obligation": "the carry target is consumed by subsequent HMR/reset and reverse cleanup",
     },
+    ("arith.rs", 1026, "e70d0e40e1654d5f"): {
+        "primitive_family": "dirty_carryin_context_live",
+        "support_domain": "source-hash-bound dirty_carryin carry-loop context row",
+        "falsifier_template": "choose a reached dirty_carryin loop row after the local CX folds where a[i]=1 and anc=1",
+        "witness": "line 1026 is the dirty_carryin loop close, but the mapped origin rows are live carry creation at line 1013; a[i]=anc=1 toggles new, and omission loses the dirty suffix carry before HMR phase discharge",
+        "restoration_obligation": "dirty_carryin carries are measured, discharged through dirty bits, and uncomputed by xor_carries_off_cin",
+    },
     ("arith.rs", 1087, "0fc7492380703c0e"): {
         "primitive_family": "const_chunk_carry_live",
         "support_domain": "source-hash-bound const-chunk carry creation context row",
