@@ -61,6 +61,7 @@ for path in \
   scripts/storm-q1152-binder-ledger.py \
   scripts/storm-mcx-incrementer-budget.py \
   scripts/storm-construction-package-gate.py \
+  scripts/storm-frontier-escape-gate.py \
   scripts/storm-square-static-gap-audit.py \
   scripts/storm-single-ccx-fanout-ledger.py \
   scripts/storm-q1152-avgt-theorem.py \
@@ -110,6 +111,7 @@ for path in \
   skills/stormgate-prefilter.md \
   skills/q1152-structural-core.md \
   skills/construction-package-gate.md \
+  skills/frontier-escape-gate.md \
   skills/support-bounded-vented-dead-carry.md \
   skills/paper-gidney-constant-workspace-adder.md \
   skills/paper-mbu-modular-arithmetic.md \
@@ -152,6 +154,7 @@ for path in \
   .agents/skills/stormgate-prefilter/SKILL.md \
   .agents/skills/q1152-structural-core/SKILL.md \
   .agents/skills/construction-package-gate/SKILL.md \
+  .agents/skills/frontier-escape-gate/SKILL.md \
   .agents/skills/paper-gidney-constant-workspace-adder/SKILL.md \
   .agents/skills/paper-mbu-modular-arithmetic/SKILL.md \
   .agents/skills/paper-hrs-dirty-constant-adder/SKILL.md \
@@ -240,6 +243,8 @@ need_text scripts/storm-mcx-incrementer-budget.py "mcx incrementer budget" "mcx_
 need_text scripts/storm-mcx-incrementer-budget.py "candidate budget fail" "candidate-budget-fail"
 need_text scripts/storm-construction-package-gate.py "construction package gate" "construction_package_gate=pass"
 need_text scripts/storm-construction-package-gate.py "package nack" "package-nack"
+need_text scripts/storm-frontier-escape-gate.py "frontier escape gate" "frontier_escape_gate=pass"
+need_text scripts/storm-frontier-escape-gate.py "escape nack" "escape-nack"
 need_text scripts/storm-square-static-gap-audit.py "square static gap audit" "square_static_gap_audit=pass"
 need_text scripts/storm-square-static-gap-audit.py "zero bit trim decision" "no-executable-zero-bit-trim"
 need_text scripts/storm-single-ccx-fanout-ledger.py "single ccx fanout ledger" "single_ccx_fanout_ledger=pass"
@@ -298,11 +303,14 @@ need_text skills/q1152-structural-core.md "q1152 structural core" "wall-gated co
 need_text skills/q1152-structural-core.md "trusted eval" "Trusted eval"
 need_text skills/construction-package-gate.md "construction package gate" "Construction Package Gate"
 need_text skills/construction-package-gate.md "package nack" "package-nack"
+need_text skills/frontier-escape-gate.md "frontier escape gate" "Frontier Escape Gate"
+need_text skills/frontier-escape-gate.md "ready for validation" "ready-for-validation"
 need_text skills/support-bounded-vented-dead-carry.md "support bounded vent" "Support-Bounded Vented Dead-Carry"
 need_text skills/support-bounded-vented-dead-carry.md "dead predicate" "source-hash-bound"
 need_text skills/support-bounded-vented-dead-carry.md "headroom cap" "TLM_SQUARE_PEAK_CAP"
 need_text .agents/skills/q1152-structural-core/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/construction-package-gate/SKILL.md "bridge" "Codex-discoverable bridge"
+need_text .agents/skills/frontier-escape-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text skills/paper-gidney-constant-workspace-adder.md "gidney source" "arXiv:2507.23079"
 need_text skills/paper-mbu-modular-arithmetic.md "mbu phase cleanup" "phase correction"
 need_text skills/paper-hrs-dirty-constant-adder.md "dirty host" "not scratch"
@@ -993,6 +1001,65 @@ elif ! grep -q 'candidate_clean=pass' "$tmpdir/construction-package-ready.out" |
      ! grep -q 'decision=ready-for-validation' "$tmpdir/construction-package-ready.out"; then
   printf 'public_harness_check=fail construction_package_ready_output\n' >&2
   cat "$tmpdir/construction-package-ready.out" >&2
+  fail=1
+fi
+
+if ! python3 scripts/storm-frontier-escape-gate.py \
+  --escape-class current-corpus-knob \
+  --local-optimum measured >"$tmpdir/frontier-escape-current.out" 2>"$tmpdir/frontier-escape-current.err"; then
+  printf 'public_harness_check=fail frontier_escape_current_failed\n' >&2
+  cat "$tmpdir/frontier-escape-current.err" >&2
+  fail=1
+elif ! grep -q 'frontier_escape_gate=pass' "$tmpdir/frontier-escape-current.out" ||
+     ! grep -q 'escape_class=current-corpus-knob' "$tmpdir/frontier-escape-current.out" ||
+     ! grep -q 'decision=escape-nack' "$tmpdir/frontier-escape-current.out" ||
+     ! grep -q 'reasons=current_corpus_closed,score_no_edge' "$tmpdir/frontier-escape-current.out"; then
+  printf 'public_harness_check=fail frontier_escape_current_output\n' >&2
+  cat "$tmpdir/frontier-escape-current.out" >&2
+  fail=1
+fi
+if ! python3 scripts/storm-frontier-escape-gate.py \
+  --escape-class construction-package \
+  --coverage pass \
+  --count pass \
+  --score-edge 295 >"$tmpdir/frontier-escape-construction.out" 2>"$tmpdir/frontier-escape-construction.err"; then
+  printf 'public_harness_check=fail frontier_escape_construction_failed\n' >&2
+  cat "$tmpdir/frontier-escape-construction.err" >&2
+  fail=1
+elif ! grep -q 'escape_class=construction-package' "$tmpdir/frontier-escape-construction.out" ||
+     ! grep -q 'decision=construction-prefilter-only' "$tmpdir/frontier-escape-construction.out"; then
+  printf 'public_harness_check=fail frontier_escape_construction_output\n' >&2
+  cat "$tmpdir/frontier-escape-construction.out" >&2
+  fail=1
+fi
+if ! python3 scripts/storm-frontier-escape-gate.py \
+  --escape-class source-theorem \
+  --source-support certified \
+  --expected-avg-saving 1 \
+  --score-edge 1152 \
+  --candidate-clean pass >"$tmpdir/frontier-escape-source-ready.out" 2>"$tmpdir/frontier-escape-source-ready.err"; then
+  printf 'public_harness_check=fail frontier_escape_source_ready_failed\n' >&2
+  cat "$tmpdir/frontier-escape-source-ready.err" >&2
+  fail=1
+elif ! grep -q 'escape_class=source-theorem' "$tmpdir/frontier-escape-source-ready.out" ||
+     ! grep -q 'decision=ready-for-validation' "$tmpdir/frontier-escape-source-ready.out"; then
+  printf 'public_harness_check=fail frontier_escape_source_ready_output\n' >&2
+  cat "$tmpdir/frontier-escape-source-ready.out" >&2
+  fail=1
+fi
+if ! python3 scripts/storm-frontier-escape-gate.py \
+  --escape-class nonce-retune \
+  --nonce-retune-status prefilter \
+  --score-edge 1000 \
+  --candidate-clean unknown >"$tmpdir/frontier-escape-nonce-prefilter.out" 2>"$tmpdir/frontier-escape-nonce-prefilter.err"; then
+  printf 'public_harness_check=fail frontier_escape_nonce_prefilter_failed\n' >&2
+  cat "$tmpdir/frontier-escape-nonce-prefilter.err" >&2
+  fail=1
+elif ! grep -q 'escape_class=nonce-retune' "$tmpdir/frontier-escape-nonce-prefilter.out" ||
+     ! grep -q 'decision=escape-nack' "$tmpdir/frontier-escape-nonce-prefilter.out" ||
+     ! grep -q 'reasons=prefilter_only,candidate_not_clean' "$tmpdir/frontier-escape-nonce-prefilter.out"; then
+  printf 'public_harness_check=fail frontier_escape_nonce_prefilter_output\n' >&2
+  cat "$tmpdir/frontier-escape-nonce-prefilter.out" >&2
   fail=1
 fi
 

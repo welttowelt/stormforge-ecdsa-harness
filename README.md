@@ -142,6 +142,8 @@ agent instructions or used as a preflight before route work:
   wall coverage, proof, score economics, count screens, and trusted eval.
 - `skills/construction-package-gate.md`: reject lower-q construction packages
   that lack q-tier score edge, co-binder coverage, or clean validation status.
+- `skills/frontier-escape-gate.md`: classify post-local-optimum packets as
+  source theorem, construction package, nonce retune, or NACK.
 - `skills/paper-gidney-constant-workspace-adder.md`: apply Gidney 2025
   constant-workspace adders only after a toy proof and one-callsite residual
   gate.
@@ -268,6 +270,8 @@ Common call chains:
 - Paper-driven lower-q adder work: `paper-gidney-constant-workspace-adder` ->
   `paper-mbu-modular-arithmetic` -> `q1152-structural-core` ->
   `construction-package-gate`.
+- Post-local-optimum route triage: `frontier-lock` ->
+  `frontier-escape-gate` -> `validation-submit-gate`.
 - Conditionally-clean cascade cut: `conditionally-clean-cascade-cut` ->
   `paper-conditionally-clean-ancillae` -> `fold-carry-rearchitecture` ->
   `exact-support-invariant-miner`.
