@@ -149,6 +149,8 @@ agent instructions or used as a preflight before route work:
 - `skills/single-ccx-fanout-throughput.md`: apply and verify the d44
   `SINGLE_CCX_FANOUT` no-clone throughput patch without promoting it into a
   clean-route claim.
+- `skills/fanout-runpod-qstate-guard.md`: verify fanout GPU qstate headers and
+  hashes before spending pod time.
 - `skills/paper-gidney-constant-workspace-adder.md`: apply Gidney 2025
   constant-workspace adders only after a toy proof and one-callsite residual
   gate.
