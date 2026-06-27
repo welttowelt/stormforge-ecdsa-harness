@@ -176,6 +176,12 @@ SITE_CLASSIFIERS: dict[tuple[str, int], dict[str, str]] = {
         "falsifier_template": "set ctrl=1 and a0=1",
         "witness": "cy0 = ctrl & a0 is 1 for f bit0",
     },
+    ("arith.rs", 1322): {
+        "primitive_family": "ffg_prefix_carry_live",
+        "support_domain": "+f hybrid prefix carry chain",
+        "falsifier_template": "choose a reached prefix bit with a[i]=1 and previous carry ci=1",
+        "witness": "a[i]=1 and ci=1 toggles the next prefix carry; omission changes the carry chain",
+    },
     ("arith.rs", 1345): {
         "primitive_family": "ffg_cy0_release_live",
         "support_domain": "+f optional cy0 release/restore diagnostic",
