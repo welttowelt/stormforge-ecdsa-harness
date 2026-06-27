@@ -199,7 +199,7 @@ awk -v route="$route" \
   }
   END {
     effective_tape_matches = tape_matches + overlap_tape_matches;
-    if (effective_tape_matches == 0) {
+    if (tape_matches == 0) {
       decision = "missing-tape-overlap-trace";
       next_step = "capture TLM_TAPE/TLM_TAIL rows around the fold before editing solver code";
     } else if (evidence == 0) {

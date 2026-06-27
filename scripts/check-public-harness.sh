@@ -504,6 +504,27 @@ elif ! grep -q 'Decision: overlap-restore-proof-missing' "$tmpdir/apply-overlap-
   fail=1
 fi
 
+printf '%s\n' \
+  'i=180 candidate=pending_symbols TLM_OVERLAP_CHECK candidate=pending_symbols i=180 target_phase=tlm_apply_inverse_mod_sub_fold reads_during_fold=0 restore_proof=1 phase_proof=1 support_certificate=public-cert active=1107 tape=415 pending=6 win_idx=60 fold_ops=2793965..2794746 qids=88,89 touched_qids=none sample=none' \
+  > "$tmpdir/apply-overlap-prefixed-only.summary"
+if ! scripts/apply-overlap-ledger.sh \
+  --trace "$tmpdir/apply-overlap-prefixed-only.summary" \
+  --frontier 1571592960 \
+  --q 1147 \
+  --target-q 1146 \
+  --route fixture-prefixed-only \
+  --candidate pending_symbols \
+  --target-i any >"$tmpdir/apply-overlap-prefixed-only.out" 2>"$tmpdir/apply-overlap-prefixed-only.err"; then
+  printf 'public_harness_check=fail apply_overlap_prefixed_only_failed\n' >&2
+  cat "$tmpdir/apply-overlap-prefixed-only.err" >&2
+  fail=1
+elif ! grep -q 'Decision: missing-tape-overlap-trace' "$tmpdir/apply-overlap-prefixed-only.out" ||
+     ! grep -q 'Evidence rows: 1' "$tmpdir/apply-overlap-prefixed-only.out"; then
+  printf 'public_harness_check=fail apply_overlap_prefixed_only_gate\n' >&2
+  cat "$tmpdir/apply-overlap-prefixed-only.out" >&2
+  fail=1
+fi
+
 if [ "$fail" -ne 0 ]; then
   exit 1
 fi
