@@ -72,6 +72,12 @@ SITE_CLASSIFIERS: dict[tuple[str, int], dict[str, str]] = {
         "falsifier_template": "choose a reachable apply symbol with swp=1 and x_reg[j] != y_reg[j]",
         "witness": "step0 apply model: swp=1, forward xr=1 yr=0, reverse xr=0 yr=1",
     },
+    ("gcd.rs", 1510): {
+        "primitive_family": "apply_cswap_live",
+        "support_domain": "GCD apply-forward symbol with swp=1 and unequal coordinate registers",
+        "falsifier_template": "choose a reachable apply symbol with swp=1 and x_reg[j] != y_reg[j]",
+        "witness": "swp=1 with x_reg[j]=1,y_reg[j]=0 changes both coordinate registers; omission leaves the old order",
+    },
     ("arith.rs", 834): {
         "primitive_family": "adder_carry_live",
         "support_domain": "plain Gidney carry creation",
