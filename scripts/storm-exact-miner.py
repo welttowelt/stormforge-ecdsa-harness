@@ -214,6 +214,19 @@ SITE_CLASSIFIERS: dict[tuple[str, int], dict[str, str]] = {
         "falsifier_template": "set a[i]=1 and b[i]=1 on a reached live bit",
         "witness": "a[i]=1 and b[i]=1 toggles the vent ancilla; omission loses the carry into b[i+1]",
     },
+    ("arith.rs", 1865): {
+        "primitive_family": "vented_plain_carry_live",
+        "support_domain": "non-vented carry creation in add_cout_vented_skip_dead after dead(i) guard is false",
+        "falsifier_template": "set a[i]=1 and b[i]=1 on a reached live non-vented bit",
+        "witness": "a[i]=1 and b[i]=1 toggles b[i+1]; omission loses the carry into the following sum path",
+    },
+    ("arith.rs", 1880): {
+        "primitive_family": "vented_plain_carry_uncompute_live",
+        "support_domain": "non-vented carry uncompute in add_cout_vented_skip_dead after dead(i) guard is false",
+        "falsifier_template": "start from a live carry produced by the forward non-vented row",
+        "witness": "the reverse CCX is required to restore b[i+1] after the sum bit is written",
+        "restoration_obligation": "skipping leaves the carry lane dirty",
+    },
     ("arith.rs", 1859): {
         "primitive_family": "carry_live",
         "support_domain": "non-vented carry creation after dead(i) guard is false",

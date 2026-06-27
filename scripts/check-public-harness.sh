@@ -48,6 +48,7 @@ for path in \
   scripts/dialog-codec-entropy-ledger.sh \
   scripts/apply-overlap-ledger.sh \
   scripts/storm-exact-miner.py \
+  scripts/storm-audit-impact.py \
   examples/audit-card.example.md \
   examples/operator-card.example.md \
   examples/mailbox-entry.example.md \
@@ -61,6 +62,7 @@ for path in \
   examples/support-facts.example.jsonl \
   examples/nack-ledger.example.jsonl \
   examples/exact-skip-candidates.example.jsonl \
+  examples/cycle48-audit-impact.example.json \
   examples/apply-overlap-trace.example.txt \
   templates/exact-skip-candidate.json \
   docs/exact-support-miner.md \
@@ -194,6 +196,7 @@ need_text scripts/storm-exact-miner.py "falsify command" "falsify"
 need_text scripts/storm-exact-miner.py "ledger command" "ledger"
 need_text scripts/storm-exact-miner.py "public safety scan" "redaction_risk"
 need_text scripts/storm-exact-miner.py "Gidney trace context decoding" "trace_context_family"
+need_text scripts/storm-audit-impact.py "machine-readable audit metrics" "unknown_weight_abs_avgT_delta"
 
 need_text examples/operator-card.example.md "falsifiable decision" "Falsifiable decision"
 need_text examples/audit-card.example.md "rci tony" "RCI/Tony"
@@ -208,6 +211,7 @@ need_text examples/site-audit.example.tsv "site audit fixture" "src/point_add/tr
 need_text examples/support-facts.example.jsonl "support fixture" "dirty_host"
 need_text examples/nack-ledger.example.jsonl "nack ledger fixture" "nack_note"
 need_text examples/exact-skip-candidates.example.jsonl "proof packet" "proof_status"
+need_text examples/cycle48-audit-impact.example.json "machine-readable improvement" "ranked_unknown_rows_reduction_pct"
 need_text examples/apply-overlap-trace.example.txt "apply overlap fixture" "TLM_OVERLAP_CHECK"
 need_text examples/apply-overlap-trace.example.txt "apply overlap tail fixture" "TLM_TAIL"
 need_text templates/exact-skip-candidate.json "allocator unchanged" "allocator_unchanged"
