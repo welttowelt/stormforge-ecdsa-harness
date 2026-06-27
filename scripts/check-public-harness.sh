@@ -507,10 +507,11 @@ elif ! grep -q 'Decision: overlap-restore-proof-missing' "$tmpdir/apply-overlap-
 fi
 
 cat >"$tmpdir/source-line-family-summary.tsv" <<'EOF'
-file	line	family	kind	count
-src/point_add/trailmix_ludicrous/gidney.rs	1297	gidney_thread_sum	CCX	100
-src/point_add/trailmix_ludicrous/comparator.rs	717	comparator_top_carry	CCX	40
-src/point_add/trailmix_ludicrous/arith.rs	834	unclassified	CCX	20
+file	line	family	kind	count	source_hash
+src/point_add/trailmix_ludicrous/gidney.rs	1297	gidney_thread_sum	CCX	100	fixture-source
+src/point_add/trailmix_ludicrous/gidney.rs	1297	gidney_thread_sum	CCX	90	changed-source
+src/point_add/trailmix_ludicrous/comparator.rs	717	comparator_top_carry	CCX	40	fixture-source
+src/point_add/trailmix_ludicrous/arith.rs	834	unclassified	CCX	20	fixture-source
 EOF
 cat >"$tmpdir/closed-site-audit.tsv" <<'EOF'
 rank	count	kind	file	line	context	source_hash
@@ -524,7 +525,8 @@ if ! python3 scripts/storm-source-certificate-scout.py \
   printf 'public_harness_check=fail source_certificate_scout_failed\n' >&2
   cat "$tmpdir/context-scout.err" >&2
   fail=1
-elif ! grep -q 'source_certificate_scout=pass rows=1' "$tmpdir/context-scout.out" ||
+elif ! grep -q 'source_certificate_scout=pass rows=2' "$tmpdir/context-scout.out" ||
+     ! grep -q 'changed-source' "$tmpdir/context-scout.tsv" ||
      ! grep -q 'comparator_top_carry' "$tmpdir/context-scout.tsv" ||
      grep -q 'unclassified' "$tmpdir/context-scout.tsv"; then
   printf 'public_harness_check=fail source_certificate_scout_output\n' >&2
@@ -548,7 +550,7 @@ elif ! python3 scripts/storm-exact-miner.py support-check \
   printf 'public_harness_check=fail source_certificate_scout_support_failed\n' >&2
   cat "$tmpdir/context-scout-supported.err" >&2
   fail=1
-elif ! grep -q 'counterexample=1' "$tmpdir/context-scout-supported.out"; then
+elif ! grep -q 'counterexample=2' "$tmpdir/context-scout-supported.out"; then
   printf 'public_harness_check=fail source_certificate_scout_support_counts\n' >&2
   cat "$tmpdir/context-scout-supported.out" >&2
   cat "$tmpdir/context-scout-supported.jsonl" >&2

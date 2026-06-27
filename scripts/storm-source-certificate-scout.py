@@ -31,15 +31,26 @@ def read_tsv(path: Path) -> list[dict[str, str]]:
         raise SystemExit(f"input_not_found path={path}") from exc
 
 
-def closed_keys(paths: Iterable[Path]) -> set[tuple[str, str, str]]:
-    keys: set[tuple[str, str, str]] = set()
+def row_source_hash(row: dict[str, str], default: str = "") -> str:
+    return (
+        row.get("source_hash")
+        or row.get("source_snippet_hash")
+        or row.get("source_code_hash")
+        or default
+        or ""
+    ).strip()
+
+
+def closed_keys(paths: Iterable[Path]) -> set[tuple[str, str, str, str]]:
+    keys: set[tuple[str, str, str, str]] = set()
     for path in paths:
         for row in read_tsv(path):
             file_name = row.get("file", row.get("source_file", ""))
             line = row.get("line", row.get("source_line", ""))
             kind = row.get("kind", row.get("op_class", "")).upper()
+            source_hash = row_source_hash(row)
             if file_name and line and kind:
-                keys.add((file_name, line, kind))
+                keys.add((file_name, line, kind, source_hash))
     return keys
 
 
@@ -59,11 +70,12 @@ def build_rows(args: argparse.Namespace) -> list[dict[str, str]]:
         family = row.get("family", "")
         kind = row.get("kind", "").upper()
         count = row.get("count", "0")
+        source_hash = row_source_hash(row, args.source_hash)
         if not file_name or not line or not kind:
             continue
         if not args.include_unclassified and family == "unclassified":
             continue
-        if (file_name, line, kind) in closed:
+        if (file_name, line, kind, source_hash) in closed or (file_name, line, kind, "") in closed:
             continue
         rows.append(
             {
@@ -76,7 +88,7 @@ def build_rows(args: argparse.Namespace) -> list[dict[str, str]]:
                 "trace_context_family": family,
                 "trace_context_call": row.get("trace_context_call", ""),
                 "trace_context_bit": row.get("trace_context_bit", ""),
-                "source_hash": row.get("source_hash", args.source_hash),
+                "source_hash": source_hash,
             }
         )
     rows.sort(key=lambda item: (-as_int(item["count"]), item["file"], as_int(item["line"]), item["kind"]))
