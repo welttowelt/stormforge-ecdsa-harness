@@ -322,7 +322,7 @@ elif ! grep -q 'certified=0 unknown=0 counterexample=1' "$tmpdir/stale-context-s
 fi
 
 printf '%s\n' \
-  '{"frontier":"fixture-frontier/demo-source","source_base":"public-demo-source","stream_hash":"context-cert-demo","op_id":"context-cert","source_location":"src/point_add/trailmix_ludicrous/gidney.rs:1233","context":"0x05002a07","op_class":"ccx","executed_weight":1,"support_status":"CERTIFIED","support_certificate":"public route-specific certificate"}' \
+  '{"frontier":"fixture-frontier/demo-source","source_base":"public-demo-source","source_hash":"fixture-source-hash","stream_hash":"context-cert-demo","op_id":"context-cert","source_location":"src/point_add/trailmix_ludicrous/gidney.rs:1233","context":"0x05002a07","op_class":"ccx","executed_weight":1,"support_status":"CERTIFIED","support_certificate":"public route-specific certificate"}' \
   > "$tmpdir/context-cert.jsonl"
 if ! python3 scripts/storm-exact-miner.py trace-facts \
   --input "$tmpdir/context-cert.jsonl" \
@@ -340,6 +340,22 @@ elif ! grep -q 'certified=1 unknown=0 counterexample=0' "$tmpdir/context-cert-su
   printf 'public_harness_check=fail exact_miner_context_cert_support_counts\n' >&2
   cat "$tmpdir/context-cert-support.out" >&2
   cat "$tmpdir/context-cert-support.jsonl" >&2
+  fail=1
+fi
+
+printf '%s\n' \
+  '{"frontier":"fixture-frontier/demo-source","source_base":"public-demo-source","stream_hash":"unbound-cert-demo","op_id":"unbound-cert","source_location":"src/point_add/trailmix_ludicrous/demo.rs:7","op_class":"ccx","executed_weight":1,"support_status":"CERTIFIED","support_certificate":"floating certificate without source hash"}' \
+  > "$tmpdir/unbound-cert.jsonl"
+if ! python3 scripts/storm-exact-miner.py support-check \
+  --facts "$tmpdir/unbound-cert.jsonl" \
+  --out "$tmpdir/unbound-cert-support.jsonl" >"$tmpdir/unbound-cert-support.out" 2>"$tmpdir/unbound-cert-support.err"; then
+  printf 'public_harness_check=fail exact_miner_unbound_cert_support_failed\n' >&2
+  cat "$tmpdir/unbound-cert-support.err" >&2
+  fail=1
+elif ! grep -q 'certified=0 unknown=1 counterexample=0' "$tmpdir/unbound-cert-support.out"; then
+  printf 'public_harness_check=fail exact_miner_unbound_cert_support_counts\n' >&2
+  cat "$tmpdir/unbound-cert-support.out" >&2
+  cat "$tmpdir/unbound-cert-support.jsonl" >&2
   fail=1
 fi
 

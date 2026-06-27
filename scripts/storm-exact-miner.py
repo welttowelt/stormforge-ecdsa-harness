@@ -799,17 +799,23 @@ def support_result_for_fact(fact: dict[str, Any]) -> dict[str, str]:
     note = str(fact.get("support_note", "") or "").strip()
     family = str(fact.get("primitive_family", "") or "").strip()
     certificate = str(fact.get("support_certificate", "") or "").strip()
+    source_hash = str(fact.get("source_hash", "") or "").strip()
+    certificate_bound = bool(certificate and source_hash)
 
-    if preset == "CERTIFIED" and certificate:
+    if preset == "CERTIFIED" and certificate_bound:
         status = "CERTIFIED"
         method = method or "external_support_certificate"
-        note = note or "public support certificate supplied by input fact"
+        note = note or "source-hash-bound public support certificate supplied by input fact"
+    elif preset == "CERTIFIED" and certificate:
+        status = "UNKNOWN"
+        method = method or "external_support_certificate"
+        note = "CERTIFIED status ignored because support_certificate is not bound to source_hash"
     elif has_source_counterexample(fact):
         status = "COUNTEREXAMPLE"
         method = "source_support_enum"
         note = "source witness falsifies this omission"
     elif family == "dirty_host":
-        if fact.get("support_certificate") and fact.get("restoration_obligation") and fact.get("phase_obligation"):
+        if certificate_bound and fact.get("restoration_obligation") and fact.get("phase_obligation"):
             status = "CERTIFIED"
             method = "dirty_host_restoration"
             note = "public certificate supplies restoration and phase obligations"
@@ -828,12 +834,18 @@ def support_result_for_fact(fact: dict[str, Any]) -> dict[str, str]:
             status = "UNKNOWN"
             method = "exact_remainder"
             note = "exact-remainder fact needs value_max < modulus or a public certificate"
-    elif certificate and (
+    elif certificate_bound and (
         fact.get("known_zero_controls") or fact.get("dead_targets") or not fact.get("target_live", True)
     ):
         status = "CERTIFIED"
         method = "support_certificate"
-        note = "public support certificate supplied for fixed-control or dead-target fact"
+        note = "source-hash-bound public support certificate supplied for fixed-control or dead-target fact"
+    elif certificate and (
+        fact.get("known_zero_controls") or fact.get("dead_targets") or not fact.get("target_live", True)
+    ):
+        status = "UNKNOWN"
+        method = "support_certificate"
+        note = "support_certificate ignored for fixed-control/dead-target fact without source_hash"
     elif preset == "CERTIFIED":
         status = "UNKNOWN"
         method = method or "manual_source_invariant"
@@ -1142,6 +1154,8 @@ def prove_candidate(candidate: dict[str, Any]) -> dict[str, Any]:
     packet = dict(candidate)
     inputs = packet.get("proof_inputs", {})
     certificate = str(inputs.get("support_certificate", "")).strip()
+    source_hash = str(inputs.get("source_hash", "") or packet.get("source_hash", "") or "").strip()
+    certificate_bound = bool(certificate and source_hash)
     input_support_status = status_field(inputs.get("support_status", ""))
     source_witness = str(inputs.get("witness", "") or "").strip()
     source_template = str(inputs.get("falsifier_template", "") or "").strip()
@@ -1157,9 +1171,12 @@ def prove_candidate(candidate: dict[str, Any]) -> dict[str, Any]:
     elif input_support_status == "COUNTEREXAMPLE":
         status = "UNKNOWN"
         note = "counterexample status ignored without falsifier_template and witness"
-    elif input_support_status == "CERTIFIED" and certificate:
+    elif input_support_status == "CERTIFIED" and certificate_bound:
         status = "CERTIFIED"
-        note = str(inputs.get("support_note", "") or "support checker supplied a public certificate")
+        note = str(inputs.get("support_note", "") or "support checker supplied a source-hash-bound public certificate")
+    elif input_support_status == "CERTIFIED" and certificate:
+        status = "UNKNOWN"
+        note = "certified status ignored because support_certificate is not bound to source_hash"
     elif input_support_status == "CERTIFIED":
         status = "UNKNOWN"
         note = "certified status ignored without support_certificate or built-in proof"
@@ -1171,21 +1188,30 @@ def prove_candidate(candidate: dict[str, Any]) -> dict[str, Any]:
             status = "UNKNOWN"
             note = "source counterexample packet is missing falsifier_template or witness"
     elif packet["proof_kind"] == "support_certificate":
-        if certificate:
+        if certificate_bound:
             status = "CERTIFIED"
-            note = "public support checker certificate supplied"
+            note = "source-hash-bound public support checker certificate supplied"
+        elif certificate:
+            status = "UNKNOWN"
+            note = "support_certificate ignored because it is not bound to source_hash"
     elif packet["proof_kind"] == "bitvec_unsat":
         value_max = as_int_maybe(inputs.get("value_max"))
         modulus = as_int_maybe(inputs.get("modulus"))
         if value_max is not None and modulus is not None and value_max < modulus:
             status = "CERTIFIED"
             note = "built-in range check proves value_max < modulus"
-        elif certificate:
+        elif certificate_bound:
             status = "CERTIFIED"
-            note = "external public certificate supplied"
-    elif certificate:
+            note = "source-hash-bound external public certificate supplied"
+        elif certificate:
+            status = "UNKNOWN"
+            note = "external public certificate ignored because it is not bound to source_hash"
+    elif certificate_bound:
         status = "CERTIFIED"
-        note = "external public certificate supplied"
+        note = "source-hash-bound external public certificate supplied"
+    elif certificate:
+        status = "UNKNOWN"
+        note = "external public certificate ignored because it is not bound to source_hash"
 
     packet["proof_status"] = status
     packet["proof_note"] = note
