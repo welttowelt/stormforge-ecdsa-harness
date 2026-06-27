@@ -646,6 +646,13 @@ SOURCE_HASH_SITE_CLASSIFIERS: dict[tuple[str, int, str], dict[str, str]] = {
         "falsifier_template": "bind the scout row back to d44cad3 source and raw origin phases before treating it as a removable comparator CCX",
         "witness": "d44cad3 comparator.rs:89 is static COMPARE_CIN_STRUCTURAL_DEAD_RANGES data `(1760, 0, 2)`, while origin rows are kept comparator CCX; no executable source-hook exists here",
     },
+    ("mcx.rs", 80, "4ccf2146ceb1eb50"): {
+        "primitive_family": "mcx_prefix_live",
+        "support_domain": "source-hash-bound KG prefix emit span ending at mcx.rs:80",
+        "falsifier_template": "choose a scheduled KgPrefixOp::Ccx row with both controls set to 1 and target 0",
+        "witness": "d44cad3 mcx.rs:80 closes KgPrefixOp::emit; the executable CCX in the same source span is line 77, and a=b=1 toggles target, so omission breaks the MCX prefix ladder",
+        "restoration_obligation": "the emitted prefix target is consumed by the MCX cascade and must be restored by the reverse schedule",
+    },
     ("square.rs", 154, "5db1c7a68cd9a333"): {
         "primitive_family": "square_cross_live",
         "support_domain": "source-hash-bound symmetric square off-diagonal cross product",
