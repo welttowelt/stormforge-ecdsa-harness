@@ -858,7 +858,9 @@ def build_candidate(fact: dict[str, Any], reason: str, proof_kind: str, proof_in
 
 
 def has_counterexample_evidence(fact: dict[str, Any]) -> bool:
-    return bool(fact.get("falsifier_template") and fact.get("witness"))
+    template = str(fact.get("falsifier_template", "") or "").strip()
+    witness = str(fact.get("witness", "") or "").strip()
+    return bool(template and witness)
 
 
 def has_source_counterexample(fact: dict[str, Any]) -> bool:
