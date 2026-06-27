@@ -11,6 +11,7 @@ Use them to teach agents the workflow:
 - every route can receive a Bluesky and Redsky audit pass,
 - every compute request has a validator and kill gate,
 - every public note separates evidence from claims,
+- apply-overlap fixtures separate certified facts from restore-proof failures,
 - scanner output stays `Prefilter` until official validation passes.
 
 The examples intentionally avoid:

@@ -64,6 +64,7 @@ for path in \
   examples/exact-skip-candidates.example.jsonl \
   examples/cycle48-audit-impact.example.json \
   examples/apply-overlap-trace.example.txt \
+  examples/apply-overlap-restore-missing.example.txt \
   templates/exact-skip-candidate.json \
   docs/exact-support-miner.md \
   docs/redsky-stormgate-audit-2026-06-20-f8e215b-current.md \
@@ -214,6 +215,8 @@ need_text examples/exact-skip-candidates.example.jsonl "proof packet" "proof_sta
 need_text examples/cycle48-audit-impact.example.json "machine-readable improvement" "ranked_unknown_rows_reduction_pct"
 need_text examples/apply-overlap-trace.example.txt "apply overlap fixture" "TLM_OVERLAP_CHECK"
 need_text examples/apply-overlap-trace.example.txt "apply overlap tail fixture" "TLM_TAIL"
+need_text examples/apply-overlap-restore-missing.example.txt "apply overlap restore-missing fixture" "restore_proof=0"
+need_text examples/apply-overlap-restore-missing.example.txt "apply overlap tape-tail fixture" "tape_tail_code"
 need_text templates/exact-skip-candidate.json "allocator unchanged" "allocator_unchanged"
 need_text templates/exact-skip-candidate.json "support status" "support_status"
 need_text templates/exact-skip-candidate.json "trace context family" "trace_context_family"
@@ -482,6 +485,22 @@ if ! scripts/apply-overlap-ledger.sh \
 elif ! grep -q 'Decision: overlap-nacked-read-during-fold' "$tmpdir/apply-overlap-nack.out"; then
   printf 'public_harness_check=fail apply_overlap_nack_decision\n' >&2
   cat "$tmpdir/apply-overlap-nack.out" >&2
+  fail=1
+fi
+
+if ! scripts/apply-overlap-ledger.sh \
+  --trace examples/apply-overlap-restore-missing.example.txt \
+  --frontier 1571592960 \
+  --q 1147 \
+  --target-q 1146 \
+  --route fixture-restore-missing \
+  --candidate pending_symbols >"$tmpdir/apply-overlap-restore-missing.out" 2>"$tmpdir/apply-overlap-restore-missing.err"; then
+  printf 'public_harness_check=fail apply_overlap_restore_missing_failed\n' >&2
+  cat "$tmpdir/apply-overlap-restore-missing.err" >&2
+  fail=1
+elif ! grep -q 'Decision: overlap-restore-proof-missing' "$tmpdir/apply-overlap-restore-missing.out"; then
+  printf 'public_harness_check=fail apply_overlap_restore_missing_decision\n' >&2
+  cat "$tmpdir/apply-overlap-restore-missing.out" >&2
   fail=1
 fi
 
