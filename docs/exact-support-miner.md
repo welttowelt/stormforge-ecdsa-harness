@@ -111,6 +111,7 @@ evidence are all present.
 Each packet records:
 
 - route id, frontier, source base, stream hash, and source location;
+- optional public source hash for source-snippet or proof-input identity;
 - op class and executed weight;
 - primitive family, support domain, falsifier template, and witness when known;
 - proof method, support status, support note, support hash, and witness hash;
@@ -131,6 +132,10 @@ The v1 miner can certify or reject only simple public-safe obligations:
 - an external public certificate was supplied with the trace fact;
 - a built-in exact-remainder range check proves `value_max < modulus`.
 - a source-site classifier supplies a generic-live counterexample witness.
+
+Bare input statuses are not proof. `CERTIFIED` requires a public
+`support_certificate` or a built-in proof such as an exact-remainder range
+check; `COUNTEREXAMPLE` requires both a falsifier template and witness.
 
 Everything else is emitted as `UNKNOWN`. `UNKNOWN` packets are useful backlog,
 but they do not authorize compute, circuit edits, win language, alerting, or

@@ -2,6 +2,7 @@
   "route_id": "exact-skip-demo",
   "frontier": "fixture-frontier/demo-source",
   "source_base": "public-demo-source",
+  "source_hash": "optional-public-source-snippet-hash",
   "stream_hash": "demo-stream-hash",
   "source_location": "src/point_add/demo.rs:42",
   "op_class": "ccx",

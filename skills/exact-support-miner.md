@@ -85,6 +85,10 @@ require one of:
 - a source counterexample witness that closes the row as generic-live.
 - decoded Gidney trace context plus a matching local carry/sum/phase witness.
 
+Do not accept bare `support_status` as proof. A certified row needs a public
+certificate or built-in proof, and a counterexample row needs both a falsifier
+template and witness.
+
 If the miner emits `COUNTEREXAMPLE`, record the NACK and move on. If it emits
 `UNKNOWN`, the next worker must supply a bounded invariant or falsifier before
 the row reaches residual validation.

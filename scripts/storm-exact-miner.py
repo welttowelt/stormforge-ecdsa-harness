@@ -506,10 +506,16 @@ def status_field(value: Any, default: str = "") -> str:
     return ""
 
 
+def stable_id_part(part: Any) -> str:
+    if isinstance(part, (dict, list)):
+        return json.dumps(part, sort_keys=True, separators=(",", ":"))
+    return str(part)
+
+
 def stable_id(prefix: str, *parts: Any) -> str:
     h = hashlib.sha256()
     for part in parts:
-        h.update(str(part).encode())
+        h.update(stable_id_part(part).encode())
         h.update(b"\0")
     return f"{prefix}-{h.hexdigest()[:16]}"
 
@@ -625,6 +631,12 @@ def normalize_fact(record: dict[str, Any], index: int, defaults: dict[str, str] 
     rank = str(record.get("rank", ""))
     first_idx = str(record.get("first_idx", ""))
     last_idx = str(record.get("last_idx", ""))
+    source_hash = str(
+        record.get("source_hash")
+        or record.get("source_snippet_hash")
+        or record.get("source_code_hash")
+        or ""
+    )
     stream_hash = str(record.get("stream_hash") or record.get("ops_hash") or defaults.get("stream_hash") or "")
     if not stream_hash:
         stream_hash = stable_id("site-stream", source_base, source_location, context, rank, first_idx, last_idx)
@@ -644,6 +656,7 @@ def normalize_fact(record: dict[str, Any], index: int, defaults: dict[str, str] 
         "fact_id": stable_id("fact", frontier, stream_hash, op_id, source_location, op_class),
         "frontier": frontier,
         "source_base": source_base,
+        "source_hash": source_hash,
         "stream_hash": stream_hash,
         "op_id": op_id,
         "source_location": source_location,
@@ -714,12 +727,9 @@ def support_result_for_fact(fact: dict[str, Any]) -> dict[str, str]:
     method = str(fact.get("proof_method", "") or "").strip()
     note = str(fact.get("support_note", "") or "").strip()
     family = str(fact.get("primitive_family", "") or "").strip()
+    certificate = str(fact.get("support_certificate", "") or "").strip()
 
-    if preset:
-        status = preset
-        method = method or "external_support_status"
-        note = note or "support status supplied by input fact"
-    elif has_source_counterexample(fact):
+    if has_source_counterexample(fact):
         status = "COUNTEREXAMPLE"
         method = "source_support_enum"
         note = "source witness falsifies this omission"
@@ -743,12 +753,24 @@ def support_result_for_fact(fact: dict[str, Any]) -> dict[str, str]:
             status = "UNKNOWN"
             method = "exact_remainder"
             note = "exact-remainder fact needs value_max < modulus or a public certificate"
-    elif fact.get("support_certificate") and (
+    elif certificate and (
         fact.get("known_zero_controls") or fact.get("dead_targets") or not fact.get("target_live", True)
     ):
         status = "CERTIFIED"
         method = "support_certificate"
         note = "public support certificate supplied for fixed-control or dead-target fact"
+    elif preset == "CERTIFIED" and certificate:
+        status = "CERTIFIED"
+        method = method or "external_support_certificate"
+        note = note or "public support certificate supplied by input fact"
+    elif preset == "CERTIFIED":
+        status = "UNKNOWN"
+        method = method or "manual_source_invariant"
+        note = "CERTIFIED status ignored without support_certificate or built-in proof"
+    elif preset == "COUNTEREXAMPLE":
+        status = "UNKNOWN"
+        method = method or "manual_source_invariant"
+        note = "COUNTEREXAMPLE status ignored without falsifier_template and witness"
     else:
         status = "UNKNOWN"
         method = method or "manual_source_invariant"
@@ -762,6 +784,13 @@ def support_result_for_fact(fact: dict[str, Any]) -> dict[str, str]:
         "support_hash": stable_id(
             "support",
             fact.get("fact_id", ""),
+            fact.get("source_base", ""),
+            fact.get("source_hash", ""),
+            fact.get("source_location", ""),
+            fact.get("trace_context_family", ""),
+            fact.get("trace_context_call", ""),
+            fact.get("trace_context_bit", ""),
+            trace_span_key(fact.get("trace_span", {})),
             status,
             method,
             note,
@@ -787,6 +816,7 @@ def build_candidate(fact: dict[str, Any], reason: str, proof_kind: str, proof_in
         "route_id": route_id,
         "frontier": fact["frontier"],
         "source_base": fact["source_base"],
+        "source_hash": fact.get("source_hash", ""),
         "stream_hash": fact["stream_hash"],
         "fact_id": fact["fact_id"],
         "source_location": fact["source_location"],
@@ -825,8 +855,7 @@ def build_candidate(fact: dict[str, Any], reason: str, proof_kind: str, proof_in
 
 def has_source_counterexample(fact: dict[str, Any]) -> bool:
     family = str(fact.get("primitive_family", ""))
-    status = status_field(fact.get("support_status", ""))
-    return bool((status == "COUNTEREXAMPLE") or (family and fact.get("falsifier_template") and fact.get("witness")))
+    return bool(family and fact.get("falsifier_template") and fact.get("witness"))
 
 
 def source_site_backlog_candidate(fact: dict[str, Any]) -> dict[str, Any]:
@@ -834,7 +863,7 @@ def source_site_backlog_candidate(fact: dict[str, Any]) -> dict[str, Any]:
     if has_source_counterexample(fact):
         proof_kind = "source_counterexample"
         reason = "source-site-counterexample"
-    elif support_status == "CERTIFIED":
+    elif support_status == "CERTIFIED" and fact.get("support_certificate"):
         proof_kind = "support_certificate"
         reason = "source-site-support-certified"
     else:
@@ -846,6 +875,8 @@ def source_site_backlog_candidate(fact: dict[str, Any]) -> dict[str, Any]:
         proof_kind,
         {
             "source_location": fact["source_location"],
+            "source_base": fact.get("source_base", ""),
+            "source_hash": fact.get("source_hash", ""),
             "op_class": fact["op_class"],
             "branch_context": fact.get("branch_context", ""),
             "site_rank": fact.get("site_rank", ""),
@@ -977,29 +1008,35 @@ def prove_candidate(candidate: dict[str, Any]) -> dict[str, Any]:
     inputs = packet.get("proof_inputs", {})
     certificate = str(inputs.get("support_certificate", "")).strip()
     input_support_status = status_field(inputs.get("support_status", ""))
+    source_witness = str(inputs.get("witness", "") or "").strip()
+    source_template = str(inputs.get("falsifier_template", "") or "").strip()
     status = "UNKNOWN"
     note = "manual proof required before compute"
 
     if not packet.get("allocator_unchanged", False):
         status = "COUNTEREXAMPLE"
         note = "allocator order changed; this route is outside fixed-allocation exact-skip scope"
-    elif input_support_status == "COUNTEREXAMPLE":
+    elif input_support_status == "COUNTEREXAMPLE" and source_template and source_witness:
         status = "COUNTEREXAMPLE"
         note = str(inputs.get("support_note", "") or "support checker supplied a counterexample")
-    elif input_support_status == "CERTIFIED":
+    elif input_support_status == "COUNTEREXAMPLE":
+        status = "UNKNOWN"
+        note = "counterexample status ignored without falsifier_template and witness"
+    elif input_support_status == "CERTIFIED" and certificate:
         status = "CERTIFIED"
         note = str(inputs.get("support_note", "") or "support checker supplied a public certificate")
+    elif input_support_status == "CERTIFIED":
+        status = "UNKNOWN"
+        note = "certified status ignored without support_certificate or built-in proof"
     elif packet["proof_kind"] == "source_counterexample":
-        template = str(inputs.get("falsifier_template", "")).strip()
-        witness = str(inputs.get("witness", "")).strip()
-        if template and witness:
+        if source_template and source_witness:
             status = "COUNTEREXAMPLE"
             note = "source witness falsifies this omission"
         else:
             status = "UNKNOWN"
             note = "source counterexample packet is missing falsifier_template or witness"
     elif packet["proof_kind"] == "support_certificate":
-        if certificate or inputs.get("support_hash"):
+        if certificate:
             status = "CERTIFIED"
             note = "public support checker certificate supplied"
     elif packet["proof_kind"] == "bitvec_unsat":
@@ -1034,6 +1071,8 @@ def trace_span_key(value: Any) -> str:
 def ledger_key(packet: dict[str, Any]) -> str:
     return stable_id(
         "nack",
+        packet.get("source_base", ""),
+        packet.get("source_hash", ""),
         packet.get("source_location", ""),
         packet.get("primitive_family", ""),
         packet.get("trace_context_family", ""),
@@ -1075,6 +1114,8 @@ def falsify_packets(packets: list[dict[str, Any]], ledger: dict[str, dict[str, A
 def ledger_entry_from_packet(packet: dict[str, Any]) -> dict[str, Any]:
     return {
         "ledger_key": ledger_key(packet),
+        "source_base": packet.get("source_base", ""),
+        "source_hash": packet.get("source_hash", ""),
         "source_location": packet.get("source_location", ""),
         "primitive_family": packet.get("primitive_family", ""),
         "trace_span": packet.get("trace_span", {}),

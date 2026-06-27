@@ -203,6 +203,7 @@ need_text examples/exact-skip-candidates.example.jsonl "proof packet" "proof_sta
 need_text templates/exact-skip-candidate.json "allocator unchanged" "allocator_unchanged"
 need_text templates/exact-skip-candidate.json "support status" "support_status"
 need_text templates/exact-skip-candidate.json "trace context family" "trace_context_family"
+need_text templates/exact-skip-candidate.json "source hash" "source_hash"
 need_text docs/exact-support-miner.md "exact support miner" "Exact Support Miner"
 need_text docs/exact-support-miner.md "support checker" "support-check"
 need_text docs/exact-support-miner.md "redsky gate" "Redsky"
