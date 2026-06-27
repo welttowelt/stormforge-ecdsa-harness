@@ -306,6 +306,22 @@ elif ! grep -q 'certified=0 unknown=0 counterexample=2' "$tmpdir/context-support
 fi
 
 printf '%s\n' \
+  '{"fact_id":"stale-context-demo","frontier":"fixture-frontier/demo-source","source_base":"public-demo-source","stream_hash":"stale-context-demo","op_id":"stale-context","source_location":"src/point_add/trailmix_ludicrous/gcd.rs:1246","op_class":"ccx","executed_weight":1,"allocator_unchanged":true,"trace_context_value":"0x12002a07","primitive_family":"","support_domain":"","falsifier_template":"","witness":"","phase_obligation":"","restoration_obligation":"","proof_method":"","support_status":""}' \
+  > "$tmpdir/stale-context.jsonl"
+if ! python3 scripts/storm-exact-miner.py support-check \
+  --facts "$tmpdir/stale-context.jsonl" \
+  --out "$tmpdir/stale-context-support.jsonl" >"$tmpdir/stale-context-support.out" 2>"$tmpdir/stale-context-support.err"; then
+  printf 'public_harness_check=fail exact_miner_stale_context_support_failed\n' >&2
+  cat "$tmpdir/stale-context-support.err" >&2
+  fail=1
+elif ! grep -q 'certified=0 unknown=0 counterexample=1' "$tmpdir/stale-context-support.out"; then
+  printf 'public_harness_check=fail exact_miner_stale_context_support_counts\n' >&2
+  cat "$tmpdir/stale-context-support.out" >&2
+  cat "$tmpdir/stale-context-support.jsonl" >&2
+  fail=1
+fi
+
+printf '%s\n' \
   '{"frontier":"fixture-frontier/demo-source","source_base":"public-demo-source","stream_hash":"context-cert-demo","op_id":"context-cert","source_location":"src/point_add/trailmix_ludicrous/gidney.rs:1233","context":"0x05002a07","op_class":"ccx","executed_weight":1,"support_status":"CERTIFIED","support_certificate":"public route-specific certificate"}' \
   > "$tmpdir/context-cert.jsonl"
 if ! python3 scripts/storm-exact-miner.py trace-facts \

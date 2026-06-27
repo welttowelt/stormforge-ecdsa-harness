@@ -875,10 +875,62 @@ def support_result_for_fact(fact: dict[str, Any]) -> dict[str, str]:
     }
 
 
+def reclassify_missing_support_fields(fact: dict[str, Any]) -> dict[str, Any]:
+    """Fill classifier fields for streams normalized before newer decoders.
+
+    Caller-supplied fields stay authoritative. This only derives missing
+    primitive-family, witness, and obligation fields from public source location
+    or trace-context metadata already present in the fact.
+    """
+    enriched = dict(fact)
+    raw_context = (
+        enriched.get("trace_context_value")
+        or enriched.get("branch_context")
+        or enriched.get("context")
+        or ""
+    )
+    context_info: dict[str, Any] = {}
+    if raw_context:
+        context_info.update(decode_trace_context(str(raw_context)))
+    if enriched.get("trace_context_family"):
+        context_info["trace_context_family"] = enriched.get("trace_context_family")
+    if enriched.get("trace_context_call") != "":
+        context_info["trace_context_call"] = enriched.get("trace_context_call")
+    if enriched.get("trace_context_bit") != "":
+        context_info["trace_context_bit"] = enriched.get("trace_context_bit")
+
+    classifier: dict[str, str] = {}
+    classifier.update(classify_trace_context(context_info))
+    classifier.update(classify_source_site(str(enriched.get("source_location", ""))))
+
+    for key in (
+        "primitive_family",
+        "support_domain",
+        "falsifier_template",
+        "witness",
+        "phase_obligation",
+        "restoration_obligation",
+        "proof_method",
+    ):
+        if not str(enriched.get(key, "") or "").strip() and classifier.get(key):
+            enriched[key] = classifier[key]
+
+    for key in (
+        "trace_context_value",
+        "trace_context_family",
+        "trace_context_call",
+        "trace_context_bit",
+    ):
+        if enriched.get(key, "") == "" and context_info.get(key, "") != "":
+            enriched[key] = context_info[key]
+
+    return enriched
+
+
 def support_check_facts(facts: list[dict[str, Any]]) -> list[dict[str, Any]]:
     checked = []
     for fact in facts:
-        enriched = dict(fact)
+        enriched = reclassify_missing_support_fields(fact)
         enriched.update(support_result_for_fact(enriched))
         checked.append(enriched)
     return checked
