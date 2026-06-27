@@ -278,6 +278,12 @@ SITE_CLASSIFIERS: dict[tuple[str, int], dict[str, str]] = {
         "falsifier_template": "choose a reached row with swp=1 and u[j] != v[j]",
         "witness": "the source emits line 899 only after the exact-dead cswap guard is false; swp=1 with unequal limbs changes both registers",
     },
+    ("gcd.rs", 935): {
+        "primitive_family": "gcd_forward_cswap_live",
+        "support_domain": "forward GCD/apply symbol aggregate over live cswap rows",
+        "falsifier_template": "choose a reached apply symbol with swp=1 and unequal coordinate limbs",
+        "witness": "swp=1 with x_reg[j]=1,y_reg[j]=0 changes both coordinate registers; omission leaves the old order",
+    },
     ("mcx.rs", 54): {
         "primitive_family": "mcx_prefix_live",
         "support_domain": "two-control prefix target toggle",

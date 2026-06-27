@@ -73,7 +73,7 @@ any circuit edit, residual, compute, alert, or submit step.
 
 `examples/cycle48-wall-owner-sites.example.tsv` is a small regression fixture
 for this behavior. It includes generic-live comparator and GCD aggregate rows
-that must classify as source counterexamples, plus a still-unknown GCD/apply
+that must classify as source counterexamples, plus a still-unknown GCD/reverse
 row that remains in the proof backlog.
 
 When a fact stream preserves `TRACE_OP_SITES` context values, the miner decodes

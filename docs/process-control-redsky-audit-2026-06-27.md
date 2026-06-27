@@ -90,6 +90,7 @@ Updated `scripts/storm-exact-miner.py` with classifier aliases for:
 - `comparator.rs:864`
 - `gcd.rs:745`
 - `gcd.rs:730`
+- `gcd.rs:935`
 
 Added `examples/cycle48-wall-owner-sites.example.tsv` as a regression fixture.
 
