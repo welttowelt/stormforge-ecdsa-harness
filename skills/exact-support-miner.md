@@ -24,8 +24,13 @@ Use fixture or public trace facts only.
 1. Refresh the public frontier and name the source base.
 2. Normalize trace facts:
    `python3 scripts/storm-exact-miner.py trace-facts --input <public.jsonl> --out <facts.jsonl>`.
+   If the input is a raw source-site TSV, provide `--frontier`,
+   `--source-base`, and `--stream-hash` defaults.
 3. Mine candidates:
    `python3 scripts/storm-exact-miner.py mine --facts <facts.jsonl> --out <candidates.jsonl>`.
+   For source-site TSVs without proof annotations, add
+   `--include-unknown-sites --max-unknown-sites <n>` to emit rankable UNKNOWN
+   proof backlog packets.
 4. Build proof packets:
    `python3 scripts/storm-exact-miner.py prove --candidates <candidates.jsonl> --out <proofs.jsonl>`.
 5. Rank packets:

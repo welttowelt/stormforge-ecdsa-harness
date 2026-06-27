@@ -56,6 +56,7 @@ for path in \
   examples/compute-request.example.md \
   examples/public-note.example.md \
   examples/op-trace-facts.example.jsonl \
+  examples/site-audit.example.tsv \
   examples/exact-skip-candidates.example.jsonl \
   templates/exact-skip-candidate.json \
   docs/exact-support-miner.md \
@@ -189,6 +190,7 @@ need_text examples/route-packet.example.md "stop condition" "Stop condition"
 need_text examples/compute-request.example.md "zero paid compute" "zero"
 need_text examples/public-note.example.md "not a candidate" "not a candidate"
 need_text examples/op-trace-facts.example.jsonl "public demo source" "public-demo-source"
+need_text examples/site-audit.example.tsv "site audit fixture" "src/point_add/trailmix_ludicrous/gcd.rs"
 need_text examples/exact-skip-candidates.example.jsonl "proof packet" "proof_status"
 need_text templates/exact-skip-candidate.json "allocator unchanged" "allocator_unchanged"
 need_text docs/exact-support-miner.md "exact support miner" "Exact Support Miner"

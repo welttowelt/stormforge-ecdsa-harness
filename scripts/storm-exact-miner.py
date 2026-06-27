@@ -70,10 +70,30 @@ def parse_args() -> argparse.Namespace:
     trace = sub.add_parser("trace-facts", help="normalize JSONL or TSV op-trace facts")
     trace.add_argument("--input", required=True, help="public JSONL/TSV trace facts")
     trace.add_argument("--out", required=True, help="normalized JSONL output path")
+    trace.add_argument("--frontier", default="", help="default frontier label when input omits frontier")
+    trace.add_argument("--source-base", default="", help="default source base when input omits source_base")
+    trace.add_argument("--stream-hash", default="", help="default stream hash when input omits stream_hash")
 
     mine = sub.add_parser("mine", help="find omission candidates from normalized facts")
     mine.add_argument("--facts", required=True, help="normalized facts JSONL")
     mine.add_argument("--out", required=True, help="candidate JSONL output path")
+    mine.add_argument(
+        "--include-unknown-sites",
+        action="store_true",
+        help="also emit UNKNOWN manual-proof packets for source-site facts with no built-in proof trigger",
+    )
+    mine.add_argument(
+        "--max-unknown-sites",
+        type=int,
+        default=0,
+        help="maximum UNKNOWN site packets to emit; 0 means no limit",
+    )
+    mine.add_argument(
+        "--min-site-weight",
+        type=float,
+        default=1.0,
+        help="minimum executed weight for --include-unknown-sites packets",
+    )
 
     prove = sub.add_parser("prove", help="create proof packets from candidates")
     prove.add_argument("--candidates", required=True, help="candidate JSONL")
@@ -190,13 +210,32 @@ def stable_id(prefix: str, *parts: Any) -> str:
     return f"{prefix}-{h.hexdigest()[:16]}"
 
 
-def normalize_fact(record: dict[str, Any], index: int) -> dict[str, Any]:
-    frontier = str(record.get("frontier", "unknown"))
-    source_base = str(record.get("source_base", record.get("source", "unknown")))
-    stream_hash = str(record.get("stream_hash", record.get("ops_hash", "unknown")))
-    source_location = str(record.get("source_location", record.get("source_file", "unknown")))
+def normalize_fact(record: dict[str, Any], index: int, defaults: dict[str, str] | None = None) -> dict[str, Any]:
+    defaults = defaults or {}
+    frontier = str(record.get("frontier") or defaults.get("frontier") or "unknown")
+    source_base = str(record.get("source_base") or record.get("source") or defaults.get("source_base") or "unknown")
+    source_file = str(record.get("source_file", record.get("file", "")))
+    source_line = str(record.get("source_line", record.get("line", "")))
+    if record.get("source_location"):
+        source_location = str(record["source_location"])
+    elif source_file and source_line:
+        source_location = f"{source_file}:{source_line}"
+    else:
+        source_location = "unknown"
+    context = str(record.get("branch_context", record.get("context", "")))
+    rank = str(record.get("rank", ""))
+    first_idx = str(record.get("first_idx", ""))
+    last_idx = str(record.get("last_idx", ""))
+    stream_hash = str(record.get("stream_hash") or record.get("ops_hash") or defaults.get("stream_hash") or "")
+    if not stream_hash:
+        stream_hash = stable_id("site-stream", source_base, source_location, context, rank, first_idx, last_idx)
     op_class = str(record.get("op_class", record.get("kind", "unknown"))).lower()
-    op_id = str(record.get("op_id", record.get("index", index)))
+    if record.get("op_id"):
+        op_id = str(record["op_id"])
+    elif rank or first_idx or last_idx or context:
+        op_id = f"rank={rank or index};context={context or 'none'};span={first_idx or '?'}-{last_idx or '?'}"
+    else:
+        op_id = str(record.get("index", index))
 
     fact = {
         "fact_id": stable_id("fact", frontier, stream_hash, op_id, source_location, op_class),
@@ -214,10 +253,15 @@ def normalize_fact(record: dict[str, Any], index: int) -> dict[str, Any]:
         "target_live": as_bool(record.get("target_live"), default=True),
         "exact_remainder": as_bool(record.get("exact_remainder"), default=False),
         "allocator_unchanged": as_bool(record.get("allocator_unchanged"), default=True),
-        "emitted_weight": as_number(record.get("emitted_weight"), default=1.0),
-        "executed_weight": as_number(record.get("executed_weight"), default=1.0),
+        "emitted_weight": as_number(record.get("emitted_weight", record.get("count")), default=1.0),
+        "executed_weight": as_number(record.get("executed_weight", record.get("count")), default=1.0),
         "support_certificate": str(record.get("support_certificate", "")),
-        "branch_context": str(record.get("branch_context", "")),
+        "branch_context": context,
+        "site_rank": rank,
+        "trace_span": {
+            "first_idx": first_idx,
+            "last_idx": last_idx,
+        },
         "value_max": record.get("value_max", ""),
         "modulus": record.get("modulus", ""),
     }
@@ -245,13 +289,40 @@ def build_candidate(fact: dict[str, Any], reason: str, proof_kind: str, proof_in
         "validation_target": "trusted full 0/0/0 after source proof",
         "kill_gate": "block compute if allocator changes, proof is UNKNOWN, or any cls/pha/anc dirt appears",
         "reason": reason,
+        "branch_context": fact.get("branch_context", ""),
+        "site_rank": fact.get("site_rank", ""),
+        "trace_span": fact.get("trace_span", {}),
+        "fastest_falsifier": "derive the source invariant, then run a toy/support enumeration or trace witness before any circuit edit",
     }
 
 
-def mine_candidates(facts: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def source_site_backlog_candidate(fact: dict[str, Any]) -> dict[str, Any]:
+    return build_candidate(
+        fact,
+        "source-site-proof-backlog",
+        "manual_source_invariant",
+        {
+            "source_location": fact["source_location"],
+            "op_class": fact["op_class"],
+            "branch_context": fact.get("branch_context", ""),
+            "site_rank": fact.get("site_rank", ""),
+            "trace_span": fact.get("trace_span", {}),
+            "support_certificate": fact["support_certificate"],
+        },
+    )
+
+
+def mine_candidates(
+    facts: list[dict[str, Any]],
+    include_unknown_sites: bool = False,
+    max_unknown_sites: int = 0,
+    min_site_weight: float = 1.0,
+) -> list[dict[str, Any]]:
     candidates: list[dict[str, Any]] = []
     seen: set[str] = set()
+    unknown_sites = 0
     for fact in facts:
+        before = len(candidates)
         controls = set(fact["controls"])
         known_zero = controls.intersection(fact["known_zero_controls"])
         if known_zero:
@@ -299,6 +370,16 @@ def mine_candidates(facts: list[dict[str, Any]]) -> list[dict[str, Any]]:
                     {"controls": sorted(known_zero), "support_certificate": fact["support_certificate"]},
                 )
             )
+        if (
+            include_unknown_sites
+            and len(candidates) == before
+            and fact["source_location"] != "unknown"
+            and fact["op_class"] in {"ccx", "ccz", "cswap", "shift", "remainder"}
+            and as_number(fact.get("executed_weight"), default=0.0) >= min_site_weight
+            and (max_unknown_sites <= 0 or unknown_sites < max_unknown_sites)
+        ):
+            candidates.append(source_site_backlog_candidate(fact))
+            unknown_sites += 1
     deduped: list[dict[str, Any]] = []
     for candidate in candidates:
         if candidate["route_id"] in seen:
@@ -375,12 +456,22 @@ def main() -> int:
     try:
         if args.command == "trace-facts":
             records = load_records(args.input)
-            facts = [normalize_fact(record, idx) for idx, record in enumerate(records)]
+            defaults = {
+                "frontier": args.frontier,
+                "source_base": args.source_base,
+                "stream_hash": args.stream_hash,
+            }
+            facts = [normalize_fact(record, idx, defaults) for idx, record in enumerate(records)]
             write_jsonl(args.out, facts)
             print(f"storm_exact_miner=pass command=trace-facts facts={len(facts)}")
         elif args.command == "mine":
             facts = load_records(args.facts)
-            candidates = mine_candidates(facts)
+            candidates = mine_candidates(
+                facts,
+                include_unknown_sites=args.include_unknown_sites,
+                max_unknown_sites=args.max_unknown_sites,
+                min_site_weight=args.min_site_weight,
+            )
             write_jsonl(args.out, candidates)
             print(f"storm_exact_miner=pass command=mine candidates={len(candidates)}")
         elif args.command == "prove":

@@ -43,6 +43,27 @@ python3 scripts/storm-exact-miner.py rank \
   --out /tmp/storm-ranked.jsonl
 ```
 
+For public `site_audit` TSVs that contain only source locations and weights,
+normalize the TSV and opt into UNKNOWN backlog packets:
+
+```bash
+python3 scripts/storm-exact-miner.py trace-facts \
+  --input examples/site-audit.example.tsv \
+  --frontier 1571592960/d44cad3 \
+  --source-base d44cad3 \
+  --stream-hash d44-site-audit-example \
+  --out /tmp/storm-site-facts.jsonl
+
+python3 scripts/storm-exact-miner.py mine \
+  --facts /tmp/storm-site-facts.jsonl \
+  --include-unknown-sites \
+  --max-unknown-sites 200 \
+  --out /tmp/storm-site-candidates.jsonl
+```
+
+These packets are rankable proof targets only. They do not certify an omission;
+they name the highest-weight source site and the next falsifier.
+
 ## Packet Fields
 
 Each packet records:
