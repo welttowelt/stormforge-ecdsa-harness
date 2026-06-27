@@ -791,6 +791,14 @@ SOURCE_HASH_SITE_CLASSIFIERS: dict[tuple[str, int, str], dict[str, str]] = {
         "falsifier_template": "bind the scout row back to d44cad3 source and raw origin phases before treating it as a removable fused chunk-fold CCX",
         "witness": "d44cad3 fused.rs:731 is static FUSED_CHUNK_FOLD_DEAD_RANGES data `(798, 0, 3)`, while origin rows are kept fused chunk-fold CCX in fold phases; no executable source-hook exists here",
     },
+    ("fused.rs", 1271, "4687a22ce2228f11"): {
+        "primitive_family": "fused_chunk_fold_cleanup_context_live",
+        "support_domain": "source-hash-bound fold_chunk_clean no-cin reverse cleanup context",
+        "falsifier_template": "choose a reached no-cin fold chunk with addend control on=1, y[0]=1, and the first internal carry next=1",
+        "witness": "line 1271 starts the no-cin reverse cleanup that measures next and discharges phase with cz_if_bit(y[0], on, bit); skipping the mapped fused chunk-fold carry/cleanup row leaves next or its phase discharge wrong",
+        "phase_obligation": "HMR cleanup phase must be discharged through the addend control before y[0] is restored",
+        "restoration_obligation": "the measured internal carry must be zeroed and the folded y[0] control restored",
+    },
     ("comparator.rs", 57, "d1a924ee4e28795f"): {
         "primitive_family": "table_origin_not_op_site",
         "support_domain": "source-hash-bound COMPARE_CIN_STRUCTURAL_DEAD_RANGES table-origin row",
