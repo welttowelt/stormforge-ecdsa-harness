@@ -61,6 +61,7 @@ for path in \
   scripts/storm-q1152-binder-ledger.py \
   scripts/storm-mcx-incrementer-budget.py \
   scripts/storm-square-static-gap-audit.py \
+  scripts/storm-single-ccx-fanout-ledger.py \
   examples/audit-card.example.md \
   examples/operator-card.example.md \
   examples/mailbox-entry.example.md \
@@ -225,6 +226,8 @@ need_text scripts/storm-mcx-incrementer-budget.py "mcx incrementer budget" "mcx_
 need_text scripts/storm-mcx-incrementer-budget.py "candidate budget fail" "candidate-budget-fail"
 need_text scripts/storm-square-static-gap-audit.py "square static gap audit" "square_static_gap_audit=pass"
 need_text scripts/storm-square-static-gap-audit.py "zero bit trim decision" "no-executable-zero-bit-trim"
+need_text scripts/storm-single-ccx-fanout-ledger.py "single ccx fanout ledger" "single_ccx_fanout_ledger=pass"
+need_text scripts/storm-single-ccx-fanout-ledger.py "trusted eval nack" "trusted-eval-nack"
 
 need_text examples/operator-card.example.md "falsifiable decision" "Falsifiable decision"
 need_text examples/audit-card.example.md "rci tony" "RCI/Tony"
@@ -802,6 +805,39 @@ elif ! grep -q 'square_static_gap_audit=pass' "$tmpdir/square-static-gap.out" ||
   printf 'public_harness_check=fail square_static_gap_audit_output\n' >&2
   cat "$tmpdir/square-static-gap.out" >&2
   cat "$tmpdir/square-static-gap.tsv" >&2
+  fail=1
+fi
+
+cat >"$tmpdir/single-ccx-fanout-build.out" <<'EOF'
+  emitted ops : 10221059
+EOF
+cat >"$tmpdir/single-ccx-fanout-build.err" <<'EOF'
+SINGLE_CCX_FANOUT: STOP passes=318 input_ops=10221377 output_ops=10221059 reason=no target-fanout conjugation found
+SINGLE_CCX_FANOUT: SUMMARY input_ops=10221377 output_ops=10221059 passes=318
+EOF
+cat >"$tmpdir/single-ccx-fanout-eval.out" <<'EOF'
+  loaded ops  : 10221059
+  qubits      : 1152
+  classical mismatches    : 24
+  phase-garbage batches   : 16
+  ancilla-garbage batches : 0
+EOF
+if ! python3 scripts/storm-single-ccx-fanout-ledger.py \
+  --build-stdout "$tmpdir/single-ccx-fanout-build.out" \
+  --build-stderr "$tmpdir/single-ccx-fanout-build.err" \
+  --eval-stdout "$tmpdir/single-ccx-fanout-eval.out" \
+  >"$tmpdir/single-ccx-fanout-ledger.out" 2>"$tmpdir/single-ccx-fanout-ledger.err"; then
+  printf 'public_harness_check=fail single_ccx_fanout_ledger_failed\n' >&2
+  cat "$tmpdir/single-ccx-fanout-ledger.err" >&2
+  fail=1
+elif ! grep -q 'single_ccx_fanout_ledger=pass' "$tmpdir/single-ccx-fanout-ledger.out" ||
+     ! grep -q 'delta_ops=-318' "$tmpdir/single-ccx-fanout-ledger.out" ||
+     ! grep -q 'passes=318' "$tmpdir/single-ccx-fanout-ledger.out" ||
+     ! grep -q 'classical=24' "$tmpdir/single-ccx-fanout-ledger.out" ||
+     ! grep -q 'phase=16' "$tmpdir/single-ccx-fanout-ledger.out" ||
+     ! grep -q 'decision=trusted-eval-nack' "$tmpdir/single-ccx-fanout-ledger.out"; then
+  printf 'public_harness_check=fail single_ccx_fanout_ledger_output\n' >&2
+  cat "$tmpdir/single-ccx-fanout-ledger.out" >&2
   fail=1
 fi
 
