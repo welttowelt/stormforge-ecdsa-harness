@@ -302,6 +302,19 @@ SITE_CLASSIFIERS: dict[tuple[str, int], dict[str, str]] = {
         "falsifier_template": "set ctrl=1 and adjacent shifted bits unequal",
         "witness": "reverse controlled shift is needed to restore the value",
     },
+    ("gcd.rs", 784): {
+        "primitive_family": "controlled_mod_double_cswap_live",
+        "support_domain": "controlled_mod_double forward shift over a ++ ovf",
+        "falsifier_template": "set ctrl=1 and adjacent shift-view bits unequal",
+        "witness": "ctrl=1 with w[i]=1,w[i+1]=0 swaps adjacent bits; omission leaves the unshifted order",
+    },
+    ("gcd.rs", 812): {
+        "primitive_family": "controlled_mod_double_reverse_cswap_live",
+        "support_domain": "controlled_mod_double_reverse inverse shift over a ++ ovf",
+        "falsifier_template": "set ctrl=1 and adjacent inverse-shift-view bits unequal",
+        "witness": "ctrl=1 with w[i]=0,w[i+1]=1 swaps adjacent bits during inverse restoration",
+        "restoration_obligation": "reverse controlled modular-double shift rows are required to restore a ++ ovf",
+    },
     ("gcd.rs", 730): {
         "primitive_family": "gcd_shift_cswap_live",
         "support_domain": "GCD controlled right/left shift helper aggregate",

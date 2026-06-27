@@ -104,6 +104,8 @@ Updated `scripts/storm-exact-miner.py` with classifier aliases for:
 - `gidney.rs:1416`
 - `arith.rs:524`
 - `arith.rs:537`
+- `gcd.rs:784`
+- `gcd.rs:812`
 
 Added `examples/cycle48-wall-owner-sites.example.tsv` as a regression fixture.
 
@@ -177,14 +179,41 @@ Measured output:
 | Original cycle48 artifact | 25 | 32 | 23 | 31 | 31 | 709580 | 124882 |
 | Before passes 6-10 | 14 | 43 | 12 | 42 | 42 | 17818 | 816644 |
 | After passes 6-10 | 8 | 49 | 6 | 48 | 48 | 2056 | 832406 |
+| After pass 11 | 6 | 51 | 4 | 50 | 50 | 1032 | 833430 |
 
 Result:
 
-- Ranked UNKNOWN rows fell from `23` to `6`, a `73.9%` reduction.
-- Ranked UNKNOWN weight fell from `709580` to `2056`, a `99.7%` reduction.
-- Durable NACK ledger rows rose from `31` to `48`.
+- Ranked UNKNOWN rows fell from `23` to `4`, an `82.6%` reduction.
+- Ranked UNKNOWN weight fell from `709580` to `1032`, a `99.9%` reduction.
+- Durable NACK ledger rows rose from `31` to `50`.
 - Certified rows stayed at `0`, so the audit improved proof routing but did not
   create a submission candidate.
+
+## Pass 11 - GCD Mod-Double Shift Alias Sync
+
+Problem:
+After the cycle48 audit-impact sync, the next public top UNKNOWN rows were
+`gcd.rs:784` and `gcd.rs:812`.
+
+Evidence:
+Both rows are source-site CSWAPs in the controlled modular double pair. The
+forward row at `gcd.rs:784` shifts the `a ++ ovf` view under `ctrl`; the reverse
+row at `gcd.rs:812` restores the same view during inverse controlled modular
+doubling.
+
+Effect:
+With `ctrl=1` and adjacent shift-view bits unequal, the CSWAP changes register
+order. Omitting the forward row leaves the value unshifted; omitting the reverse
+row leaves the inverse schedule unrestored.
+
+Fix:
+Added explicit NACK-only source aliases for `gcd.rs:784` and `gcd.rs:812`, then
+advanced the fixture to leave `arith.rs:1865` as the next visible UNKNOWN.
+
+Gate:
+No source hook, count claim, residual/eval, pod dispatch, alert, WINNER, or
+submit follows from these rows. The next worker must prove or falsify
+`arith.rs:1865` before touching compute.
 
 ## Verification Commands
 
