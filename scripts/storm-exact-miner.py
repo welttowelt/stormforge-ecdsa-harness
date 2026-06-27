@@ -610,6 +610,12 @@ SOURCE_HASH_SITE_CLASSIFIERS: dict[tuple[str, int, str], dict[str, str]] = {
         "falsifier_template": "bind the scout row back to d44cad3 source and joined trace rows before treating it as a removable CCX",
         "witness": "d44cad3 gidney.rs:311 is static dead-boundary call-list data, while origin rows are kept CCX in register phases; no executable source-hook exists at this line",
     },
+    ("fused.rs", 486, "8b76aa5ce391d117"): {
+        "primitive_family": "table_origin_not_op_site",
+        "support_domain": "source-hash-bound FUSED_CLEAN_FOLD_DEAD_RANGES table-origin row",
+        "falsifier_template": "bind the scout row back to d44cad3 source and raw origin phases",
+        "witness": "d44cad3 fused.rs:486 is static FUSED_CLEAN_FOLD_DEAD_RANGES data `(334, 0, 3)`, while origin rows are kept fused-fold CCX in forward/inverse fold phases; no executable source-hook exists here",
+    },
     ("comparator.rs", 68, "e2d291034f536196"): {
         "primitive_family": "comparator_top_carry_live",
         "support_domain": "source-hash-bound compare_geq_chunked_middle held top carry",
