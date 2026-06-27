@@ -42,7 +42,7 @@ Use fixture or public trace facts only.
    `COUNTEREXAMPLE` during `prove`; only unclassified rows remain UNKNOWN.
 5. Build proof packets:
    `python3 scripts/storm-exact-miner.py prove --candidates <candidates.jsonl> --out <proofs.jsonl>`.
-6. Apply falsifiers and optional NACK ledger:
+6. Apply falsifiers and an optional existing NACK ledger:
    `python3 scripts/storm-exact-miner.py falsify --packets <proofs.jsonl> --out <falsified.jsonl>`.
 7. Emit reusable public NACK entries:
    `python3 scripts/storm-exact-miner.py ledger --packets <falsified.jsonl> --out <ledger.jsonl>`.

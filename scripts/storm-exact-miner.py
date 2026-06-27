@@ -404,7 +404,7 @@ def parse_args() -> argparse.Namespace:
     falsify = sub.add_parser("falsify", help="apply source counterexamples and optional NACK ledger")
     falsify.add_argument("--packets", required=True, help="candidate/proof packet JSONL")
     falsify.add_argument("--out", required=True, help="falsified proof packet JSONL")
-    falsify.add_argument("--ledger", default="", help="optional public NACK ledger JSONL")
+    falsify.add_argument("--ledger", default="", help="existing public NACK ledger JSONL to apply")
 
     ledger = sub.add_parser("ledger", help="emit public NACK ledger entries from counterexample packets")
     ledger.add_argument("--packets", required=True, help="proof packet JSONL")

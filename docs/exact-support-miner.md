@@ -107,6 +107,9 @@ python3 scripts/storm-exact-miner.py ledger \
   --out /tmp/storm-nack-ledger.jsonl
 ```
 
+`falsify --ledger` reads an existing NACK ledger and applies those entries to
+the packet stream. To write a new ledger, run the separate `ledger` command.
+
 `support-check` is intentionally conservative. It can mark known source
 counterexamples, exact-remainder checks, and externally certified support facts;
 dirty-host rows remain `UNKNOWN` unless restoration, phase, and public support
