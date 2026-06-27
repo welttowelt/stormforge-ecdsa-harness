@@ -1,0 +1,72 @@
+diff --git a/src/point_add/mod.rs b/src/point_add/mod.rs
+index dd54bdd..daaf0ac 100644
+--- a/src/point_add/mod.rs
++++ b/src/point_add/mod.rs
+@@ -2248,7 +2248,7 @@ pub fn build() -> Vec<Op> {
+     let input_ops = ops.len();
+     let mut fanout_passes = 0usize;
+     loop {
+-        match single_ccx_fanout::rewrite_first_target_fanout(ops.clone(), 96) {
++        match single_ccx_fanout::rewrite_first_target_fanout(&ops, 96) {
+             Ok((rewritten, _witness)) => {
+                 fanout_passes += 1;
+                 ops = rewritten;
+diff --git a/src/point_add/single_ccx_fanout.rs b/src/point_add/single_ccx_fanout.rs
+index 0a092f5..a4e12b9 100644
+--- a/src/point_add/single_ccx_fanout.rs
++++ b/src/point_add/single_ccx_fanout.rs
+@@ -188,14 +188,14 @@ fn validate_protected_tail(ops: &[Op], protected: usize) -> Result<Vec<Op>, Stri
+ /// Dependency epochs permit commuting operations around the sole CX blocker.
+ /// Condition-stack transitions are barriers, and the fixed nonce suffix is
+ /// checked byte-for-byte after the rewrite.
+-pub(crate) fn rewrite_first_target_fanout(
+-    ops: Vec<Op>,
+-    protected_tail_ops: usize,
+-) -> Result<(Vec<Op>, FanoutWitness), String> {
+-    let protected_tail = validate_protected_tail(&ops, protected_tail_ops)?;
+-    let prefix_len = ops.len() - protected_tail_ops;
+-    let mut epochs = Epochs::new(max_wire(&ops) + 1);
+-    let mut candidates = HashMap::<GateKey, Candidate>::new();
++pub(crate) fn rewrite_first_target_fanout(
++    ops: &[Op],
++    protected_tail_ops: usize,
++) -> Result<(Vec<Op>, FanoutWitness), String> {
++    let protected_tail = validate_protected_tail(ops, protected_tail_ops)?;
++    let prefix_len = ops.len() - protected_tail_ops;
++    let mut epochs = Epochs::new(max_wire(ops) + 1);
++    let mut candidates = HashMap::<GateKey, Candidate>::new();
+ 
+     for index in 0..prefix_len {
+         let op = ops[index];
+@@ -246,10 +246,10 @@ pub(crate) fn rewrite_first_target_fanout(
+                         condition: blocker.c_condition.0,
+                     };
+                     let mut rewritten = Vec::with_capacity(ops.len() - 1);
+-                    for (op_index, stream_op) in ops.into_iter().enumerate() {
+-                        if op_index == prior.index || op_index == index {
+-                            continue;
+-                        }
++                    for (op_index, stream_op) in ops.iter().copied().enumerate() {
++                        if op_index == prior.index || op_index == index {
++                            continue;
++                        }
+                         rewritten.push(stream_op);
+                         if op_index == blocker_index {
+                             rewritten.push(replacement);
+@@ -345,7 +345,7 @@ mod tests {
+         let mut before = before_prefix.clone();
+         let tail = nonce_tail();
+         before.extend(tail.clone());
+-        let (after, witness) = rewrite_first_target_fanout(before, 96).unwrap();
++        let (after, witness) = rewrite_first_target_fanout(&before, 96).unwrap();
+         assert_eq!(witness.first_index, 0);
+         assert_eq!(witness.blocker_index, 1);
+         assert_eq!(witness.second_index, 2);
+@@ -370,6 +370,6 @@ mod tests {
+         pop.kind = OperationType::PopCondition;
+         let mut ops = vec![ccx(0, 1, 2), push, cx(2, 3), pop, ccx(0, 1, 2)];
+         ops.extend(nonce_tail());
+-        assert!(rewrite_first_target_fanout(ops, 96).is_err());
++        assert!(rewrite_first_target_fanout(&ops, 96).is_err());
+     }
+ }

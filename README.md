@@ -94,6 +94,8 @@ endorsement where there was only inspiration.
 - A redaction checklist and automated redaction scan.
 - Machine-readable claim-ledger, proof-backlog, pod-admission, and state-packet
   helper scripts for running short control loops without private state.
+- Public patch packages for source-preserving throughput helpers that require
+  their own validation gates before use.
 - Public-credit policy for community-derived ideas.
 - Repo-local Codex skill bridges for ECDSA workflow agents.
 
@@ -144,6 +146,9 @@ agent instructions or used as a preflight before route work:
   that lack q-tier score edge, co-binder coverage, or clean validation status.
 - `skills/frontier-escape-gate.md`: classify post-local-optimum packets as
   source theorem, construction package, nonce retune, or NACK.
+- `skills/single-ccx-fanout-throughput.md`: apply and verify the d44
+  `SINGLE_CCX_FANOUT` no-clone throughput patch without promoting it into a
+  clean-route claim.
 - `skills/paper-gidney-constant-workspace-adder.md`: apply Gidney 2025
   constant-workspace adders only after a toy proof and one-callsite residual
   gate.
