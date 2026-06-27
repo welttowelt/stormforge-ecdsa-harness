@@ -493,6 +493,12 @@ SOURCE_HASH_SITE_CLASSIFIERS: dict[tuple[str, int, str], dict[str, str]] = {
         "falsifier_template": "choose cin=1,a_in=1,b_in=0 so the derived carry controls are both 1",
         "witness": "cin=1 gives ci=0; after the local X/CX folds a[i]=1,b[i]=1, so line 196 toggles next carry and omission leaves it 0",
     },
+    ("comparator.rs", 158, "471606852bc5024a"): {
+        "primitive_family": "table_origin_not_op_site",
+        "support_domain": "source-hash-bound COMPARE_CIN_STRUCTURAL_DEAD_RANGES table-origin row",
+        "falsifier_template": "bind the scout row back to d44cad3 source and raw origin phases before treating it as a removable comparator CCX",
+        "witness": "d44cad3 comparator.rs:158 is static COMPARE_CIN_STRUCTURAL_DEAD_RANGES data `(3168, 0, 2)`, while origin rows are kept comparator CCX operations; no executable source-hook exists here",
+    },
     ("gcd.rs", 690, "870820f1ca5c6974"): {
         "primitive_family": "gcd_right_shift_cswap_live",
         "support_domain": "source-hash-bound controlled_right_shift cswap",
