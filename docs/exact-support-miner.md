@@ -62,6 +62,9 @@ python3 scripts/storm-exact-miner.py mine \
 ```
 
 These packets are rankable proof targets only. They do not certify an omission.
+`--max-unknown-sites` caps only unclassified manual-invariant backlog rows;
+known source counterexamples and support-certified rows do not consume that
+quota.
 Known generic-live source families are tagged with `primitive_family`,
 `support_domain`, `falsifier_template`, and `witness`, then proven as
 `COUNTEREXAMPLE` so they cannot be confused with candidate work. Unclassified

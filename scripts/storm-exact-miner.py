@@ -384,7 +384,7 @@ def parse_args() -> argparse.Namespace:
         "--max-unknown-sites",
         type=int,
         default=0,
-        help="maximum UNKNOWN site packets to emit; 0 means no limit",
+        help="maximum UNKNOWN manual-source-invariant site packets to emit; 0 means no limit",
     )
     mine.add_argument(
         "--min-site-weight",
@@ -1137,10 +1137,14 @@ def mine_candidates(
             and fact["source_location"] != "unknown"
             and fact["op_class"] in {"ccx", "ccz", "cswap", "shift", "remainder"}
             and as_number(fact.get("executed_weight"), default=0.0) >= min_site_weight
-            and (max_unknown_sites <= 0 or unknown_sites < max_unknown_sites)
         ):
-            candidates.append(source_site_backlog_candidate(fact))
-            unknown_sites += 1
+            site_candidate = source_site_backlog_candidate(fact)
+            is_unknown_site = site_candidate.get("proof_kind") == "manual_source_invariant"
+            if is_unknown_site and max_unknown_sites > 0 and unknown_sites >= max_unknown_sites:
+                continue
+            candidates.append(site_candidate)
+            if is_unknown_site:
+                unknown_sites += 1
     deduped: list[dict[str, Any]] = []
     for candidate in candidates:
         if candidate["route_id"] in seen:

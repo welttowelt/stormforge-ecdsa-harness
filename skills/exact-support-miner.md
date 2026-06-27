@@ -38,7 +38,9 @@ Use fixture or public trace facts only.
    `python3 scripts/storm-exact-miner.py mine --facts <supported-or-facts.jsonl> --out <candidates.jsonl>`.
    For source-site TSVs without proof annotations, add
    `--include-unknown-sites --max-unknown-sites <n>` to emit rankable UNKNOWN
-   proof backlog packets. The miner tags known generic-live source rows with
+   proof backlog packets. The cap applies only to unclassified UNKNOWN rows,
+   so known counterexamples do not hide the next manual proof target. The miner
+   tags known generic-live source rows with
    `primitive_family`, `falsifier_template`, and `witness`, then marks them
    `COUNTEREXAMPLE` during `prove`; only unclassified rows remain UNKNOWN.
 5. Build proof packets:

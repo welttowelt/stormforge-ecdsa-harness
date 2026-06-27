@@ -322,6 +322,44 @@ elif ! grep -q 'certified=0 unknown=0 counterexample=1' "$tmpdir/stale-context-s
 fi
 
 printf '%s\n' \
+  'rank	count	kind	file	line	context	first_idx	last_idx' \
+  '1	5	CCX	src/point_add/trailmix_ludicrous/arith.rs	834	none	10	20' \
+  '2	4	CCX	src/point_add/trailmix_ludicrous/comparator.rs	702	none	30	40' \
+  '3	3	CCX	src/point_add/trailmix_ludicrous/new_unknown.rs	42	none	50	60' \
+  '4	2	CCX	src/point_add/trailmix_ludicrous/another_unknown.rs	9	none	70	80' \
+  > "$tmpdir/max-unknown-sites.tsv"
+if ! python3 scripts/storm-exact-miner.py trace-facts \
+  --input "$tmpdir/max-unknown-sites.tsv" \
+  --frontier fixture-frontier/demo-source \
+  --source-base public-demo-source \
+  --stream-hash max-unknown-sites-demo \
+  --out "$tmpdir/max-unknown-sites-facts.jsonl" >"$tmpdir/max-unknown-sites-trace.out" 2>"$tmpdir/max-unknown-sites-trace.err"; then
+  printf 'public_harness_check=fail exact_miner_max_unknown_sites_trace_failed\n' >&2
+  cat "$tmpdir/max-unknown-sites-trace.err" >&2
+  fail=1
+elif ! python3 scripts/storm-exact-miner.py support-check \
+  --facts "$tmpdir/max-unknown-sites-facts.jsonl" \
+  --out "$tmpdir/max-unknown-sites-support.jsonl" >"$tmpdir/max-unknown-sites-support.out" 2>"$tmpdir/max-unknown-sites-support.err"; then
+  printf 'public_harness_check=fail exact_miner_max_unknown_sites_support_failed\n' >&2
+  cat "$tmpdir/max-unknown-sites-support.err" >&2
+  fail=1
+elif ! python3 scripts/storm-exact-miner.py mine \
+  --facts "$tmpdir/max-unknown-sites-support.jsonl" \
+  --include-unknown-sites \
+  --max-unknown-sites 1 \
+  --out "$tmpdir/max-unknown-sites-candidates.jsonl" >"$tmpdir/max-unknown-sites-mine.out" 2>"$tmpdir/max-unknown-sites-mine.err"; then
+  printf 'public_harness_check=fail exact_miner_max_unknown_sites_mine_failed\n' >&2
+  cat "$tmpdir/max-unknown-sites-mine.err" >&2
+  fail=1
+elif [ "$(grep -c '"proof_kind":"manual_source_invariant"' "$tmpdir/max-unknown-sites-candidates.jsonl")" -ne 1 ] \
+  || [ "$(grep -c '"proof_kind":"source_counterexample"' "$tmpdir/max-unknown-sites-candidates.jsonl")" -ne 2 ] \
+  || ! grep -q 'new_unknown.rs:42' "$tmpdir/max-unknown-sites-candidates.jsonl"; then
+  printf 'public_harness_check=fail exact_miner_max_unknown_sites_quota\n' >&2
+  cat "$tmpdir/max-unknown-sites-candidates.jsonl" >&2
+  fail=1
+fi
+
+printf '%s\n' \
   '{"frontier":"fixture-frontier/demo-source","source_base":"public-demo-source","source_hash":"fixture-source-hash","stream_hash":"context-cert-demo","op_id":"context-cert","source_location":"src/point_add/trailmix_ludicrous/gidney.rs:1233","context":"0x05002a07","op_class":"ccx","executed_weight":1,"support_status":"CERTIFIED","support_certificate":"public route-specific certificate"}' \
   > "$tmpdir/context-cert.jsonl"
 if ! python3 scripts/storm-exact-miner.py trace-facts \
