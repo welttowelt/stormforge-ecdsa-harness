@@ -234,17 +234,36 @@ SITE_CLASSIFIERS: dict[tuple[str, int], dict[str, str]] = {
         "falsifier_template": "set ctrl=1 and carry=0 in the X-sandwich body",
         "witness": "ctrl=1, carry=0 toggles target after carry is inverted",
     },
+    ("comparator.rs", 864): {
+        "primitive_family": "comparator_cin_carry_live",
+        "support_domain": "compare_geq_cin_middle carry over a + ~b + ~cin",
+        "falsifier_template": "enumerate cin, a_in, b_in cases where both derived carry controls are 1",
+        "witness": "cin=0,a_in=0,b_in=1 gives ta=1,tb=1; cin=1,a_in=1,b_in=0 also fires the carry",
+    },
     ("gcd.rs", 748): {
         "primitive_family": "controlled_double_cswap_live",
         "support_domain": "controlled modular double left-shift",
         "falsifier_template": "set ctrl=1 and adjacent shifted bits unequal",
         "witness": "controlled shift changes the value when neighboring bits differ",
     },
+    ("gcd.rs", 745): {
+        "primitive_family": "controlled_double_cswap_live",
+        "support_domain": "controlled modular double left-shift aggregate",
+        "falsifier_template": "set ctrl=1 and adjacent shifted bits unequal in the a ++ ovf shift view",
+        "witness": "ctrl=1, a[i]=1, a[i+1]=0 makes the controlled shift change the modular-double value",
+    },
     ("gcd.rs", 776): {
         "primitive_family": "controlled_double_cswap_live",
         "support_domain": "controlled modular double reverse shift",
         "falsifier_template": "set ctrl=1 and adjacent shifted bits unequal",
         "witness": "reverse controlled shift is needed to restore the value",
+    },
+    ("gcd.rs", 730): {
+        "primitive_family": "gcd_shift_cswap_live",
+        "support_domain": "GCD controlled right/left shift helper aggregate",
+        "falsifier_template": "set the shift control to 1 and choose adjacent active limbs unequal",
+        "witness": "ctrl=1 with adjacent limbs 1/0 changes the shifted register; omitting the cswap leaves the old order",
+        "restoration_obligation": "inverse shift rows are required to restore the active GCD register",
     },
     ("gcd.rs", 764): {
         "primitive_family": "controlled_double_overflow_live",

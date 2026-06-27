@@ -92,6 +92,8 @@ endorsement where there was only inspiration.
 - Safe filled examples for the templates.
 - A fixture-only dashboard for operator status.
 - A redaction checklist and automated redaction scan.
+- Machine-readable claim-ledger, proof-backlog, pod-admission, and state-packet
+  helper scripts for running short control loops without private state.
 - Public-credit policy for community-derived ideas.
 - Repo-local Codex skill bridges for ECDSA workflow agents.
 

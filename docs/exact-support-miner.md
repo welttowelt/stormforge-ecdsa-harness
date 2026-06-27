@@ -71,6 +71,11 @@ Known generic-live source families are tagged with `primitive_family`,
 source sites remain `UNKNOWN` and must receive a real source invariant before
 any circuit edit, residual, compute, alert, or submit step.
 
+`examples/cycle48-wall-owner-sites.example.tsv` is a small regression fixture
+for this behavior. It includes generic-live comparator and GCD aggregate rows
+that must classify as source counterexamples, plus a still-unknown GCD/apply
+row that remains in the proof backlog.
+
 When a fact stream preserves `TRACE_OP_SITES` context values, the miner decodes
 Gidney-family contexts into `trace_context_family`, `trace_context_call`, and
 `trace_context_bit`. This keeps q1152 binder rows from the threaded/hybrid
