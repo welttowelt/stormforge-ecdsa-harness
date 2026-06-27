@@ -113,7 +113,7 @@ awk -v route="$route" \
     }
     if (phase == target_phase) profile_phase_seen = 1;
   }
-  /^TLM_TAPE / {
+  /^TLM_(TAPE|TAIL) / {
     phase = field("phase");
     iter = field("i");
     if ((target_phase == "any" || phase == "" || phase == target_phase) &&
@@ -175,7 +175,7 @@ awk -v route="$route" \
   END {
     if (tape_matches == 0) {
       decision = "missing-tape-overlap-trace";
-      next_step = "capture TLM_TAPE rows around the fold before editing solver code";
+      next_step = "capture TLM_TAPE/TLM_TAIL rows around the fold before editing solver code";
     } else if (evidence == 0) {
       decision = "measure-read-restore-phase";
       next_step = "add TLM_OVERLAP_CHECK with reads_during_fold, restore_proof, phase_proof, and certificate";

@@ -10,7 +10,7 @@ This skill turns the current apply/codec/fold overlap idea into a reusable
 public proof gate. It does not prove a solver route by itself. It records the
 minimum evidence needed before fleet compute:
 
-- a `TLM_TAPE` row at the target fold iteration;
+- a `TLM_TAPE` or live d44 `TLM_TAIL` row at the target fold iteration;
 - a candidate-specific `TLM_OVERLAP_CHECK` row;
 - zero reads during the fold;
 - read/restore evidence;
@@ -36,7 +36,7 @@ The default target is the current high-pressure fold:
 
 ## Decisions
 
-- `missing-tape-overlap-trace`: capture `TLM_TAPE` rows before editing code.
+- `missing-tape-overlap-trace`: capture `TLM_TAPE`/`TLM_TAIL` rows before editing code.
 - `measure-read-restore-phase`: add a candidate-specific overlap row.
 - `overlap-nacked-read-during-fold`: the fold still reads the candidate wires.
 - `overlap-restore-proof-missing`: read/write restoration is not proved.
