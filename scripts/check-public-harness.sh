@@ -57,6 +57,7 @@ for path in \
   scripts/storm-peak-lifetime-ledger.py \
   scripts/storm-gidney-thread-join.py \
   scripts/storm-windowed-carry-toy.py \
+  scripts/storm-const-chunk-prefix-ledger.py \
   examples/audit-card.example.md \
   examples/operator-card.example.md \
   examples/mailbox-entry.example.md \
@@ -886,6 +887,51 @@ elif ! grep -q 'gidney_boundary_toy=pass' "$tmpdir/gidney-boundary-toy.out" ||
      ! grep -q 'phase_proof=0 ancilla_proof=0' "$tmpdir/gidney-boundary-toy.out"; then
   printf 'public_harness_check=fail gidney_boundary_toy_summary\n' >&2
   cat "$tmpdir/gidney-boundary-toy.out" >&2
+  fail=1
+fi
+
+cat >"$tmpdir/const-chunk-demo-arith.rs" <<'EOF'
+const CONST_CHUNK_DEAD_RANGES: &[(usize, usize, usize)] = &[
+    (10, 0, 2),
+    (11, 3, 5),
+    (12, 0, 0),
+];
+EOF
+cat >"$tmpdir/const-chunk-demo-contexts.tsv" <<'EOF'
+file	line	context_hex	family	call	bit	kind	count
+src/point_add/trailmix_ludicrous/arith.rs	1090	0x08000a00	const_chunk_carry	10	0	CCX	1
+src/point_add/trailmix_ludicrous/arith.rs	1090	0x08000a01	const_chunk_carry	10	1	CCX	1
+src/point_add/trailmix_ludicrous/arith.rs	1090	0x08000a02	const_chunk_carry	10	2	CCX	1
+src/point_add/trailmix_ludicrous/arith.rs	1090	0x08000b03	const_chunk_carry	11	3	CCX	1
+src/point_add/trailmix_ludicrous/arith.rs	1090	0x08000c00	const_chunk_carry	12	0	CCX	1
+EOF
+if ! python3 scripts/storm-const-chunk-prefix-ledger.py \
+  --arith-source "$tmpdir/const-chunk-demo-arith.rs" \
+  --contexts "$tmpdir/const-chunk-demo-contexts.tsv" \
+  --summary-out "$tmpdir/const-chunk-prefix-none.tsv" >"$tmpdir/const-chunk-prefix-none.out" 2>"$tmpdir/const-chunk-prefix-none.err"; then
+  printf 'public_harness_check=fail const_chunk_prefix_no_binding_failed\n' >&2
+  cat "$tmpdir/const-chunk-prefix-none.err" >&2
+  fail=1
+elif ! grep -q 'decision=need-binding-call-trace' "$tmpdir/const-chunk-prefix-none.out" ||
+     ! grep -q 'traced_prefix_calls=2' "$tmpdir/const-chunk-prefix-none.out"; then
+  printf 'public_harness_check=fail const_chunk_prefix_no_binding_decision\n' >&2
+  cat "$tmpdir/const-chunk-prefix-none.out" >&2
+  fail=1
+fi
+if ! python3 scripts/storm-const-chunk-prefix-ledger.py \
+  --arith-source "$tmpdir/const-chunk-demo-arith.rs" \
+  --contexts "$tmpdir/const-chunk-demo-contexts.tsv" \
+  --binding-calls 10,12 \
+  --summary-out "$tmpdir/const-chunk-prefix-binding.tsv" >"$tmpdir/const-chunk-prefix-binding.out" 2>"$tmpdir/const-chunk-prefix-binding.err"; then
+  printf 'public_harness_check=fail const_chunk_prefix_binding_failed\n' >&2
+  cat "$tmpdir/const-chunk-prefix-binding.err" >&2
+  fail=1
+elif ! grep -q 'decision=prefix-binding-candidate' "$tmpdir/const-chunk-prefix-binding.out" ||
+     ! grep -q 'binding_prefix_calls=2' "$tmpdir/const-chunk-prefix-binding.out" ||
+     ! grep -q 'estimated_saved_allocs=4' "$tmpdir/const-chunk-prefix-binding.out" ||
+     ! grep -q 'estimated_delta_toffoli=-4' "$tmpdir/const-chunk-prefix-binding.out"; then
+  printf 'public_harness_check=fail const_chunk_prefix_binding_decision\n' >&2
+  cat "$tmpdir/const-chunk-prefix-binding.out" >&2
   fail=1
 fi
 
