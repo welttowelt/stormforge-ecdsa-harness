@@ -99,6 +99,12 @@ awk -v route="$route" \
     if (list == "") return item;
     return list "," item;
   }
+  {
+    tlm_pos = index($0, "TLM_");
+    if (tlm_pos > 1) {
+      $0 = substr($0, tlm_pos);
+    }
+  }
   /^TLM_PROFILE / {
     profile_rows++;
     phase = field("peak_phase");
@@ -167,13 +173,33 @@ awk -v route="$route" \
       if (cert != "" || truthy(status)) {
         cert_count++;
       }
+      active_text = field("active");
+      tape_text = field("tape");
+      pending_text = field("pending");
+      codec = field("codec");
+      if (active_text != "" || tape_text != "" || pending_text != "") {
+        overlap_tape_matches++;
+        active = active_text + 0;
+        tape = tape_text + 0;
+        pending = pending_text + 0;
+        if (active > max_tape_active) {
+          max_tape_active = active;
+          max_tape_line = sprintf("i=%s active=%d tape=%d pending=%d codec=%s phase=%s source=overlap_check",
+            iter, active, tape, pending, codec, phase);
+        }
+        if (tape > max_tape) max_tape = tape;
+        if (pending > max_pending) max_pending = pending;
+        if (active > target_q) tape_above++;
+        tape_iters = append(tape_iters, iter);
+      }
       evidence_lines = append(evidence_lines,
         sprintf("candidate=%s i=%s reads=%s restore=%s phase=%s cert=%s status=%s",
           cand, iter, reads, restore, phase_proof, cert, status));
     }
   }
   END {
-    if (tape_matches == 0) {
+    effective_tape_matches = tape_matches + overlap_tape_matches;
+    if (effective_tape_matches == 0) {
       decision = "missing-tape-overlap-trace";
       next_step = "capture TLM_TAPE/TLM_TAIL rows around the fold before editing solver code";
     } else if (evidence == 0) {
@@ -211,8 +237,8 @@ awk -v route="$route" \
     printf "- Target phase: %s\n", target_phase;
     printf "- Target iter: %s\n", target_i;
     printf "- Peak profile: %s\n", profile_text;
-    printf "- Tape overlap: rows=%d above_target=%d max={%s} max_tape=%d max_pending=%d iters=%s\n",
-      tape_matches, tape_above, max_tape_text, max_tape, max_pending, tape_iters_text;
+    printf "- Tape overlap: rows=%d direct_rows=%d overlap_rows=%d above_target=%d max={%s} max_tape=%d max_pending=%d iters=%s\n",
+      effective_tape_matches, tape_matches, overlap_tape_matches, tape_above, max_tape_text, max_tape, max_pending, tape_iters_text;
     printf "- Evidence rows: %d details=%s\n", evidence, evidence_text;
     printf "- Decision: %s\n", decision;
     printf "- Next: %s\n", next_step;
