@@ -545,6 +545,31 @@ SOURCE_HASH_SITE_CLASSIFIERS: dict[tuple[str, int, str], dict[str, str]] = {
         "witness": "swp=1,x_reg[j]=0,y_reg[j]=1 swaps to 1,0 during inverse restoration; omission leaves the old coordinate order",
         "restoration_obligation": "inverse apply swap rows are required to restore x/y register order",
     },
+    ("arith.rs", 563, "324e34afb8598e19"): {
+        "primitive_family": "hybrid_plain_carry_live",
+        "support_domain": "source-hash-bound hybrid_add_plain carry row",
+        "falsifier_template": "choose a reached plain-add row with a[i]=1 and b[i]=1",
+        "witness": "a[i]=1,b[i]=1 toggles the carry target for the row; omission loses the carry and changes the later sum",
+    },
+    ("comparator.rs", 68, "e2d291034f536196"): {
+        "primitive_family": "comparator_top_carry_live",
+        "support_domain": "source-hash-bound compare_geq_chunked_middle held top carry",
+        "falsifier_template": "choose folded controls a[i]=1 and b[i]=1 after the carry-in CX folds",
+        "witness": "after ci folds, a[i]=1,b[i]=1 toggles the next comparator carry; omission loses the comparison predicate",
+    },
+    ("square.rs", 154, "5db1c7a68cd9a333"): {
+        "primitive_family": "square_cross_live",
+        "support_domain": "source-hash-bound symmetric square off-diagonal cross product",
+        "falsifier_template": "set the two source square bits to 1",
+        "witness": "x[i]=1,x[i+1+k]=1 toggles row[k+2]; omission drops an off-diagonal square product",
+    },
+    ("square.rs", 183, "dfd7339142550728"): {
+        "primitive_family": "square_cross_reverse_live",
+        "support_domain": "source-hash-bound reverse symmetric square cross rebuild",
+        "falsifier_template": "start from a valid product row whose cross term is 1",
+        "witness": "x[i]=1,x[i+1+k]=1 must rebuild row[k+2] before subtracting the row; omission leaves prod dirty",
+        "restoration_obligation": "reverse square rows are required to drain the product register",
+    },
 }
 
 
