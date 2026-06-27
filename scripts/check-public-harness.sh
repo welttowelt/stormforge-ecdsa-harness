@@ -264,6 +264,37 @@ elif ! grep -q 'certified=0 unknown=1 counterexample=2' "$tmpdir/support.out"; t
   fail=1
 fi
 
+printf '%s\n' \
+  'rank	count	kind	file	line	context	first_idx	last_idx' \
+  '1	2	CCX	src/point_add/trailmix_ludicrous/gcd.rs	1246	0x12002a07	10	20' \
+  '2	3	CCX	src/point_add/trailmix_ludicrous/comparator.rs	864	0x13000102	30	40' \
+  > "$tmpdir/context-sites.tsv"
+if ! python3 scripts/storm-exact-miner.py trace-facts \
+  --input "$tmpdir/context-sites.tsv" \
+  --frontier fixture-frontier/demo-source \
+  --source-base public-demo-source \
+  --stream-hash context-site-demo \
+  --out "$tmpdir/context-facts.jsonl" >"$tmpdir/context-trace.out" 2>"$tmpdir/context-trace.err"; then
+  printf 'public_harness_check=fail exact_miner_context_trace_failed\n' >&2
+  cat "$tmpdir/context-trace.err" >&2
+  fail=1
+elif ! grep -q 'gcd_reverse_cswap' "$tmpdir/context-facts.jsonl" \
+  || ! grep -q 'compare_cin_carry' "$tmpdir/context-facts.jsonl"; then
+  printf 'public_harness_check=fail exact_miner_context_decode\n' >&2
+  cat "$tmpdir/context-facts.jsonl" >&2
+  fail=1
+elif ! python3 scripts/storm-exact-miner.py support-check \
+  --facts "$tmpdir/context-facts.jsonl" \
+  --out "$tmpdir/context-support.jsonl" >"$tmpdir/context-support.out" 2>"$tmpdir/context-support.err"; then
+  printf 'public_harness_check=fail exact_miner_context_support_failed\n' >&2
+  cat "$tmpdir/context-support.err" >&2
+  fail=1
+elif ! grep -q 'certified=0 unknown=0 counterexample=2' "$tmpdir/context-support.out"; then
+  printf 'public_harness_check=fail exact_miner_context_support_counts\n' >&2
+  cat "$tmpdir/context-support.out" >&2
+  fail=1
+fi
+
 if [ "$fail" -ne 0 ]; then
   exit 1
 fi

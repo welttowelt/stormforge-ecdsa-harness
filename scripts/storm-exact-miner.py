@@ -327,16 +327,31 @@ TRACE_CONTEXT_FAMILIES: dict[int, str] = {
     0x0100_0000: "ffg_prefix_carry",
     0x0200_0000: "cuccaro_forward_carry",
     0x0300_0000: "cuccaro_reverse_carry",
+    0x0400_0000: "comparator_top_carry",
     0x0500_0000: "gidney_thread_forward_carry",
     0x0600_0000: "gidney_thread_boundary_carry",
     0x0700_0000: "gidney_thread_sum",
+    0x0800_0000: "const_chunk_carry",
     0x0900_0000: "gidney_erase_ccz",
     0x0A00_0000: "gidney_erase_capped_ccz",
+    0x0B00_0000: "gcd_right_shift_cswap",
+    0x0C00_0000: "gcd_left_shift_cswap",
+    0x0D00_0000: "fused_clean_fold_carry",
+    0x0E00_0000: "fused_chunk_fold_carry",
+    0x0F00_0000: "fused_dirty_fold_carry",
+    0x1000_0000: "fused_clean_window_carry",
+    0x1100_0000: "add_const_carry",
+    0x1200_0000: "gcd_reverse_cswap",
+    0x1300_0000: "compare_cin_carry",
+    0x1400_0000: "fused_cdouble_shift",
+    0x1500_0000: "fused_cdouble_reverse_shift",
     0x1600_0000: "gidney_hybrid_forward_carry",
     0x1700_0000: "gidney_hybrid_sum",
     0x1800_0000: "gidney_hybrid_dirty_uncompute",
     0x1900_0000: "gidney_hybrid_uncompute",
     0x1A00_0000: "gidney_hybrid_low_sum",
+    0x1B00_0000: "gcd_forward_cswap",
+    0x1C00_0000: "fused_boundary_zero_carry",
 }
 
 
@@ -567,6 +582,62 @@ def classify_trace_context(context_info: dict[str, Any]) -> dict[str, str]:
     call = context_info.get("trace_context_call", "")
     bit = context_info.get("trace_context_bit", "")
     label = f"decoded call={call} bit={bit}"
+    if family in {
+        "ffg_prefix_carry",
+        "cuccaro_forward_carry",
+        "comparator_top_carry",
+        "const_chunk_carry",
+        "fused_clean_fold_carry",
+        "fused_chunk_fold_carry",
+        "fused_clean_window_carry",
+        "add_const_carry",
+        "compare_cin_carry",
+        "fused_boundary_zero_carry",
+    }:
+        return {
+            "primitive_family": f"{family}_live",
+            "support_domain": f"carry creation at {label}",
+            "falsifier_template": "choose local inputs where both carry controls are 1",
+            "witness": f"{label}; both carry controls set toggles the next carry target",
+        }
+    if family in {"cuccaro_reverse_carry"}:
+        return {
+            "primitive_family": f"{family}_live",
+            "support_domain": f"carry uncompute at {label}",
+            "falsifier_template": "start from a live forward carry and skip its reverse carry row",
+            "witness": f"{label}; reverse CCX is required to restore the carry lane",
+            "restoration_obligation": "skipping leaves carry scratch dirty",
+        }
+    if family == "fused_dirty_fold_carry":
+        return {
+            "primitive_family": "fused_dirty_fold_carry_live",
+            "support_domain": f"dirty borrowed fold carry at {label}",
+            "falsifier_template": "choose local fold inputs where carry and addend parity both fire",
+            "witness": f"{label}; the dirty carry copy changes when the CCX is omitted",
+            "restoration_obligation": "skipping breaks the borrowed carry restoration path",
+        }
+    if family in {
+        "gcd_right_shift_cswap",
+        "gcd_left_shift_cswap",
+        "gcd_forward_cswap",
+        "gcd_reverse_cswap",
+        "fused_cdouble_shift",
+        "fused_cdouble_reverse_shift",
+    }:
+        restoration = (
+            "reverse shift/swap row is required to restore the inverse schedule"
+            if "reverse" in family or "left" in family
+            else ""
+        )
+        result = {
+            "primitive_family": f"{family}_live",
+            "support_domain": f"controlled swap/shift at {label}",
+            "falsifier_template": "set the control to 1 and choose adjacent or paired bits unequal",
+            "witness": f"{label}; ctrl=1 with unequal inputs changes the swapped registers",
+        }
+        if restoration:
+            result["restoration_obligation"] = restoration
+        return result
     if family in {"gidney_thread_forward_carry", "gidney_hybrid_forward_carry"}:
         return {
             "primitive_family": f"{family}_live",

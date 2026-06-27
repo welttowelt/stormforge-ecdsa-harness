@@ -75,6 +75,12 @@ adder and HMR erase paths separate in the NACK ledger, and lets the support
 checker close generic-live carry/sum/phase rows without hardcoding every
 callsite.
 
+The same context decoding covers generic-live GCD shift/cswap rows, comparator
+carry rows, constant-chunk carries, and fused-fold carries. Those rows are
+closed as source counterexamples unless a later packet supplies a route-specific
+public support certificate; decoded context is identity/provenance, not a clean
+skip proof.
+
 For proof-routing runs, insert the support checker and ledger:
 
 ```bash
