@@ -590,6 +590,13 @@ SOURCE_HASH_SITE_CLASSIFIERS: dict[tuple[str, int, str], dict[str, str]] = {
         "witness": "a[i]=1 and cin_ref=1 toggles cout_ref; omission loses the const-chunk carry into later sum/cleanup",
         "restoration_obligation": "the carry target is consumed by subsequent HMR/reset and reverse cleanup",
     },
+    ("arith.rs", 1087, "0fc7492380703c0e"): {
+        "primitive_family": "const_chunk_carry_live",
+        "support_domain": "source-hash-bound const-chunk carry creation context row",
+        "falsifier_template": "choose a reached const-chunk row with a[i]=1 and incoming carry cin_ref=1",
+        "witness": "line 1087 binds the const-chunk carry context for the following ccx; a[i]=1 and cin_ref=1 toggles cout_ref, so omission loses the carry",
+        "restoration_obligation": "the carry target is consumed by subsequent HMR/reset and reverse cleanup",
+    },
     ("comparator.rs", 68, "e2d291034f536196"): {
         "primitive_family": "comparator_top_carry_live",
         "support_domain": "source-hash-bound compare_geq_chunked_middle held top carry",
