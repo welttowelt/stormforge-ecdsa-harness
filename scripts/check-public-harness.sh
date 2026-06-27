@@ -295,6 +295,28 @@ elif ! grep -q 'certified=0 unknown=0 counterexample=2' "$tmpdir/context-support
   fail=1
 fi
 
+printf '%s\n' \
+  '{"frontier":"fixture-frontier/demo-source","source_base":"public-demo-source","stream_hash":"context-cert-demo","op_id":"context-cert","source_location":"src/point_add/trailmix_ludicrous/gidney.rs:1233","context":"0x05002a07","op_class":"ccx","executed_weight":1,"support_status":"CERTIFIED","support_certificate":"public route-specific certificate"}' \
+  > "$tmpdir/context-cert.jsonl"
+if ! python3 scripts/storm-exact-miner.py trace-facts \
+  --input "$tmpdir/context-cert.jsonl" \
+  --out "$tmpdir/context-cert-facts.jsonl" >"$tmpdir/context-cert-trace.out" 2>"$tmpdir/context-cert-trace.err"; then
+  printf 'public_harness_check=fail exact_miner_context_cert_trace_failed\n' >&2
+  cat "$tmpdir/context-cert-trace.err" >&2
+  fail=1
+elif ! python3 scripts/storm-exact-miner.py support-check \
+  --facts "$tmpdir/context-cert-facts.jsonl" \
+  --out "$tmpdir/context-cert-support.jsonl" >"$tmpdir/context-cert-support.out" 2>"$tmpdir/context-cert-support.err"; then
+  printf 'public_harness_check=fail exact_miner_context_cert_support_failed\n' >&2
+  cat "$tmpdir/context-cert-support.err" >&2
+  fail=1
+elif ! grep -q 'certified=1 unknown=0 counterexample=0' "$tmpdir/context-cert-support.out"; then
+  printf 'public_harness_check=fail exact_miner_context_cert_support_counts\n' >&2
+  cat "$tmpdir/context-cert-support.out" >&2
+  cat "$tmpdir/context-cert-support.jsonl" >&2
+  fail=1
+fi
+
 if [ "$fail" -ne 0 ]; then
   exit 1
 fi

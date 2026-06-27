@@ -800,7 +800,11 @@ def support_result_for_fact(fact: dict[str, Any]) -> dict[str, str]:
     family = str(fact.get("primitive_family", "") or "").strip()
     certificate = str(fact.get("support_certificate", "") or "").strip()
 
-    if has_source_counterexample(fact):
+    if preset == "CERTIFIED" and certificate:
+        status = "CERTIFIED"
+        method = method or "external_support_certificate"
+        note = note or "public support certificate supplied by input fact"
+    elif has_source_counterexample(fact):
         status = "COUNTEREXAMPLE"
         method = "source_support_enum"
         note = "source witness falsifies this omission"
@@ -830,10 +834,6 @@ def support_result_for_fact(fact: dict[str, Any]) -> dict[str, str]:
         status = "CERTIFIED"
         method = "support_certificate"
         note = "public support certificate supplied for fixed-control or dead-target fact"
-    elif preset == "CERTIFIED" and certificate:
-        status = "CERTIFIED"
-        method = method or "external_support_certificate"
-        note = note or "public support certificate supplied by input fact"
     elif preset == "CERTIFIED":
         status = "UNKNOWN"
         method = method or "manual_source_invariant"
@@ -941,14 +941,14 @@ def has_source_counterexample(fact: dict[str, Any]) -> bool:
 
 def source_site_backlog_candidate(fact: dict[str, Any]) -> dict[str, Any]:
     support_status = status_field(fact.get("support_status", ""))
-    if has_source_counterexample(fact) or (
+    if support_status == "CERTIFIED" and fact.get("support_certificate"):
+        proof_kind = "support_certificate"
+        reason = "source-site-support-certified"
+    elif has_source_counterexample(fact) or (
         support_status == "COUNTEREXAMPLE" and has_counterexample_evidence(fact)
     ):
         proof_kind = "source_counterexample"
         reason = "source-site-counterexample"
-    elif support_status == "CERTIFIED" and fact.get("support_certificate"):
-        proof_kind = "support_certificate"
-        reason = "source-site-support-certified"
     else:
         proof_kind = "manual_source_invariant"
         reason = "source-site-proof-backlog"
