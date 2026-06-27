@@ -552,6 +552,13 @@ SOURCE_HASH_SITE_CLASSIFIERS: dict[tuple[str, int, str], dict[str, str]] = {
         "witness": "s2=1,w[i]=0,w[i-1]=1 swaps to 1,0 during inverse restoration; omission leaves the wrong work view",
         "restoration_obligation": "reverse fused cdouble shift rows are required to restore the shifted work view",
     },
+    ("fused.rs", 987, "79102dddd2f8cab2"): {
+        "primitive_family": "source_context_not_op_site",
+        "support_domain": "source-hash-bound fused LAST_AND lifetime-boundary constant",
+        "falsifier_template": "bind the scout row back to d44cad3 source and raw origin phases before treating the constant as a removable fused-fold CCX",
+        "witness": "d44cad3 fused.rs:987 is `const LAST_AND: usize = 11`, not a circuit emission site; live derived-control CCX rows are emitted later in add_mf_fold_clean_tail and remain required",
+        "restoration_obligation": "LAST_AND bounds cleanup/lifetime scheduling for derived controls rather than providing a droppable operation",
+    },
     ("gcd.rs", 1591, "7b33ab8a221f932f"): {
         "primitive_family": "apply_cswap_live",
         "support_domain": "source-hash-bound apply_step_forward coordinate cswap",
@@ -564,6 +571,13 @@ SOURCE_HASH_SITE_CLASSIFIERS: dict[tuple[str, int, str], dict[str, str]] = {
         "falsifier_template": "choose a reached inverse apply row with swp=1 and x_reg[j] != y_reg[j]",
         "witness": "swp=1,x_reg[j]=0,y_reg[j]=1 swaps to 1,0 during inverse restoration; omission leaves the old coordinate order",
         "restoration_obligation": "inverse apply swap rows are required to restore x/y register order",
+    },
+    ("gcd.rs", 750, "d541def583011a3e"): {
+        "primitive_family": "gcd_mod_double_source_context",
+        "support_domain": "source-hash-bound controlled_mod_double context row with dirty-tree line drift",
+        "falsifier_template": "bind the scout row back to clean d44cad3 source before treating it as a removable GCD/mod-double CCX",
+        "witness": "clean d44cad3 gcd.rs:750 is a comment before the controlled_mod_double add-f call, not an emitted gate; dirty lower-q local line 750 is a live reverse overflow-rebuild CCX where ctrl=1 and a[0]=1 toggles ovf",
+        "restoration_obligation": "the reverse overflow bit gates inverse subtract-f restoration in controlled_mod_double_reverse",
     },
     ("arith.rs", 563, "324e34afb8598e19"): {
         "primitive_family": "hybrid_plain_carry_live",
@@ -584,6 +598,12 @@ SOURCE_HASH_SITE_CLASSIFIERS: dict[tuple[str, int, str], dict[str, str]] = {
         "falsifier_template": "choose a reached fused fold row with y[i]=1 and incoming carry ci=1",
         "witness": "line 194 toggles the next carry when y[i]=1 and ci=1; omission loses the carry through the fused fold chain",
         "restoration_obligation": "the carry is consumed by later inline sums and reverse fold cleanup",
+    },
+    ("arith.rs", 262, "5885ef471d3da0d9"): {
+        "primitive_family": "table_origin_not_op_site",
+        "support_domain": "source-hash-bound CONST_CHUNK_DEAD_RANGES table-origin row",
+        "falsifier_template": "bind the scout row back to d44cad3 source and raw origin phases before treating it as a removable const-chunk CCX",
+        "witness": "d44cad3 arith.rs:262 is static CONST_CHUNK_DEAD_RANGES data `(879, 0, 9)`, while origin rows are kept arithmetic CCX operations; no executable source-hook exists here",
     },
     ("arith.rs", 274, "72d7ae23d4404ca9"): {
         "primitive_family": "table_origin_not_op_site",
@@ -624,6 +644,20 @@ SOURCE_HASH_SITE_CLASSIFIERS: dict[tuple[str, int, str], dict[str, str]] = {
         "witness": "line 1087 binds the const-chunk carry context for the following ccx; a[i]=1 and cin_ref=1 toggles cout_ref, so omission loses the carry",
         "restoration_obligation": "the carry target is consumed by subsequent HMR/reset and reverse cleanup",
     },
+    ("arith.rs", 2949, "ebc3d55796151155"): {
+        "primitive_family": "const_window_carry_live",
+        "support_domain": "source-hash-bound add_const_window_clean carry-chain context row",
+        "falsifier_template": "choose a reached constant-window row with previous carry cy_i=1 and folded a[i]^cy_i=1",
+        "witness": "line 2949 binds add_const_window_clean; the mapped origin rows are live forward carry CCX operations at line 2972. For c_i=0, cy_i=1, and a_i=0, the local folds make ta=1 and tb=1, toggling next carry; omission loses carry_{i+1}",
+        "phase_obligation": "reverse HMR cleanup later discharges the measured carry phase with cz_if_bit",
+        "restoration_obligation": "the carry is consumed by the top-bit sum and then measured/zeroed during reverse cleanup",
+    },
+    ("fused.rs", 471, "1c6dc8a1b9f162e9"): {
+        "primitive_family": "table_origin_not_op_site",
+        "support_domain": "source-hash-bound FUSED_CLEAN_FOLD_DEAD_RANGES table-origin row",
+        "falsifier_template": "bind the scout row back to d44cad3 source and raw origin phases before treating it as a removable fused-fold CCX",
+        "witness": "d44cad3 fused.rs:471 is static FUSED_CLEAN_FOLD_DEAD_RANGES data `(23, 31, 31)`, while origin rows are kept fused-fold CCX operations; no executable source-hook exists here",
+    },
     ("arith.rs", 1139, "0d02314f3d7bd53b"): {
         "primitive_family": "const_chunk_drop_cout_phase_live",
         "support_domain": "source-hash-bound const_chunk_add_clean_drop_cout HMR phase correction",
@@ -644,6 +678,20 @@ SOURCE_HASH_SITE_CLASSIFIERS: dict[tuple[str, int, str], dict[str, str]] = {
         "falsifier_template": "choose a reached chunk-boundary erase row with carry=1 and erase controls set",
         "witness": "line 799 enters the reverse boundary-erase loop; raw rows are kept erase_carry_gated_opt CCX operations, and controls=1 toggles the carry/erase predicate",
         "restoration_obligation": "skipping leaves chunk boundary carry cleanup and phase discharge incorrect",
+    },
+    ("codec.rs", 546, "b416ac85b613263a"): {
+        "primitive_family": "codec_step0_source_map_mismatch",
+        "support_domain": "source-hash-bound Step0 codec row does not bind to an executable clean d44cad3 source hook",
+        "falsifier_template": "bind the scout row to clean d44cad3 before treating it as a removable codec CCX",
+        "witness": "clean d44cad3 codec.rs:546 is blank, while the dirty lower-q worktree has a live compress_step0_with_t1 CCX at that local line; with t1=s2=1 the dirty-row CCX toggles sub, so neither binding licenses an exact skip",
+        "restoration_obligation": "Step0 codec compression must preserve the two-bit code used by later decompression",
+    },
+    ("codec.rs", 561, "89ff43160a3a5b7b"): {
+        "primitive_family": "codec_step0_source_map_mismatch",
+        "support_domain": "source-hash-bound Step0 codec row does not bind to an executable clean d44cad3 source hook",
+        "falsifier_template": "bind the scout row to clean d44cad3 before treating it as a removable codec CCX",
+        "witness": "clean d44cad3 codec.rs has only 556 lines, while the dirty lower-q worktree has a live decompress_step0_with_t1 CCX at local line 561; with t1=s2=1 the dirty-row CCX rebuilds sub, so neither binding licenses an exact skip",
+        "restoration_obligation": "Step0 codec decompression must rebuild the raw symbol slots for inverse dialog restoration",
     },
     ("codec.rs", 304, "011131e1db1721fe"): {
         "primitive_family": "dialog_codec_normalizer_live",
