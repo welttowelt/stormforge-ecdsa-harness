@@ -24,6 +24,30 @@ Local peak relief is not a candidate. A route must lower the scored qubit tier,
 reduce emitted/average Toffoli at the same tier, or produce a clean residual
 that beats the refreshed frontier.
 
+## Best-Converter Ranking
+
+Use this ranking when triaging fleet work from recent d44/q1152 cycles:
+
+1. **Exact-support NACK ledger.** Convert static-skip and carry-omission ideas
+   into `CERTIFIED`, `UNKNOWN`, or `COUNTEREXAMPLE` packets before compute.
+   Counterexamples are durable fleet wins because they block repeated scans on
+   the same live row.
+2. **Wall census before hooks.** A local q relief that does not move every
+   co-resident q1152 family is not a route. Census register, clean, fold,
+   square, comparator, and GCD owners before writing source code.
+3. **Trusted eval after count edge.** Emitted-op or static-CCX savings are only
+   an invitation to falsify. Dense classical mismatches or broad phase batches
+   convert a tempting count edge into a NACK.
+4. **Active-volume and threshold gate.** q-lowering rows still need below-target
+   average Toffoli and clean output. If a candidate family has no above-target
+   rows in the trace, do not spend source-edit or fleet time on it as a peak cut.
+5. **Nonce search only after value proof.** If failures are dense across shots
+   or move with nonce, stop rerolling. Improve the invariant, not the patience.
+
+The most useful reusable result is often a negative artifact: a source-hash-bound
+NACK, wall map, or active-volume ledger that prevents many workers from burning
+cycles on the same false edge.
+
 ## Protocol
 
 1. Refresh the frontier and source base. Record score, qubits, Toffoli, source
@@ -39,18 +63,24 @@ that beats the refreshed frontier.
    square/body, clean carry floor, allocator watermark, or exact static family.
    A route that relieves only one below-score shelf is a NACK unless it also
    lowers the official count or score.
-6. For dirty-host or borrowed-host ideas, run proof before source hooks:
+6. Before compute for exact/static trims, run the exact-support miner or an
+   equivalent source-hash-bound certificate. Emit the NACK ledger even when no
+   candidate survives.
+7. For dirty-host or borrowed-host ideas, run proof before source hooks:
    candidate id, width, call family, dirty hosts required, clean hosts saved,
    extra CCX estimate, `restore_proof`, `phase_proof`, and `ancilla_proof`.
-7. Run source/trace census before a hook. Report available qids, whether the
+8. Run source/trace census before a hook. Report available qids, whether the
    host is read during the protected fold, required host width, predicted clean
    host savings, extra CCX, and expected wall movement.
-8. Screen count with a default-off knob. Parse emitted ops, qubits, static
+9. Screen count with a default-off knob. Parse emitted ops, qubits, static
    Toffoli/CCX, and peak location. Do not run trusted eval for count-neutral or
    count-worse variants unless the evaluator is the falsifier.
-9. If a q-tier or same-tier count edge exists, run trusted eval. Record
+10. If a q-tier or same-tier count edge exists, run trusted eval. Record
    classical, phase, and ancilla failures plus a short failure sample shape.
-10. Restore the baseline artifact before leaving the worktree. Post the result
+11. For q-lowering, run route-threshold arithmetic before promotion: target q,
+    average Toffoli threshold, static CCX, route-compare cleanliness, residual
+    plan, and whether the source family actually owns above-target active rows.
+12. Restore the baseline artifact before leaving the worktree. Post the result
     as ACK, PARTIAL, NACK, or CANDIDATE with artifact names and no private raw
     logs.
 
@@ -65,13 +95,21 @@ that beats the refreshed frontier.
 - Count-positive but dirty: a static skip that saves emitted ops or CCX is still
   `Prefilter` until trusted eval is clean. Broad classical mismatches or phase
   batches make it a NACK, not a near-win.
+- q-lower but too expensive: a lower-qubit route that misses the q-tier Toffoli
+  threshold or has route-compare failures is diagnostic only.
+- Active-volume miss: if a lifetime/uncompute family has zero above-target rows,
+  it can help diagnostics or count work, but it is not the next peak-cut lane.
+- Dense nonce failure: if failure counts stay broad across rerolled nonces, the
+  route has a value/phase problem. Do not send it to blind fleet search.
 - Repeated parameter sweeps: if variants share one failed assumption, stop and
   invert the assumption instead of widening the grid.
 
 Recent production pattern to preserve: dirty fold suffix work lowered local
 fold pressure but stayed q1152 and count-worse; tape-host census proved host
-supply but not a score edge; one GCD top-zero static skip saved count but failed
-trusted eval. The reusable result is the gate, not those knobs.
+supply but not a score edge; Gidney top2 skips saved roughly 18k CCX but failed
+every trusted shot; fused fold and square static-trim rows produced reusable
+counterexample ledger entries; FFG lifetime rows were already below target peak.
+The reusable result is the gate, not those knobs.
 
 ## Output
 
