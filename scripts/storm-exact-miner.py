@@ -359,11 +359,24 @@ SITE_CLASSIFIERS: dict[tuple[str, int], dict[str, str]] = {
         "falsifier_template": "set the two carry controls to 1",
         "witness": "c1=c2=1 toggles the fold carry target",
     },
+    ("fused.rs", 1943): {
+        "primitive_family": "fused_cdouble_shift_live",
+        "support_domain": "forward fused double+controlled-double s2 shift row",
+        "falsifier_template": "set s2=1 and choose adjacent work-view bits unequal",
+        "witness": "s2=1 with w[i]=1,w[i-1]=0 changes the fused cdouble shift; omission leaves the old order",
+    },
     ("fused.rs", 1990): {
         "primitive_family": "fold_s2_y1_live",
         "support_domain": "inverse cdouble fold d=s2&y1",
         "falsifier_template": "set s2=1 and y1=1",
         "witness": "s2=y1=1 sets d=1",
+    },
+    ("fused.rs", 2008): {
+        "primitive_family": "fused_cdouble_reverse_shift_live",
+        "support_domain": "reverse fused double+controlled-double s2 shift row",
+        "falsifier_template": "set s2=1 and choose adjacent work-view bits unequal",
+        "witness": "s2=1 with w[i]=0,w[i-1]=1 changes the reverse fused cdouble shift; omission breaks inverse restoration",
+        "restoration_obligation": "reverse fused cdouble shift rows are required to restore the work-view order",
     },
 }
 
