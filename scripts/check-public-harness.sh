@@ -835,6 +835,11 @@ rank	count	kind	file	line	context	source_hash
 41	514	CCX	src/point_add/trailmix_ludicrous/comparator.rs	158	none	471606852bc5024a
 42	512	CCX	src/point_add/trailmix_ludicrous/gcd.rs	734	none	04ff46f341beed08
 43	512	CCX	src/point_add/trailmix_ludicrous/gcd.rs	762	none	d11d7bb4ae684f23
+44	512	CCX	src/point_add/trailmix_ludicrous/gidney.rs	186	none	5890f18abd5d147c
+45	502	CCX	src/point_add/trailmix_ludicrous/gidney.rs	179	none	3c978d43c3f08159
+46	502	CCX	src/point_add/trailmix_ludicrous/gidney.rs	203	none	3c978d43c3f08159
+47	10	CCX	src/point_add/trailmix_ludicrous/gidney.rs	174	none	388916ff50ef6e31
+48	2	CCX	src/point_add/trailmix_ludicrous/gidney.rs	211	none	ed611a6fdf670876
 EOF
 if ! python3 scripts/storm-exact-miner.py trace-facts \
   --input "$tmpdir/source-hash-bound-scout.tsv" \
@@ -851,7 +856,7 @@ elif ! python3 scripts/storm-exact-miner.py support-check \
   printf 'public_harness_check=fail source_hash_bound_scout_support_failed\n' >&2
   cat "$tmpdir/source-hash-bound-scout-supported.err" >&2
   fail=1
-elif ! grep -q 'counterexample=43' "$tmpdir/source-hash-bound-scout-supported.out" ||
+elif ! grep -q 'counterexample=48' "$tmpdir/source-hash-bound-scout-supported.out" ||
      ! grep -q 'unknown=0' "$tmpdir/source-hash-bound-scout-supported.out"; then
   printf 'public_harness_check=fail source_hash_bound_scout_support_counts\n' >&2
   cat "$tmpdir/source-hash-bound-scout-supported.out" >&2

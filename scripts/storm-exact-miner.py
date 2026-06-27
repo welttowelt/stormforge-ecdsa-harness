@@ -661,6 +661,36 @@ SOURCE_HASH_SITE_CLASSIFIERS: dict[tuple[str, int, str], dict[str, str]] = {
         "falsifier_template": "bind the scout row back to d44cad3 source and joined trace rows before treating it as a removable CCX",
         "witness": "d44cad3 gidney.rs:321 is static dead-boundary call-list data (`1334`), while origin rows are kept CCX; no executable source-hook exists at this line",
     },
+    ("gidney.rs", 174, "388916ff50ef6e31"): {
+        "primitive_family": "table_origin_not_op_site",
+        "support_domain": "source-hash-bound GIDNEY_THREAD_SUM_DEAD_RANGES table-origin row",
+        "falsifier_template": "bind the scout row back to d44cad3 source and joined trace rows before treating it as a removable CCX",
+        "witness": "d44cad3 gidney.rs:174 is static GIDNEY_THREAD_SUM_DEAD_RANGES data `(2341, 11, 15)`, while origin rows are kept threaded-sum CCX; no executable source-hook exists at this line",
+    },
+    ("gidney.rs", 179, "3c978d43c3f08159"): {
+        "primitive_family": "table_origin_not_op_site",
+        "support_domain": "source-hash-bound GIDNEY_THREAD_SUM_DEAD_RANGES table-origin row",
+        "falsifier_template": "bind the scout row back to d44cad3 source and joined trace rows before treating it as a removable CCX",
+        "witness": "d44cad3 gidney.rs:179 is static GIDNEY_THREAD_SUM_DEAD_RANGES data `(3007, 12, 16)`, while origin rows are kept threaded-sum CCX; no executable source-hook exists at this line",
+    },
+    ("gidney.rs", 186, "5890f18abd5d147c"): {
+        "primitive_family": "table_origin_not_op_site",
+        "support_domain": "source-hash-bound GIDNEY_THREAD_SUM_DEAD_RANGES table-origin row",
+        "falsifier_template": "bind the scout row back to d44cad3 source and joined trace rows before treating it as a removable CCX",
+        "witness": "d44cad3 gidney.rs:186 is static GIDNEY_THREAD_SUM_DEAD_RANGES data `(2358, 29, 32)`, while origin rows are kept threaded-sum CCX; no executable source-hook exists at this line",
+    },
+    ("gidney.rs", 203, "3c978d43c3f08159"): {
+        "primitive_family": "table_origin_not_op_site",
+        "support_domain": "source-hash-bound GIDNEY_THREAD_SUM_DEAD_RANGES table-origin row",
+        "falsifier_template": "bind the scout row back to d44cad3 source and joined trace rows before treating it as a removable CCX",
+        "witness": "d44cad3 gidney.rs:203 is static GIDNEY_THREAD_SUM_DEAD_RANGES data `(74, 54, 57)`, while origin rows are kept threaded-sum CCX; no executable source-hook exists at this line",
+    },
+    ("gidney.rs", 211, "ed611a6fdf670876"): {
+        "primitive_family": "table_origin_not_op_site",
+        "support_domain": "source-hash-bound GIDNEY_THREAD_SUM_DEAD_RANGES table-origin row",
+        "falsifier_template": "bind the scout row back to d44cad3 source and joined trace rows before treating it as a removable CCX",
+        "witness": "d44cad3 gidney.rs:211 is static GIDNEY_THREAD_SUM_DEAD_RANGES data `(122, 51, 53)`, while origin rows are kept threaded-sum CCX; no executable source-hook exists at this line",
+    },
     ("fused.rs", 486, "8b76aa5ce391d117"): {
         "primitive_family": "table_origin_not_op_site",
         "support_domain": "source-hash-bound FUSED_CLEAN_FOLD_DEAD_RANGES table-origin row",
