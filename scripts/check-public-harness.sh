@@ -59,6 +59,7 @@ for path in \
   scripts/storm-windowed-carry-toy.py \
   scripts/storm-const-chunk-prefix-ledger.py \
   scripts/storm-q1152-binder-ledger.py \
+  scripts/storm-mcx-incrementer-budget.py \
   examples/audit-card.example.md \
   examples/operator-card.example.md \
   examples/mailbox-entry.example.md \
@@ -219,6 +220,8 @@ need_text scripts/storm-gidney-thread-join.py "gidney thread join" "gidney_threa
 need_text scripts/storm-windowed-carry-toy.py "windowed carry toy" "windowed_carry_toy="
 need_text scripts/storm-q1152-binder-ledger.py "q1152 binder ledger" "q1152_binder_ledger=pass"
 need_text scripts/storm-q1152-binder-ledger.py "mcx floor" "none_kg_prefix_ancilla"
+need_text scripts/storm-mcx-incrementer-budget.py "mcx incrementer budget" "mcx_incrementer_budget=pass"
+need_text scripts/storm-mcx-incrementer-budget.py "candidate budget fail" "candidate-budget-fail"
 
 need_text examples/operator-card.example.md "falsifiable decision" "Falsifiable decision"
 need_text examples/audit-card.example.md "rci tony" "RCI/Tony"
@@ -736,6 +739,46 @@ elif ! grep -q 'q1152_binder_ledger=pass' "$tmpdir/q1152-binder.out" ||
   printf 'public_harness_check=fail q1152_binder_ledger_output\n' >&2
   cat "$tmpdir/q1152-binder.out" >&2
   cat "$tmpdir/q1152-binder-summary.tsv" >&2
+  fail=1
+fi
+
+cat >"$tmpdir/mcx-incrementer.trace" <<'EOF'
+TLM_MCX_INC call=170 phase=tlm_apply_forward_mod_add_fold n=10 skip_lsb_x=true anc=3 ops_start=300 ops_end=330
+TLM_MCX_INC call=171 phase=tlm_apply_forward_mod_add_fold n=11 skip_lsb_x=true anc=3 ops_start=400 ops_end=430
+TLM_MCX_INC call=172 phase=tlm_apply_forward_mod_add_fold n=12 skip_lsb_x=true anc=3 ops_start=500 ops_end=530
+EOF
+if ! python3 scripts/storm-mcx-incrementer-budget.py \
+  --trace "$tmpdir/mcx-incrementer.trace" \
+  --break-even-delta 75 \
+  --candidate-extra-per-call 24 \
+  --summary-out "$tmpdir/mcx-incrementer-budget.tsv" >"$tmpdir/mcx-incrementer-budget.out" 2>"$tmpdir/mcx-incrementer-budget.err"; then
+  printf 'public_harness_check=fail mcx_incrementer_budget_failed\n' >&2
+  cat "$tmpdir/mcx-incrementer-budget.err" >&2
+  fail=1
+elif ! grep -q 'mcx_incrementer_budget=pass' "$tmpdir/mcx-incrementer-budget.out" ||
+     ! grep -q 'trace_rows=3' "$tmpdir/mcx-incrementer-budget.out" ||
+     ! grep -q 'total_calls=3' "$tmpdir/mcx-incrementer-budget.out" ||
+     ! grep -q 'current_total_ccx=74' "$tmpdir/mcx-incrementer-budget.out" ||
+     ! grep -q 'candidate_extra_total=72.0' "$tmpdir/mcx-incrementer-budget.out" ||
+     ! grep -q 'decision=candidate-budget-pass' "$tmpdir/mcx-incrementer-budget.out" ||
+     ! grep -q $'10\t1\t3\t21\t21\t7\t7\t2\t11' "$tmpdir/mcx-incrementer-budget.tsv" ||
+     ! grep -q $'12\t1\t3\t29\t29\t10\t9\t2\t13' "$tmpdir/mcx-incrementer-budget.tsv"; then
+  printf 'public_harness_check=fail mcx_incrementer_budget_output\n' >&2
+  cat "$tmpdir/mcx-incrementer-budget.out" >&2
+  cat "$tmpdir/mcx-incrementer-budget.tsv" >&2
+  fail=1
+fi
+if ! python3 scripts/storm-mcx-incrementer-budget.py \
+  --trace "$tmpdir/mcx-incrementer.trace" \
+  --break-even-delta 75 \
+  --candidate-extra-per-call 26 >"$tmpdir/mcx-incrementer-budget-fail.out" 2>"$tmpdir/mcx-incrementer-budget-fail.err"; then
+  printf 'public_harness_check=fail mcx_incrementer_budget_failcase_failed\n' >&2
+  cat "$tmpdir/mcx-incrementer-budget-fail.err" >&2
+  fail=1
+elif ! grep -q 'candidate_extra_total=78.0' "$tmpdir/mcx-incrementer-budget-fail.out" ||
+     ! grep -q 'decision=candidate-budget-fail' "$tmpdir/mcx-incrementer-budget-fail.out"; then
+  printf 'public_harness_check=fail mcx_incrementer_budget_failcase_output\n' >&2
+  cat "$tmpdir/mcx-incrementer-budget-fail.out" >&2
   fail=1
 fi
 cat >"$tmpdir/closed-site-audit.tsv" <<'EOF'
