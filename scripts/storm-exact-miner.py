@@ -551,6 +551,13 @@ SOURCE_HASH_SITE_CLASSIFIERS: dict[tuple[str, int, str], dict[str, str]] = {
         "falsifier_template": "choose a reached plain-add row with a[i]=1 and b[i]=1",
         "witness": "a[i]=1,b[i]=1 toggles the carry target for the row; omission loses the carry and changes the later sum",
     },
+    ("arith.rs", 1331, "dcadba8e31258bc4"): {
+        "primitive_family": "ffg_prefix_carry_live",
+        "support_domain": "source-hash-bound +f hybrid prefix carry row",
+        "falsifier_template": "choose a reached prefix carry row with both carry controls equal to 1",
+        "witness": "ctrl=1,a0=1 toggles cy0, and later prefix rows with a[i]=1,ci=1 toggle next carry; omission loses the +f carry chain",
+        "restoration_obligation": "the prefix carry is consumed by suffix handoff and reverse cleanup",
+    },
     ("comparator.rs", 68, "e2d291034f536196"): {
         "primitive_family": "comparator_top_carry_live",
         "support_domain": "source-hash-bound compare_geq_chunked_middle held top carry",
