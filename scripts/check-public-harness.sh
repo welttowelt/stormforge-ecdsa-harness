@@ -516,12 +516,12 @@ src/point_add/trailmix_ludicrous/comparator.rs	717	comparator_top_carry	CCX	40	f
 src/point_add/trailmix_ludicrous/arith.rs	834	unclassified	CCX	20	fixture-source
 EOF
 cat >"$tmpdir/wall-owner-contexts.tsv" <<'EOF'
-file	line	context_hex	family	call	bit	kind	count	source_hash
-src/point_add/trailmix_ludicrous/gidney.rs	1297	0x07000000	gidney_thread_sum	0	0	CCX	60	fixture-source
-src/point_add/trailmix_ludicrous/gidney.rs	1297	0x07000001	gidney_thread_sum	0	1	CCX	40	fixture-source
-src/point_add/trailmix_ludicrous/gidney.rs	1297	0x07000002	gidney_thread_sum	0	2	CCX	90	changed-source
-src/point_add/trailmix_ludicrous/comparator.rs	717	0x04000000	comparator_top_carry	0	0	CCX	40	fixture-source
-src/point_add/trailmix_ludicrous/arith.rs	834	0x00000000	unclassified	0	0	CCX	20	fixture-source
+source_location	file	line	context_hex	trace_context_value	family	call	bit	kind	count	executed_weight	source_hash
+	src/point_add/trailmix_ludicrous/gidney.rs	1297	0x07000000		gidney_thread_sum	0	0	CCX	60		fixture-source
+src/point_add/trailmix_ludicrous/gidney.rs:1297				0x07000001		0	1	CCX		40	fixture-source
+	src/point_add/trailmix_ludicrous/gidney.rs	1297	0x07000002		gidney_thread_sum	0	2	CCX	90		changed-source
+	src/point_add/trailmix_ludicrous/comparator.rs	717	0x04000000		comparator_top_carry	0	0	CCX	40		fixture-source
+	src/point_add/trailmix_ludicrous/arith.rs	834	0x00000000		unclassified	0	0	CCX	20		fixture-source
 EOF
 if ! python3 scripts/storm-wall-owner-summary.py \
   --contexts "$tmpdir/wall-owner-contexts.tsv" \
