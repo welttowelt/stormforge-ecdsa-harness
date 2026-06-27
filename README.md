@@ -136,6 +136,8 @@ agent instructions or used as a preflight before route work:
   credential, sync/reset, validation, and submit discipline.
 - `skills/stormgate-prefilter.md`: keep prefilter, canary, survivor-label, and
   trusted-validation boundaries explicit.
+- `skills/q1152-structural-core.md`: gate lower-q structural routes on global
+  wall coverage, proof, score economics, count screens, and trusted eval.
 - `skills/paper-gidney-constant-workspace-adder.md`: apply Gidney 2025
   constant-workspace adders only after a toy proof and one-callsite residual
   gate.
