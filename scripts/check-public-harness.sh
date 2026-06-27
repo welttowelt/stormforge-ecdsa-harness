@@ -63,6 +63,7 @@ for path in \
   scripts/storm-square-static-gap-audit.py \
   scripts/storm-single-ccx-fanout-ledger.py \
   scripts/storm-q1152-avgt-theorem.py \
+  scripts/storm-cout-host-row-gate.py \
   examples/audit-card.example.md \
   examples/operator-card.example.md \
   examples/mailbox-entry.example.md \
@@ -233,6 +234,8 @@ need_text scripts/storm-single-ccx-fanout-ledger.py "single ccx fanout ledger" "
 need_text scripts/storm-single-ccx-fanout-ledger.py "trusted eval nack" "trusted-eval-nack"
 need_text scripts/storm-q1152-avgt-theorem.py "q1152 avgT theorem" "q1152_avgt_theorem=pass"
 need_text scripts/storm-q1152-avgt-theorem.py "condition discount" "classical condition"
+need_text scripts/storm-cout-host-row-gate.py "cout host row gate" "cout_host_row_gate=pass"
+need_text scripts/storm-cout-host-row-gate.py "safe host row" "SAFE_HOST_ROW"
 
 need_text examples/operator-card.example.md "falsifiable decision" "Falsifiable decision"
 need_text examples/audit-card.example.md "rci tony" "RCI/Tony"
@@ -930,6 +933,107 @@ elif ! grep -q 'q1152_avgt_theorem=pass' "$tmpdir/q1152-avgt-theorem.out" ||
      ! grep -q 'decision=source-theorem-packet' "$tmpdir/q1152-avgt-theorem.out"; then
   printf 'public_harness_check=fail q1152_avgt_theorem_output\n' >&2
   cat "$tmpdir/q1152-avgt-theorem.out" >&2
+  fail=1
+fi
+
+cat >"$tmpdir/cout-host-row-safe.json" <<'EOF'
+{
+  "host_qid": 9001,
+  "owner_family": "gidney",
+  "owner_call": 5,
+  "owner_bit": 7,
+  "alloc_op": 100,
+  "zero_free_op": 500,
+  "last_write_before_borrow": 180,
+  "borrow_start_op": 200,
+  "borrow_end_op": 260,
+  "owner_reads_or_writes_during_borrow": "no",
+  "owner_touch_ops": "120,180",
+  "disjoint_from_operands": "yes",
+  "operand_qids": "1,2,3,4,5",
+  "chunk_width": 40,
+  "cin_present": "true",
+  "erase_is_inverse": "true"
+}
+EOF
+if ! python3 scripts/storm-cout-host-row-gate.py \
+  --input "$tmpdir/cout-host-row-safe.json" \
+  --summary-out "$tmpdir/cout-host-row-safe.tsv" >"$tmpdir/cout-host-row-safe.out" 2>"$tmpdir/cout-host-row-safe.err"; then
+  printf 'public_harness_check=fail cout_host_row_safe_failed\n' >&2
+  cat "$tmpdir/cout-host-row-safe.err" >&2
+  fail=1
+elif ! grep -q 'safe=1' "$tmpdir/cout-host-row-safe.out" ||
+     ! grep -q 'validator_ready=1' "$tmpdir/cout-host-row-safe.out" ||
+     ! grep -q 'first_result=SAFE_HOST_ROW' "$tmpdir/cout-host-row-safe.out" ||
+     ! grep -q $'1\t9001\tgidney\t5\t7\tSAFE_HOST_ROW\tqid_live_idle_disjoint\t1' "$tmpdir/cout-host-row-safe.tsv"; then
+  printf 'public_harness_check=fail cout_host_row_safe_output\n' >&2
+  cat "$tmpdir/cout-host-row-safe.out" >&2
+  cat "$tmpdir/cout-host-row-safe.tsv" >&2
+  fail=1
+fi
+
+cat >"$tmpdir/cout-host-row-alias.json" <<'EOF'
+{
+  "host_qid": 9001,
+  "owner_family": "gidney",
+  "owner_call": 5,
+  "owner_bit": 7,
+  "alloc_op": 100,
+  "zero_free_op": 500,
+  "last_write_before_borrow": 180,
+  "borrow_start_op": 200,
+  "borrow_end_op": 260,
+  "owner_reads_or_writes_during_borrow": "no",
+  "owner_touch_ops": "120,220",
+  "disjoint_from_operands": "yes",
+  "operand_qids": "1,2,3,4,5",
+  "chunk_width": 40,
+  "cin_present": "true",
+  "erase_is_inverse": "true"
+}
+EOF
+if ! python3 scripts/storm-cout-host-row-gate.py \
+  --input "$tmpdir/cout-host-row-alias.json" >"$tmpdir/cout-host-row-alias.out" 2>"$tmpdir/cout-host-row-alias.err"; then
+  printf 'public_harness_check=fail cout_host_row_alias_failed\n' >&2
+  cat "$tmpdir/cout-host-row-alias.err" >&2
+  fail=1
+elif ! grep -q 'hard_nack_alias=1' "$tmpdir/cout-host-row-alias.out" ||
+     ! grep -q 'first_result=HARD_NACK_ALIAS' "$tmpdir/cout-host-row-alias.out" ||
+     ! grep -q 'first_reason=owner_touch_inside_borrow:220' "$tmpdir/cout-host-row-alias.out"; then
+  printf 'public_harness_check=fail cout_host_row_alias_output\n' >&2
+  cat "$tmpdir/cout-host-row-alias.out" >&2
+  fail=1
+fi
+
+cat >"$tmpdir/cout-host-row-double-free.json" <<'EOF'
+{
+  "host_qid": 9001,
+  "owner_family": "gidney",
+  "owner_call": 5,
+  "owner_bit": 7,
+  "alloc_op": 100,
+  "zero_free_op": 230,
+  "last_write_before_borrow": 180,
+  "borrow_start_op": 200,
+  "borrow_end_op": 260,
+  "owner_reads_or_writes_during_borrow": "no",
+  "owner_touch_ops": "120,180",
+  "disjoint_from_operands": "yes",
+  "operand_qids": "1,2,3,4,5",
+  "chunk_width": 40,
+  "cin_present": "true",
+  "erase_is_inverse": "true"
+}
+EOF
+if ! python3 scripts/storm-cout-host-row-gate.py \
+  --input "$tmpdir/cout-host-row-double-free.json" >"$tmpdir/cout-host-row-double-free.out" 2>"$tmpdir/cout-host-row-double-free.err"; then
+  printf 'public_harness_check=fail cout_host_row_double_free_failed\n' >&2
+  cat "$tmpdir/cout-host-row-double-free.err" >&2
+  fail=1
+elif ! grep -q 'double_free=1' "$tmpdir/cout-host-row-double-free.out" ||
+     ! grep -q 'first_result=DOUBLE_FREE' "$tmpdir/cout-host-row-double-free.out"; then
+  printf 'public_harness_check=fail cout_host_row_double_free_output\n' >&2
+  cat "$tmpdir/cout-host-row-double-free.out" >&2
   fail=1
 fi
 
