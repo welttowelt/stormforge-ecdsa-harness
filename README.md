@@ -140,6 +140,8 @@ agent instructions or used as a preflight before route work:
   trusted-validation boundaries explicit.
 - `skills/q1152-structural-core.md`: gate lower-q structural routes on global
   wall coverage, proof, score economics, count screens, and trusted eval.
+- `skills/construction-package-gate.md`: reject lower-q construction packages
+  that lack q-tier score edge, co-binder coverage, or clean validation status.
 - `skills/paper-gidney-constant-workspace-adder.md`: apply Gidney 2025
   constant-workspace adders only after a toy proof and one-callsite residual
   gate.
@@ -264,8 +266,8 @@ Common call chains:
 - Worker handoff: `multi-agent-handoff` plus whichever route or validation card
   owns the task.
 - Paper-driven lower-q adder work: `paper-gidney-constant-workspace-adder` ->
-  `paper-mbu-modular-arithmetic` -> `q1152-structural-core` or
-  `structural-qubit-cut`.
+  `paper-mbu-modular-arithmetic` -> `q1152-structural-core` ->
+  `construction-package-gate`.
 - Conditionally-clean cascade cut: `conditionally-clean-cascade-cut` ->
   `paper-conditionally-clean-ancillae` -> `fold-carry-rearchitecture` ->
   `exact-support-invariant-miner`.

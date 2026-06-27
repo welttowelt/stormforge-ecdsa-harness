@@ -267,8 +267,10 @@ def main() -> int:
     parser.add_argument("--count-table", action="store_true")
     args = parser.parse_args()
 
-    if args.max_width < 1 or args.window < 0 or args.count_width < 1 or args.count_window < 0:
-        parser.error("widths and windows must be non-negative, with positive widths")
+    if args.max_width < 1 or args.count_width < 1:
+        parser.error("widths must be positive")
+    if args.window < 1 or args.count_window < 1:
+        parser.error("--window and --count-window must be >=1 because cout-present cases require one held top carry")
     if args.frontier_qubits <= 1 or args.binding_sites <= 0:
         parser.error("--frontier-qubits must be >1 and --binding-sites must be positive")
 

@@ -60,6 +60,7 @@ for path in \
   scripts/storm-const-chunk-prefix-ledger.py \
   scripts/storm-q1152-binder-ledger.py \
   scripts/storm-mcx-incrementer-budget.py \
+  scripts/storm-construction-package-gate.py \
   scripts/storm-square-static-gap-audit.py \
   scripts/storm-single-ccx-fanout-ledger.py \
   scripts/storm-q1152-avgt-theorem.py \
@@ -108,6 +109,7 @@ for path in \
   skills/ecdsafail-cli-ops.md \
   skills/stormgate-prefilter.md \
   skills/q1152-structural-core.md \
+  skills/construction-package-gate.md \
   skills/support-bounded-vented-dead-carry.md \
   skills/paper-gidney-constant-workspace-adder.md \
   skills/paper-mbu-modular-arithmetic.md \
@@ -149,6 +151,7 @@ for path in \
   .agents/skills/ecdsafail-cli-ops/SKILL.md \
   .agents/skills/stormgate-prefilter/SKILL.md \
   .agents/skills/q1152-structural-core/SKILL.md \
+  .agents/skills/construction-package-gate/SKILL.md \
   .agents/skills/paper-gidney-constant-workspace-adder/SKILL.md \
   .agents/skills/paper-mbu-modular-arithmetic/SKILL.md \
   .agents/skills/paper-hrs-dirty-constant-adder/SKILL.md \
@@ -235,6 +238,8 @@ need_text scripts/storm-q1152-binder-ledger.py "q1152 binder ledger" "q1152_bind
 need_text scripts/storm-q1152-binder-ledger.py "mcx floor" "none_kg_prefix_ancilla"
 need_text scripts/storm-mcx-incrementer-budget.py "mcx incrementer budget" "mcx_incrementer_budget=pass"
 need_text scripts/storm-mcx-incrementer-budget.py "candidate budget fail" "candidate-budget-fail"
+need_text scripts/storm-construction-package-gate.py "construction package gate" "construction_package_gate=pass"
+need_text scripts/storm-construction-package-gate.py "package nack" "package-nack"
 need_text scripts/storm-square-static-gap-audit.py "square static gap audit" "square_static_gap_audit=pass"
 need_text scripts/storm-square-static-gap-audit.py "zero bit trim decision" "no-executable-zero-bit-trim"
 need_text scripts/storm-single-ccx-fanout-ledger.py "single ccx fanout ledger" "single_ccx_fanout_ledger=pass"
@@ -291,10 +296,13 @@ need_text skills/ecdsafail-cli-ops.md "ecdsafail command" "ecdsafail benchmark"
 need_text skills/stormgate-prefilter.md "prefilter label" "stage-1 survivor"
 need_text skills/q1152-structural-core.md "q1152 structural core" "wall-gated count/eval loop"
 need_text skills/q1152-structural-core.md "trusted eval" "Trusted eval"
+need_text skills/construction-package-gate.md "construction package gate" "Construction Package Gate"
+need_text skills/construction-package-gate.md "package nack" "package-nack"
 need_text skills/support-bounded-vented-dead-carry.md "support bounded vent" "Support-Bounded Vented Dead-Carry"
 need_text skills/support-bounded-vented-dead-carry.md "dead predicate" "source-hash-bound"
 need_text skills/support-bounded-vented-dead-carry.md "headroom cap" "TLM_SQUARE_PEAK_CAP"
 need_text .agents/skills/q1152-structural-core/SKILL.md "bridge" "Codex-discoverable bridge"
+need_text .agents/skills/construction-package-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text skills/paper-gidney-constant-workspace-adder.md "gidney source" "arXiv:2507.23079"
 need_text skills/paper-mbu-modular-arithmetic.md "mbu phase cleanup" "phase correction"
 need_text skills/paper-hrs-dirty-constant-adder.md "dirty host" "not scratch"
@@ -939,6 +947,55 @@ elif ! grep -q 'candidate_extra_total=78.0' "$tmpdir/mcx-incrementer-budget-fail
   fail=1
 fi
 
+if ! python3 scripts/storm-construction-package-gate.py \
+  --target-qubits 1151 \
+  --extra-per-site 1 \
+  --charged-sites 2617 \
+  --required-binders gidney,mcx,gcd,fold,register \
+  --covered-binders gidney >"$tmpdir/construction-package-windowed.out" 2>"$tmpdir/construction-package-windowed.err"; then
+  printf 'public_harness_check=fail construction_package_windowed_failed\n' >&2
+  cat "$tmpdir/construction-package-windowed.err" >&2
+  fail=1
+elif ! grep -q 'construction_package_gate=pass' "$tmpdir/construction-package-windowed.out" ||
+     ! grep -q 'coverage_ok=0' "$tmpdir/construction-package-windowed.out" ||
+     ! grep -q 'count_ok=0' "$tmpdir/construction-package-windowed.out" ||
+     ! grep -q 'decision=package-nack' "$tmpdir/construction-package-windowed.out" ||
+     ! grep -q 'reasons=missing_coverage,score_no_edge' "$tmpdir/construction-package-windowed.out"; then
+  printf 'public_harness_check=fail construction_package_windowed_output\n' >&2
+  cat "$tmpdir/construction-package-windowed.out" >&2
+  fail=1
+fi
+if ! python3 scripts/storm-construction-package-gate.py \
+  --target-qubits 1151 \
+  --extra-avg-tof 1185 \
+  --required-binders gidney,mcx \
+  --covered-binders gidney,mcx >"$tmpdir/construction-package-prefilter.out" 2>"$tmpdir/construction-package-prefilter.err"; then
+  printf 'public_harness_check=fail construction_package_prefilter_failed\n' >&2
+  cat "$tmpdir/construction-package-prefilter.err" >&2
+  fail=1
+elif ! grep -q 'coverage_ok=1' "$tmpdir/construction-package-prefilter.out" ||
+     ! grep -q 'count_ok=1' "$tmpdir/construction-package-prefilter.out" ||
+     ! grep -q 'decision=count-prefilter-only' "$tmpdir/construction-package-prefilter.out"; then
+  printf 'public_harness_check=fail construction_package_prefilter_output\n' >&2
+  cat "$tmpdir/construction-package-prefilter.out" >&2
+  fail=1
+fi
+if ! python3 scripts/storm-construction-package-gate.py \
+  --target-qubits 1151 \
+  --extra-avg-tof 1185 \
+  --required-binders gidney,mcx \
+  --covered-binders gidney,mcx \
+  --candidate-clean pass >"$tmpdir/construction-package-ready.out" 2>"$tmpdir/construction-package-ready.err"; then
+  printf 'public_harness_check=fail construction_package_ready_failed\n' >&2
+  cat "$tmpdir/construction-package-ready.err" >&2
+  fail=1
+elif ! grep -q 'candidate_clean=pass' "$tmpdir/construction-package-ready.out" ||
+     ! grep -q 'decision=ready-for-validation' "$tmpdir/construction-package-ready.out"; then
+  printf 'public_harness_check=fail construction_package_ready_output\n' >&2
+  cat "$tmpdir/construction-package-ready.out" >&2
+  fail=1
+fi
+
 if ! python3 scripts/storm-square-static-gap-audit.py \
   --min-width 1 \
   --max-width 6 \
@@ -1525,6 +1582,19 @@ elif ! grep -q 'windowed_carry_toy=pass' "$tmpdir/windowed-carry-toy.out" ||
      ! grep -q 'source_edit_ready=0' "$tmpdir/windowed-carry-toy.out"; then
   printf 'public_harness_check=fail windowed_carry_toy_output\n' >&2
   cat "$tmpdir/windowed-carry-toy.out" >&2
+  fail=1
+fi
+
+if python3 scripts/storm-windowed-carry-toy.py \
+  --max-width 2 \
+  --window 0 \
+  --count-width 16 \
+  --count-window 15 >"$tmpdir/windowed-carry-zero-window.out" 2>"$tmpdir/windowed-carry-zero-window.err"; then
+  printf 'public_harness_check=fail windowed_carry_zero_window_unexpected_pass\n' >&2
+  fail=1
+elif ! grep -q -- '--window and --count-window must be >=1' "$tmpdir/windowed-carry-zero-window.err"; then
+  printf 'public_harness_check=fail windowed_carry_zero_window_error\n' >&2
+  cat "$tmpdir/windowed-carry-zero-window.err" >&2
   fail=1
 fi
 
