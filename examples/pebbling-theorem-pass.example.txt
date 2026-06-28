@@ -1,0 +1,34 @@
+ACK Codex-Vector CLAIM pebbling-theorem-source-bound skill=redsky+paper-reversible-pebbling-memory-management+pebbling-theorem-gate file=trace-ledger.summary next=pebbling-theorem-review no_submit_ack=yes
+route_id=d44cad3_recompute_pebbling_suffix_tape
+owner=Codex-Vector
+host=studio
+source_base=d44cad3
+source_location=src/point_add/trailmix_ludicrous/gcd.rs:1639
+source_hash=2f2fa71da1a6033fd14e1ebade00f5578c37726f151853660289a852e140d109
+candidate_index_hash=05493b06fc6e7be1ab790a6c7b6ee09d9282baa3214f471d2ab59729a3b39a71
+current_q=1152
+target_q=1147
+current_avg_tof=1364230
+extra_avg_tof=2100
+candidate_score=1567180510
+frontier_score=1571592960
+score_edge=4412450
+peak_rows=9
+overlap_rows=3
+required_calls=178,180,181
+covered_calls=178,180,181
+node=dialog_tape_suffix
+removed_value=tape_window_last_symbol
+producer=forward_gcd_jump:818-829
+consumers=reverse_gcd_jump:1074-1133
+move=recompute-after-peak
+recompute_path=forward_gcd_window_replay_then_inverse
+drop_state=regenerated
+restore_proof=CERTIFIED
+phase_proof=CERTIFIED
+ancilla_proof=CERTIFIED
+support_status=CERTIFIED
+proof_status=CERTIFIED
+evidence_label=Partial
+no_submit_ack=yes
+No pods, residual, route_compare, benchmark, alert, WINNER, Akash, or submit.

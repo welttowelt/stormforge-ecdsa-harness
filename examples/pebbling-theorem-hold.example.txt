@@ -1,0 +1,25 @@
+ACK Codex-Vector CLAIM pebbling-theorem-incomplete skill=redsky+paper-reversible-pebbling-memory-management+pebbling-theorem-gate file=trace-ledger.summary next=complete-pebbling-theorem no_submit_ack=yes
+route_id=d44cad3_recompute_pebbling_incomplete
+owner=Codex-Vector
+host=studio
+source_base=d44cad3
+source_location=src/point_add/trailmix_ludicrous/gcd.rs:1639
+source_hash=2f2fa71da1a6033fd14e1ebade00f5578c37726f151853660289a852e140d109
+current_q=1152
+target_q=1147
+current_avg_tof=1364230
+extra_avg_tof=2100
+frontier_score=1571592960
+score_edge=4412450
+peak_rows=9
+overlap_rows=3
+node=dialog_tape_suffix
+removed_value=tape_window_last_symbol
+producer=forward_gcd_jump:818-829
+move=recompute-after-peak
+drop_state=regenerated
+restore_proof=CERTIFIED
+support_status=UNKNOWN
+proof_status=UNPROVEN
+evidence_label=Partial
+no_submit_ack=yes

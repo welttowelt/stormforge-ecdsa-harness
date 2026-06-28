@@ -152,6 +152,9 @@ agent instructions or used as a preflight before route work:
 - `skills/construction-intake-gate.md`: require paper-mined construction packets
   to name a current source replacement, source/candidate hashes, q/T economics,
   restore/phase/ancilla obligations, and a bounded toy falsifier before review.
+- `skills/pebbling-theorem-gate.md`: require recompute/pebbling packets to name
+  the DAG node, producer/consumers, recompute path, score edge, and certified
+  restore/phase/ancilla/support proofs before route review.
 - `skills/frontier-escape-gate.md`: classify post-local-optimum packets as
   source theorem, construction package, nonce retune, or NACK.
 - `skills/single-ccx-fanout-throughput.md`: apply and verify the d44
@@ -304,6 +307,7 @@ The bridge names are:
 - `qoffset-host-accounting-gate`
 - `emit-bundle-support-gate`
 - `construction-intake-gate`
+- `pebbling-theorem-gate`
 - `transcript-overlap-gate`
 - `paper-gidney-constant-workspace-adder`
 - `paper-mbu-modular-arithmetic`
