@@ -178,6 +178,7 @@ for path in \
   skills/fleet-owner-claim-gate.md \
   skills/pod-wrapper-dup-gate.md \
   skills/local-heavy-compute-gate.md \
+  skills/route-compare-admission-gate.md \
   skills/candidate-validation-packet-gate.md \
   skills/apply-cswap-support-gate.md \
   skills/source-packet-novelty-gate.md \
@@ -235,6 +236,7 @@ for path in \
   .agents/skills/fleet-owner-claim-gate/SKILL.md \
   .agents/skills/pod-wrapper-dup-gate/SKILL.md \
   .agents/skills/local-heavy-compute-gate/SKILL.md \
+  .agents/skills/route-compare-admission-gate/SKILL.md \
   .agents/skills/candidate-validation-packet-gate/SKILL.md \
   .agents/skills/apply-cswap-support-gate/SKILL.md \
   .agents/skills/source-packet-novelty-gate/SKILL.md \
@@ -386,6 +388,8 @@ need_text skills/fleet-owner-claim-gate.md "fleet owner claim skill" "paid insta
 need_text skills/fleet-owner-claim-gate.md "strict packet skill" "strict-single-packet"
 need_text skills/pod-wrapper-dup-gate.md "pod wrapper duplicate skill" "Duplicate GPU wrappers"
 need_text skills/local-heavy-compute-gate.md "local heavy compute skill" "Mac-local heavy compute"
+need_text skills/route-compare-admission-gate.md "route compare admission skill" "Route Compare Admission Gate"
+need_text skills/route-compare-admission-gate.md "strict admission flag" "require-admission"
 need_text skills/candidate-validation-packet-gate.md "candidate validation skill" "FOR-AKASH"
 need_text skills/apply-cswap-support-gate.md "apply cswap support skill" "per-step and per-bit"
 need_text skills/apply-cswap-support-gate.md "machine readable packet" "frontier_score"
@@ -405,6 +409,7 @@ need_text .agents/skills/official-eval-isolation-gate/SKILL.md "bridge" "Codex-d
 need_text .agents/skills/fleet-owner-claim-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/pod-wrapper-dup-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/local-heavy-compute-gate/SKILL.md "bridge" "Codex-discoverable bridge"
+need_text .agents/skills/route-compare-admission-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/candidate-validation-packet-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/apply-cswap-support-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/source-packet-novelty-gate/SKILL.md "bridge" "Codex-discoverable bridge"
@@ -417,7 +422,8 @@ need_text scripts/storm-zero-host-accounting-gate.py "zero host accounting" "zer
 need_text scripts/storm-zero-host-accounting-gate.py "source accounting nack" "source-accounting-nack"
 need_text scripts/storm-dead-drop-fixedpoint-gate.py "dead drop fixedpoint" "dead_drop_fixedpoint_gate=pass"
 need_text scripts/storm-dead-drop-fixedpoint-gate.py "fixedpoint required" "fixedpoint-required"
-need_text scripts/storm-route-compare-admission.py "route compare admission gate" "route_compare_admission=pass"
+need_text scripts/storm-route-compare-admission.py "route compare admission gate" "route_compare_admission="
+need_text scripts/storm-route-compare-admission.py "route compare admitted flag" "admitted="
 
 need_text examples/operator-card.example.md "falsifiable decision" "Falsifiable decision"
 need_text examples/audit-card.example.md "rci tony" "RCI/Tony"
@@ -2736,16 +2742,20 @@ if ! python3 scripts/storm-route-compare-admission.py \
   printf 'public_harness_check=fail route_compare_dirty_failed\n' >&2
   cat "$tmpdir/route-compare-dirty-admit.err" >&2
   fail=1
-elif ! grep -q 'candidate_clean=0' "$tmpdir/route-compare-dirty-admit.out" ||
+elif ! grep -q 'route_compare_admission=fail' "$tmpdir/route-compare-dirty-admit.out" ||
+     ! grep -q 'admitted=0' "$tmpdir/route-compare-dirty-admit.out" ||
+     ! grep -q 'baseline_clean=0' "$tmpdir/route-compare-dirty-admit.out" ||
+     ! grep -q 'candidate_clean=0' "$tmpdir/route-compare-dirty-admit.out" ||
      ! grep -q 'compare_clean=0' "$tmpdir/route-compare-dirty-admit.out" ||
      ! grep -q 'score_edge=0' "$tmpdir/route-compare-dirty-admit.out" ||
-     ! grep -q 'decision=dirty-candidate-no-admission' "$tmpdir/route-compare-dirty-admit.out"; then
+     ! grep -q 'decision=dirty-baseline-no-admission' "$tmpdir/route-compare-dirty-admit.out"; then
   printf 'public_harness_check=fail route_compare_dirty_decision\n' >&2
   cat "$tmpdir/route-compare-dirty-admit.out" >&2
   fail=1
 fi
 
 cat >"$tmpdir/route-compare-no-edge.out" <<'EOF'
+BASE_SUMMARY shots=256 ops=10228095 qubits=1147 bits=613101 classical=0 phase_batches=0 ancilla_batches=0 avg_tof=1396798.035 avg_cliff=5632151.273
 CAND_SUMMARY shots=256 ops=10228101 qubits=1147 bits=613101 classical=0 phase_batches=0 ancilla_batches=0 avg_tof=1396718.473 avg_cliff=5631466.793
 COMPARE_SUMMARY shots=256 output_diff=0 phase_diff_batches=0
 EOF
@@ -2755,7 +2765,10 @@ if ! python3 scripts/storm-route-compare-admission.py \
   printf 'public_harness_check=fail route_compare_no_edge_failed\n' >&2
   cat "$tmpdir/route-compare-no-edge-admit.err" >&2
   fail=1
-elif ! grep -q 'candidate_clean=1' "$tmpdir/route-compare-no-edge-admit.out" ||
+elif ! grep -q 'route_compare_admission=fail' "$tmpdir/route-compare-no-edge-admit.out" ||
+     ! grep -q 'admitted=0' "$tmpdir/route-compare-no-edge-admit.out" ||
+     ! grep -q 'baseline_clean=1' "$tmpdir/route-compare-no-edge-admit.out" ||
+     ! grep -q 'candidate_clean=1' "$tmpdir/route-compare-no-edge-admit.out" ||
      ! grep -q 'compare_clean=1' "$tmpdir/route-compare-no-edge-admit.out" ||
      ! grep -q 'score_edge=0' "$tmpdir/route-compare-no-edge-admit.out" ||
      ! grep -q 'decision=score-no-edge' "$tmpdir/route-compare-no-edge-admit.out"; then
@@ -2765,6 +2778,7 @@ elif ! grep -q 'candidate_clean=1' "$tmpdir/route-compare-no-edge-admit.out" ||
 fi
 
 cat >"$tmpdir/route-compare-edge.out" <<'EOF'
+BASE_SUMMARY shots=9024 ops=10228095 qubits=1152 bits=613101 classical=0 phase_batches=0 ancilla_batches=0 avg_tof=1364230.000 avg_cliff=5630100.000
 CAND_SUMMARY shots=9024 ops=10221377 qubits=1152 bits=613101 classical=0 phase_batches=0 ancilla_batches=0 avg_tof=1364228.000 avg_cliff=5630000.000
 COMPARE_SUMMARY shots=9024 output_diff=0 phase_diff_batches=0
 EOF
@@ -2774,7 +2788,10 @@ if ! python3 scripts/storm-route-compare-admission.py \
   printf 'public_harness_check=fail route_compare_edge_failed\n' >&2
   cat "$tmpdir/route-compare-edge-admit.err" >&2
   fail=1
-elif ! grep -q 'candidate_clean=1' "$tmpdir/route-compare-edge-admit.out" ||
+elif ! grep -q 'route_compare_admission=pass' "$tmpdir/route-compare-edge-admit.out" ||
+     ! grep -q 'admitted=1' "$tmpdir/route-compare-edge-admit.out" ||
+     ! grep -q 'baseline_clean=1' "$tmpdir/route-compare-edge-admit.out" ||
+     ! grep -q 'candidate_clean=1' "$tmpdir/route-compare-edge-admit.out" ||
      ! grep -q 'compare_clean=1' "$tmpdir/route-compare-edge-admit.out" ||
      ! grep -q 'score_edge=1' "$tmpdir/route-compare-edge-admit.out" ||
      ! grep -q 'decision=route-clean-score-edge' "$tmpdir/route-compare-edge-admit.out"; then
