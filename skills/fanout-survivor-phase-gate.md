@@ -9,6 +9,11 @@ Run the mixed GPU/eval logs through:
 
     python3 scripts/storm-fanout-survivor-phase-gate.py GPU_OR_EVAL_LOG [...]
 
+For raw eval_circuit stdout that does not include the nonce, attach it
+explicitly:
+
+    python3 scripts/storm-fanout-survivor-phase-gate.py eval.out --nonce N --mark-survivor
+
 The gate reports one of:
 
 - ready: at least one survivor has trusted official counts 0/0/0.
@@ -24,6 +29,8 @@ authorization.
 - Treat GPU CLEAN as stage-1 survivor, not as clean circuit evidence.
 - Trusted eval must check classical mismatch, phase garbage, and ancilla
   garbage.
+- Raw fast-exit eval stdout is valid for dirty triage when the nonce is attached
+  out-of-band and the route is still labelled survivor-only.
 - A survivor with phase garbage is a prefilter false positive, even if the GPU
   predicate passed.
 - If phase_dirty is greater than zero, steer future compute toward official

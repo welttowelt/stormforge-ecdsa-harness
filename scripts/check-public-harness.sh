@@ -1172,6 +1172,34 @@ elif ! grep -q 'fanout_survivor_phase_gate=ready' "$tmpdir/fanout-survivor-phase
   fail=1
 fi
 
+cat >"$tmpdir/fanout-survivor-phase-gate-raw-eval.out" <<'EOF'
+=== quantum_ecc: eval_circuit (trusted stage) ===
+  loaded ops  : 10221059
+-- correctness tests (9024 shots) --
+  fast exit              : enabled for dirty-candidate triage
+  tested shots            : 64
+  classical mismatches    : 0
+  phase-garbage batches   : 1
+  ancilla-garbage batches : 0
+EOF
+if ! python3 scripts/storm-fanout-survivor-phase-gate.py \
+  "$tmpdir/fanout-survivor-phase-gate-raw-eval.out" \
+  --nonce 104 \
+  --mark-survivor \
+  >"$tmpdir/fanout-survivor-phase-gate-raw-eval-gate.out" \
+  2>"$tmpdir/fanout-survivor-phase-gate-raw-eval-gate.err"; then
+  printf 'public_harness_check=fail fanout_survivor_phase_gate_raw_eval_failed\n' >&2
+  cat "$tmpdir/fanout-survivor-phase-gate-raw-eval-gate.err" >&2
+  fail=1
+elif ! grep -q 'fanout_survivor_phase_gate=nack' "$tmpdir/fanout-survivor-phase-gate-raw-eval-gate.out" ||
+     ! grep -q 'gpu_survivors=1' "$tmpdir/fanout-survivor-phase-gate-raw-eval-gate.out" ||
+     ! grep -q 'official_dirty=1' "$tmpdir/fanout-survivor-phase-gate-raw-eval-gate.out" ||
+     ! grep -q 'phase_dirty=1' "$tmpdir/fanout-survivor-phase-gate-raw-eval-gate.out"; then
+  printf 'public_harness_check=fail fanout_survivor_phase_gate_raw_eval_output\n' >&2
+  cat "$tmpdir/fanout-survivor-phase-gate-raw-eval-gate.out" >&2
+  fail=1
+fi
+
 cat >"$tmpdir/q1152-avgt-sim.rs" <<'EOF'
 match op.kind {
     OperationType::CCZ | OperationType::CCX => {

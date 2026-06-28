@@ -46,6 +46,12 @@ COUNT_PATTERNS = (
         ("classical", "phase", "ancilla"),
     ),
 )
+EVAL_BLOCK_RE = re.compile(
+    r"\bclassical\s+mismatches\s*:\s*(\d+)\b.*?"
+    r"\bphase-garbage\s+batches\s*:\s*(\d+)\b.*?"
+    r"\bancilla-garbage\s+batches\s*:\s*(\d+)\b",
+    re.IGNORECASE | re.DOTALL,
+)
 
 
 @dataclass
@@ -101,9 +107,21 @@ def iter_lines(paths: Iterable[Path]) -> Iterable[tuple[str, str]]:
                 yield f"{path}:{lineno}", line.rstrip("\n")
 
 
-def parse(paths: Iterable[Path]) -> dict[str, NonceRecord]:
+def update_official_counts(record: NonceRecord, counts: tuple[int, int, int]) -> None:
+    record.official_seen = True
+    record.classical, record.phase, record.ancilla = counts
+
+
+def parse(
+    paths: Iterable[Path],
+    default_nonce: str | None = None,
+    mark_default_survivor: bool = False,
+) -> dict[str, NonceRecord]:
     records: dict[str, NonceRecord] = {}
-    for source, line in iter_lines(paths):
+    path_list = list(paths)
+    if default_nonce and mark_default_survivor:
+        records.setdefault(default_nonce, NonceRecord(nonce=default_nonce)).gpu_survivor = True
+    for source, line in iter_lines(path_list):
         nonce_match = NONCE_RE.search(line)
         if not nonce_match:
             continue
@@ -114,8 +132,16 @@ def parse(paths: Iterable[Path]) -> dict[str, NonceRecord]:
             record.gpu_survivor = True
         counts = parse_counts(line)
         if counts and OFFICIAL_HINT_RE.search(line):
-            record.official_seen = True
-            record.classical, record.phase, record.ancilla = counts
+            update_official_counts(record, counts)
+    if default_nonce:
+        record = records.setdefault(default_nonce, NonceRecord(nonce=default_nonce))
+        for path in path_list:
+            text = path.read_text(encoding="utf-8", errors="replace")
+            match = EVAL_BLOCK_RE.search(text)
+            if match:
+                record.lines.append(str(path))
+                counts = tuple(int(match.group(i)) for i in range(1, 4))
+                update_official_counts(record, counts)  # type: ignore[arg-type]
     return records
 
 
@@ -193,6 +219,15 @@ def text_summary(summary: dict[str, object]) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("logs", nargs="+", type=Path, help="GPU and official eval logs to parse")
+    parser.add_argument(
+        "--nonce",
+        help="attach raw eval_circuit logs without nonce text to this nonce",
+    )
+    parser.add_argument(
+        "--mark-survivor",
+        action="store_true",
+        help="with --nonce, mark that nonce as a GPU/stage-1 survivor",
+    )
     parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
     parser.add_argument(
         "--require-ready",
@@ -206,7 +241,11 @@ def main() -> int:
         print(f"fanout_survivor_phase_gate=fail missing_logs={','.join(missing_paths)}", file=sys.stderr)
         return 2
 
-    summary = summarize(parse(args.logs))
+    if args.mark_survivor and not args.nonce:
+        print("fanout_survivor_phase_gate=fail mark_survivor_requires_nonce", file=sys.stderr)
+        return 2
+
+    summary = summarize(parse(args.logs, default_nonce=args.nonce, mark_default_survivor=args.mark_survivor))
     if args.json:
         print(json.dumps(summary, sort_keys=True))
     else:
