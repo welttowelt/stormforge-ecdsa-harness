@@ -71,6 +71,7 @@ for path in \
   scripts/storm-official-eval-isolation-gate.py \
   scripts/storm-fleet-owner-claim-gate.py \
   scripts/storm-pod-wrapper-dup-gate.py \
+  scripts/storm-local-heavy-compute-gate.py \
   examples/fleet-owner-claim-vague-token.example.txt \
   examples/official-eval-isolation-helper-storm.example.sh \
   scripts/storm-q1152-avgt-theorem.py \
@@ -105,6 +106,9 @@ for path in \
   examples/fleet-owner-claim-combined-tail.example.txt \
   examples/pod-wrapper-dup-pass.example.txt \
   examples/pod-wrapper-dup-fail.example.txt \
+  examples/local-heavy-compute-pass.example.txt \
+  examples/local-heavy-compute-fail.example.txt \
+  examples/local-heavy-compute-hold.example.txt \
   templates/exact-skip-candidate.json \
   docs/exact-support-miner.md \
   docs/redsky-stormgate-audit-2026-06-20-f8e215b-current.md \
@@ -142,6 +146,7 @@ for path in \
   skills/official-eval-isolation-gate.md \
   skills/fleet-owner-claim-gate.md \
   skills/pod-wrapper-dup-gate.md \
+  skills/local-heavy-compute-gate.md \
   skills/support-bounded-vented-dead-carry.md \
   skills/paper-gidney-constant-workspace-adder.md \
   skills/paper-mbu-modular-arithmetic.md \
@@ -192,6 +197,7 @@ for path in \
   .agents/skills/official-eval-isolation-gate/SKILL.md \
   .agents/skills/fleet-owner-claim-gate/SKILL.md \
   .agents/skills/pod-wrapper-dup-gate/SKILL.md \
+  .agents/skills/local-heavy-compute-gate/SKILL.md \
   .agents/skills/paper-gidney-constant-workspace-adder/SKILL.md \
   .agents/skills/paper-mbu-modular-arithmetic/SKILL.md \
   .agents/skills/paper-hrs-dirty-constant-adder/SKILL.md \
@@ -298,6 +304,8 @@ need_text scripts/storm-fleet-owner-claim-gate.py "no submit ack" "no_submit_ack
 need_text scripts/storm-fleet-owner-claim-gate.py "strict packet mode" "strict-single-packet"
 need_text scripts/storm-pod-wrapper-dup-gate.py "pod wrapper duplicate gate" "pod_wrapper_dup_gate="
 need_text scripts/storm-pod-wrapper-dup-gate.py "duplicate eval failure" "duplicate_eval_nonce_wrapper"
+need_text scripts/storm-local-heavy-compute-gate.py "local heavy compute gate" "local_heavy_compute_gate="
+need_text scripts/storm-local-heavy-compute-gate.py "mac stop decision" "stop-mac-local-heavy-compute"
 need_text scripts/storm-claim-ledger.py "claim ledger summary" "claim_ledger_summary"
 need_text scripts/storm-q1152-avgt-theorem.py "q1152 avgT theorem" "q1152_avgt_theorem=pass"
 need_text scripts/storm-q1152-avgt-theorem.py "condition discount" "classical condition"
@@ -314,6 +322,7 @@ need_text skills/official-eval-isolation-gate.md "official eval isolation skill"
 need_text skills/fleet-owner-claim-gate.md "fleet owner claim skill" "paid instance survives audit"
 need_text skills/fleet-owner-claim-gate.md "strict packet skill" "strict-single-packet"
 need_text skills/pod-wrapper-dup-gate.md "pod wrapper duplicate skill" "Duplicate GPU wrappers"
+need_text skills/local-heavy-compute-gate.md "local heavy compute skill" "Mac-local heavy compute"
 need_text .agents/skills/single-ccx-fanout-throughput/SKILL.md "bridge" "fanout-no-clone-d44.patch"
 need_text .agents/skills/fanout-survivor-phase-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/fanout-burst-triage-gate/SKILL.md "bridge" "Codex-discoverable bridge"
@@ -321,6 +330,7 @@ need_text .agents/skills/official-fast-exit-eval/SKILL.md "bridge" "Codex-discov
 need_text .agents/skills/official-eval-isolation-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/fleet-owner-claim-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/pod-wrapper-dup-gate/SKILL.md "bridge" "Codex-discoverable bridge"
+need_text .agents/skills/local-heavy-compute-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text scripts/storm-cout-host-row-gate.py "cout host row gate" "cout_host_row_gate=pass"
 need_text scripts/storm-cout-host-row-gate.py "safe host row" "SAFE_HOST_ROW"
 need_text scripts/storm-zero-host-accounting-gate.py "zero host accounting" "zero_host_accounting_gate=pass"
@@ -1482,6 +1492,56 @@ elif ! grep -q 'pod_wrapper_dup_gate=fail' "$tmpdir/pod-wrapper-dup-fail.out" ||
   printf 'public_harness_check=fail pod_wrapper_dup_fail_output\n' >&2
   cat "$tmpdir/pod-wrapper-dup-fail.out" >&2
   cat "$tmpdir/pod-wrapper-dup-fail.err" >&2
+  fail=1
+fi
+
+if ! python3 scripts/storm-local-heavy-compute-gate.py \
+  examples/local-heavy-compute-pass.example.txt \
+  --require-pass \
+  >"$tmpdir/local-heavy-compute-pass.out" \
+  2>"$tmpdir/local-heavy-compute-pass.err"; then
+  printf 'public_harness_check=fail local_heavy_compute_pass_failed\n' >&2
+  cat "$tmpdir/local-heavy-compute-pass.err" >&2
+  fail=1
+elif ! grep -q 'local_heavy_compute_gate=pass' "$tmpdir/local-heavy-compute-pass.out" ||
+     ! grep -q 'remote_heavy=2' "$tmpdir/local-heavy-compute-pass.out" ||
+     ! grep -q 'allowed_lightweight=true' "$tmpdir/local-heavy-compute-pass.out"; then
+  printf 'public_harness_check=fail local_heavy_compute_pass_output\n' >&2
+  cat "$tmpdir/local-heavy-compute-pass.out" >&2
+  fail=1
+fi
+
+if python3 scripts/storm-local-heavy-compute-gate.py \
+  examples/local-heavy-compute-fail.example.txt \
+  --require-pass \
+  >"$tmpdir/local-heavy-compute-fail.out" \
+  2>"$tmpdir/local-heavy-compute-fail.err"; then
+  printf 'public_harness_check=fail local_heavy_compute_fail_unexpected_pass\n' >&2
+  cat "$tmpdir/local-heavy-compute-fail.out" >&2
+  fail=1
+elif ! grep -q 'local_heavy_compute_gate=fail' "$tmpdir/local-heavy-compute-fail.out" ||
+     ! grep -q 'local_heavy=3' "$tmpdir/local-heavy-compute-fail.out" ||
+     ! grep -q 'stop-mac-local-heavy-compute' "$tmpdir/local-heavy-compute-fail.out"; then
+  printf 'public_harness_check=fail local_heavy_compute_fail_output\n' >&2
+  cat "$tmpdir/local-heavy-compute-fail.out" >&2
+  cat "$tmpdir/local-heavy-compute-fail.err" >&2
+  fail=1
+fi
+
+if python3 scripts/storm-local-heavy-compute-gate.py \
+  examples/local-heavy-compute-hold.example.txt \
+  --require-pass \
+  >"$tmpdir/local-heavy-compute-hold.out" \
+  2>"$tmpdir/local-heavy-compute-hold.err"; then
+  printf 'public_harness_check=fail local_heavy_compute_hold_unexpected_pass\n' >&2
+  cat "$tmpdir/local-heavy-compute-hold.out" >&2
+  fail=1
+elif ! grep -q 'local_heavy_compute_gate=hold' "$tmpdir/local-heavy-compute-hold.out" ||
+     ! grep -q 'unknown_heavy=2' "$tmpdir/local-heavy-compute-hold.out" ||
+     ! grep -q 'require-host-and-owner-evidence' "$tmpdir/local-heavy-compute-hold.out"; then
+  printf 'public_harness_check=fail local_heavy_compute_hold_output\n' >&2
+  cat "$tmpdir/local-heavy-compute-hold.out" >&2
+  cat "$tmpdir/local-heavy-compute-hold.err" >&2
   fail=1
 fi
 

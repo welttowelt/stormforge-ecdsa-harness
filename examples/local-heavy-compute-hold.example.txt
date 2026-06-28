@@ -1,0 +1,2 @@
+ps 9001 ./target/release/eval_circuit
+ps 9002 cargo build --release --bin build_circuit
