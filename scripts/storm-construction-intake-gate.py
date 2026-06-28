@@ -89,6 +89,10 @@ def first_float(pattern: re.Pattern[str], text: str) -> float | None:
     return float(value.replace("_", ""))
 
 
+def meaningful(value: str) -> bool:
+    return value.lower() not in {"unknown", "none", "missing", "tbd", "todo", "n/a", "na", "null"}
+
+
 def risk_scan_text(text: str) -> str:
     """Drop explicit negative guardrails before scanning for risky requests."""
     kept: list[str] = []
@@ -142,7 +146,7 @@ def inspect(text: str, expected_source: str) -> dict[str, object]:
         score_edge = frontier_score - candidate_score
     count_edge = score_edge is not None and score_edge > 0
     has_source_bound = bool(source_hash and SOURCE_BOUND_RE.search(text))
-    bounded_toy = bool(BOUNDED_RE.search(text) or "bounded" in toy_falsifier.lower())
+    bounded_toy = bool(meaningful(toy_falsifier) and (BOUNDED_RE.search(text) or "bounded" in toy_falsifier.lower()))
     counterexample = support_status == "COUNTEREXAMPLE" or proof_status == "COUNTEREXAMPLE"
     unknown = support_status in {"UNKNOWN", "UNPROVEN", ""} or proof_status in {"UNKNOWN", "UNPROVEN", ""}
 
@@ -184,7 +188,7 @@ def inspect(text: str, expected_source: str) -> dict[str, object]:
         ("missing_ancilla_obligation", ancilla_obligation),
         ("missing_toy_falsifier", toy_falsifier),
     ]:
-        if not value:
+        if not value or not meaningful(value):
             holds.append(label)
     if current_q is None:
         holds.append("missing_current_q")
@@ -249,10 +253,10 @@ def inspect(text: str, expected_source: str) -> dict[str, object]:
         "candidate_score": candidate_score,
         "score_edge": score_edge,
         "count_edge": count_edge,
-        "restore_obligation": bool(restore_obligation),
-        "phase_obligation": bool(phase_obligation),
-        "ancilla_obligation": bool(ancilla_obligation),
-        "toy_falsifier": bool(toy_falsifier),
+        "restore_obligation": bool(restore_obligation and meaningful(restore_obligation)),
+        "phase_obligation": bool(phase_obligation and meaningful(phase_obligation)),
+        "ancilla_obligation": bool(ancilla_obligation and meaningful(ancilla_obligation)),
+        "toy_falsifier": bool(toy_falsifier and meaningful(toy_falsifier)),
         "bounded_toy": bounded_toy,
         "support_status": support_status or "missing",
         "proof_status": proof_status or "missing",
