@@ -1,0 +1,25 @@
+route_id=fresh7-source-family-ccx
+route=source-packet-novelty
+host=studio
+owner=validator
+next=reject-family-summary
+frontier_score=1571592960
+qubits=1152
+source_base=d44cad3
+source_hash=0123456789abcdef
+candidate_index_hash=89abcdef01234567
+source_location=src/point_add/arith.rs:1322
+kind=CCX
+primitive_family=ffg_prefix_carry_live
+evidence_label=Prefilter
+summary_ccx_ccz_total=71
+closed_by_counterexample_jsonl=71
+open_after_all_jsonl_plus_fresh7=0
+open_digest=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+support_status=COUNTEREXAMPLE
+proof_status=COUNTEREXAMPLE
+expected_avgT_delta=-1
+NEXT_UNCLOSED empty
+ledger_hit=yes
+proof_backlog=closed by fresh7 counterexample packet
+no_submit_ack=yes

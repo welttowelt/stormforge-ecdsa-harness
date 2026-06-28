@@ -127,6 +127,7 @@ for path in \
   examples/source-packet-novelty-arith-pass.example.txt \
   examples/source-packet-novelty-hold.example.txt \
   examples/source-packet-novelty-fail.example.txt \
+  examples/source-packet-novelty-family-exhausted.example.txt \
   examples/source-packet-novelty-stale.example.txt \
   examples/transcript-overlap-pass.example.txt \
   examples/transcript-overlap-hold.example.txt \
@@ -360,6 +361,8 @@ need_text scripts/storm-apply-cswap-support-gate.py "stale source decision" "sta
 need_text scripts/storm-source-packet-novelty-gate.py "source packet novelty gate" "source_packet_novelty_gate="
 need_text scripts/storm-source-packet-novelty-gate.py "bounded source proof decision" "admit-one-bounded-source-proof-no-compute"
 need_text scripts/storm-source-packet-novelty-gate.py "closed ledger failure" "all_current_unknowns_closed"
+need_text scripts/storm-source-packet-novelty-gate.py "family exhaustion failure" "source_family_exhausted"
+need_text scripts/storm-source-packet-novelty-gate.py "candidate hash field" "candidate_hash"
 need_text scripts/storm-source-packet-novelty-gate.py "point add source location" "src/point_add"
 need_text scripts/storm-transcript-overlap-gate.py "transcript overlap gate" "transcript_overlap_gate="
 need_text scripts/storm-transcript-overlap-gate.py "source theorem review decision" "source-theorem-review-no-compute"
@@ -395,6 +398,8 @@ need_text skills/apply-cswap-support-gate.md "apply cswap support skill" "per-st
 need_text skills/apply-cswap-support-gate.md "machine readable packet" "frontier_score"
 need_text skills/source-packet-novelty-gate.md "source packet novelty skill" "outside_closed_ledger"
 need_text skills/source-packet-novelty-gate.md "source packet no compute" "no compute"
+need_text skills/source-packet-novelty-gate.md "source packet candidate hash" "candidate index/diff hash"
+need_text skills/source-packet-novelty-gate.md "source family exhausted" "exhausted source-family"
 need_text skills/transcript-overlap-gate.md "transcript overlap skill" "transcript peak-overlap"
 need_text skills/transcript-overlap-gate.md "active only failure" "active-only"
 need_text skills/compute-restart-gate.md "compute restart skill" "scanner restart"
@@ -413,6 +418,7 @@ need_text .agents/skills/route-compare-admission-gate/SKILL.md "bridge" "Codex-d
 need_text .agents/skills/candidate-validation-packet-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/apply-cswap-support-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/source-packet-novelty-gate/SKILL.md "bridge" "Codex-discoverable bridge"
+need_text .agents/skills/source-packet-novelty-gate/SKILL.md "bridge candidate hash" "candidate index/diff hash"
 need_text .agents/skills/transcript-overlap-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/compute-unlock-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/compute-restart-gate/SKILL.md "bridge" "Codex-discoverable bridge"
@@ -1941,6 +1947,26 @@ elif ! grep -q 'source_packet_novelty_gate=fail' "$tmpdir/source-packet-novelty-
   printf 'public_harness_check=fail source_packet_novelty_fail_output\n' >&2
   cat "$tmpdir/source-packet-novelty-fail.out" >&2
   cat "$tmpdir/source-packet-novelty-fail.err" >&2
+  fail=1
+fi
+
+if python3 scripts/storm-source-packet-novelty-gate.py \
+  examples/source-packet-novelty-family-exhausted.example.txt \
+  --require-pass \
+  >"$tmpdir/source-packet-novelty-family-exhausted.out" \
+  2>"$tmpdir/source-packet-novelty-family-exhausted.err"; then
+  printf 'public_harness_check=fail source_packet_novelty_family_exhausted_unexpected_pass\n' >&2
+  cat "$tmpdir/source-packet-novelty-family-exhausted.out" >&2
+  fail=1
+elif ! grep -q 'source_packet_novelty_gate=fail' "$tmpdir/source-packet-novelty-family-exhausted.out" ||
+     ! grep -q 'source_family_exhausted=true' "$tmpdir/source-packet-novelty-family-exhausted.out" ||
+     ! grep -q 'source_family_exhausted' "$tmpdir/source-packet-novelty-family-exhausted.out" ||
+     ! grep -q 'summary_total=71' "$tmpdir/source-packet-novelty-family-exhausted.out" ||
+     ! grep -q 'open_after=0' "$tmpdir/source-packet-novelty-family-exhausted.out" ||
+     ! grep -q 'open_digest=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' "$tmpdir/source-packet-novelty-family-exhausted.out"; then
+  printf 'public_harness_check=fail source_packet_novelty_family_exhausted_output\n' >&2
+  cat "$tmpdir/source-packet-novelty-family-exhausted.out" >&2
+  cat "$tmpdir/source-packet-novelty-family-exhausted.err" >&2
   fail=1
 fi
 

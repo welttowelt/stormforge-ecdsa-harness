@@ -21,6 +21,10 @@ OWNER_RE = re.compile(r"\b(?:owner|agent|validator)\s*[=:]\s*([A-Za-z0-9_.-]+)\b
 NEXT_RE = re.compile(r"\bnext\s*[=:]\s*([A-Za-z0-9_.:/@+-]+)\b", re.IGNORECASE)
 SOURCE_BASE_RE = re.compile(r"\b(?:source_base|source|base|source commit)\s*[=:]\s*([0-9a-f]{6,40})\b", re.IGNORECASE)
 SOURCE_HASH_RE = re.compile(r"\b(?:source_hash|source-hash|source_snippet_hash)\s*[=:]\s*([0-9a-fA-F][0-9a-fA-F_.:-]{7,63})\b", re.IGNORECASE)
+CANDIDATE_HASH_RE = re.compile(
+    r"\b(?:candidate_index_hash|candidate_diff_hash|candidate_hash|diff_hash|index_hash)\s*[=:]\s*([0-9a-fA-F][0-9a-fA-F_.:-]{7,63})\b",
+    re.IGNORECASE,
+)
 SOURCE_LOCATION_RE = re.compile(
     r"\b(?:source_location|site|file)\s*[=:]\s*((?:src/point_add)/[A-Za-z0-9_./+-]+\.rs:[0-9]+)\b",
     re.IGNORECASE,
@@ -64,6 +68,11 @@ LEDGER_HIT_RE = re.compile(
 NEXT_UNCLOSED_EMPTY_RE = re.compile(r"\bNEXT_UNCLOSED\s*(?:[=:]\s*)?(?:empty|none|0)\b", re.IGNORECASE)
 CURRENT_UNKNOWN_RE = re.compile(r"\bcurrent_unknown_scored\s*[=:]\s*([0-9]+)\b", re.IGNORECASE)
 CLOSED_BY_JSONL_RE = re.compile(r"\bclosed_by_existing_jsonl\s*[=:]\s*([0-9]+)\b", re.IGNORECASE)
+SUMMARY_TOTAL_RE = re.compile(r"\b(?:summary_ccx_ccz_total|source_family_total|family_summary_total|summary_total)\s*[=:]\s*([0-9]+)\b", re.IGNORECASE)
+CLOSED_TOTAL_RE = re.compile(r"\b(?:closed_by_counterexample_jsonl|closed_total|closed_after_all_jsonl|closed_by_all_jsonl)\s*[=:]\s*([0-9]+)\b", re.IGNORECASE)
+OPEN_AFTER_RE = re.compile(r"\b(?:open_after_all_jsonl_plus_fresh[0-9]+|open_after_all_jsonl|open_after_join|open_after)\s*[=:]\s*([0-9]+)\b", re.IGNORECASE)
+OPEN_DIGEST_RE = re.compile(r"\bopen_digest\s*[=:]\s*([0-9a-fA-F]{64})\b", re.IGNORECASE)
+EMPTY_SHA256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 PREMATURE_RE = re.compile(r"\b(?:FOR[- ]AKASH|WINNER|mobile alert|submit(?:ted)?|ready[- ]to[- ]submit|Akash-ready)\b", re.IGNORECASE)
 COMPUTE_REQUEST_RE = re.compile(
@@ -107,6 +116,7 @@ def inspect(text: str, expected_source: str, expected_qubits: int) -> dict[str, 
     next_action = first_match(NEXT_RE, text)
     source_base = first_match(SOURCE_BASE_RE, text)
     source_hash = first_match(SOURCE_HASH_RE, text)
+    candidate_hash = first_match(CANDIDATE_HASH_RE, text)
     source_location = first_match(SOURCE_LOCATION_RE, text)
     frontier_score = first_float(FRONTIER_SCORE_RE, text)
     qubits = first_int(QUBITS_RE, text)
@@ -118,6 +128,10 @@ def inspect(text: str, expected_source: str, expected_qubits: int) -> dict[str, 
     proof_status = first_match(PROOF_STATUS_RE, text).upper()
     current_unknown = first_int(CURRENT_UNKNOWN_RE, text)
     closed_by_jsonl = first_int(CLOSED_BY_JSONL_RE, text)
+    summary_total = first_int(SUMMARY_TOTAL_RE, text)
+    closed_total = first_int(CLOSED_TOTAL_RE, text)
+    open_after = first_int(OPEN_AFTER_RE, text)
+    open_digest = first_match(OPEN_DIGEST_RE, text).lower()
 
     has_no_submit = bool(NO_SUBMIT_RE.search(text))
     has_source_bound = bool(source_hash and SOURCE_BOUND_RE.search(text))
@@ -134,6 +148,18 @@ def inspect(text: str, expected_source: str, expected_qubits: int) -> dict[str, 
         and current_unknown == closed_by_jsonl
         and not has_novelty_new
     )
+    has_source_family_exhausted = (
+        (
+            summary_total is not None
+            and summary_total > 0
+            and open_after == 0
+        )
+        or (
+            summary_total is not None
+            and summary_total > 0
+            and open_digest == EMPTY_SHA256
+        )
+    ) and not has_novelty_new
     has_premature_language = bool(PREMATURE_RE.search(text))
     has_compute_request = bool(COMPUTE_REQUEST_RE.search(text))
     has_local_host = bool(LOCAL_RE.search(text))
@@ -148,6 +174,8 @@ def inspect(text: str, expected_source: str, expected_qubits: int) -> dict[str, 
         failures.append("source_counterexample_or_ledger_hit")
     if has_all_current_closed:
         failures.append("all_current_unknowns_closed")
+    if has_source_family_exhausted:
+        failures.append("source_family_exhausted")
     if has_next_unclosed_empty and not has_novelty_new:
         failures.append("next_unclosed_empty_without_new_packet")
     if has_premature_language:
@@ -181,6 +209,8 @@ def inspect(text: str, expected_source: str, expected_qubits: int) -> dict[str, 
         holds.append("missing_qubits")
     if not source_hash:
         holds.append("missing_source_hash")
+    if not candidate_hash:
+        holds.append("missing_candidate_index_or_diff_hash")
     if not has_source_bound:
         holds.append("missing_source_hash_bound_context")
     if not source_location:
@@ -225,6 +255,7 @@ def inspect(text: str, expected_source: str, expected_qubits: int) -> dict[str, 
         "source_base": source_base,
         "expected_source": expected_source,
         "source_hash": bool(source_hash),
+        "candidate_hash": bool(candidate_hash),
         "source_location": source_location,
         "frontier_score": frontier_score,
         "qubits": qubits,
@@ -237,6 +268,11 @@ def inspect(text: str, expected_source: str, expected_qubits: int) -> dict[str, 
         "proof_status": proof_status or "missing",
         "current_unknown_scored": current_unknown,
         "closed_by_existing_jsonl": closed_by_jsonl,
+        "summary_total": summary_total,
+        "closed_total": closed_total,
+        "open_after": open_after,
+        "open_digest": open_digest or "missing",
+        "source_family_exhausted": has_source_family_exhausted,
         "next_unclosed_empty": has_next_unclosed_empty,
         "outside_closed_ledger": has_novelty_new,
         "novelty_unknown": has_novelty_unknown,
@@ -268,12 +304,15 @@ def text_summary(row: dict[str, object]) -> str:
         f"route_id={row['route_id'] or 'missing'} owner={row['owner'] or 'missing'} "
         f"next={row['next_action'] or 'missing'} source_base={row['source_base'] or 'missing'} "
         f"expected_source={row['expected_source'] or 'none'} source_hash={str(row['source_hash']).lower()} "
+        f"candidate_hash={str(row['candidate_hash']).lower()} "
         f"source_bound={str(row['source_bound']).lower()} source_location={row['source_location'] or 'missing'} "
         f"frontier_score={row['frontier_score']} qubits={row['qubits']} expected_qubits={row['expected_qubits']} "
         f"kind={row['kind'] or 'missing'} family={row['family'] or 'missing'} "
         f"evidence_label={row['evidence_label'] or 'missing'} delta={row['delta']} "
         f"support_status={row['support_status']} proof_status={row['proof_status']} "
         f"current_unknown_scored={row['current_unknown_scored']} closed_by_existing_jsonl={row['closed_by_existing_jsonl']} "
+        f"summary_total={row['summary_total']} closed_total={row['closed_total']} open_after={row['open_after']} "
+        f"open_digest={row['open_digest']} source_family_exhausted={str(row['source_family_exhausted']).lower()} "
         f"next_unclosed_empty={str(row['next_unclosed_empty']).lower()} outside_closed_ledger={str(row['outside_closed_ledger']).lower()} "
         f"ledger_hit={str(row['ledger_hit']).lower()} counterexample={str(row['counterexample']).lower()} "
         f"source_proof_intent={str(row['source_proof_intent']).lower()} remote_host={str(row['remote_host']).lower()} "

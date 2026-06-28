@@ -175,6 +175,9 @@ agent instructions or used as a preflight before route work:
 - `skills/candidate-validation-packet-gate.md`: check remote validation packets
   for host, owner, ops, score edge, c/p/a, artifacts, and no-submit discipline
   before FOR-AKASH language.
+- `skills/source-packet-novelty-gate.md`: admit only source-bound, candidate
+  hash-bound, negative-edge packets outside the closed ledger; fail exhausted
+  source-family summaries before any proof or compute request.
 - `skills/transcript-overlap-gate.md`: gate transcript peak-overlap drop
   packets before implementation, blocking active-only origins, stale indexes,
   dirty probes, missing peak calls, and premature residual/compute requests.
