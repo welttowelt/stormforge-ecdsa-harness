@@ -73,6 +73,7 @@ for path in \
   scripts/storm-pod-wrapper-dup-gate.py \
   scripts/storm-local-heavy-compute-gate.py \
   scripts/storm-candidate-validation-packet-gate.py \
+  scripts/storm-apply-cswap-support-gate.py \
   examples/fleet-owner-claim-vague-token.example.txt \
   examples/official-eval-isolation-helper-storm.example.sh \
   scripts/storm-q1152-avgt-theorem.py \
@@ -113,6 +114,9 @@ for path in \
   examples/candidate-validation-packet-pass.example.txt \
   examples/candidate-validation-packet-hold.example.txt \
   examples/candidate-validation-packet-fail.example.txt \
+  examples/apply-cswap-support-pass.example.txt \
+  examples/apply-cswap-support-hold.example.txt \
+  examples/apply-cswap-support-fail.example.txt \
   templates/exact-skip-candidate.json \
   docs/exact-support-miner.md \
   docs/redsky-stormgate-audit-2026-06-20-f8e215b-current.md \
@@ -152,6 +156,7 @@ for path in \
   skills/pod-wrapper-dup-gate.md \
   skills/local-heavy-compute-gate.md \
   skills/candidate-validation-packet-gate.md \
+  skills/apply-cswap-support-gate.md \
   skills/support-bounded-vented-dead-carry.md \
   skills/paper-gidney-constant-workspace-adder.md \
   skills/paper-mbu-modular-arithmetic.md \
@@ -204,6 +209,7 @@ for path in \
   .agents/skills/pod-wrapper-dup-gate/SKILL.md \
   .agents/skills/local-heavy-compute-gate/SKILL.md \
   .agents/skills/candidate-validation-packet-gate/SKILL.md \
+  .agents/skills/apply-cswap-support-gate/SKILL.md \
   .agents/skills/paper-gidney-constant-workspace-adder/SKILL.md \
   .agents/skills/paper-mbu-modular-arithmetic/SKILL.md \
   .agents/skills/paper-hrs-dirty-constant-adder/SKILL.md \
@@ -314,6 +320,8 @@ need_text scripts/storm-local-heavy-compute-gate.py "local heavy compute gate" "
 need_text scripts/storm-local-heavy-compute-gate.py "mac stop decision" "stop-mac-local-heavy-compute"
 need_text scripts/storm-candidate-validation-packet-gate.py "candidate validation packet gate" "candidate_validation_packet_gate="
 need_text scripts/storm-candidate-validation-packet-gate.py "akash handoff decision" "candidate-for-akash-handoff-no-submit"
+need_text scripts/storm-apply-cswap-support-gate.py "apply cswap support gate" "apply_cswap_support_gate="
+need_text scripts/storm-apply-cswap-support-gate.py "per step bit decision" "complete-per-step-per-bit-proof"
 need_text scripts/storm-claim-ledger.py "claim ledger summary" "claim_ledger_summary"
 need_text scripts/storm-q1152-avgt-theorem.py "q1152 avgT theorem" "q1152_avgt_theorem=pass"
 need_text scripts/storm-q1152-avgt-theorem.py "condition discount" "classical condition"
@@ -332,6 +340,7 @@ need_text skills/fleet-owner-claim-gate.md "strict packet skill" "strict-single-
 need_text skills/pod-wrapper-dup-gate.md "pod wrapper duplicate skill" "Duplicate GPU wrappers"
 need_text skills/local-heavy-compute-gate.md "local heavy compute skill" "Mac-local heavy compute"
 need_text skills/candidate-validation-packet-gate.md "candidate validation skill" "FOR-AKASH"
+need_text skills/apply-cswap-support-gate.md "apply cswap support skill" "per-step and per-bit"
 need_text .agents/skills/single-ccx-fanout-throughput/SKILL.md "bridge" "fanout-no-clone-d44.patch"
 need_text .agents/skills/fanout-survivor-phase-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/fanout-burst-triage-gate/SKILL.md "bridge" "Codex-discoverable bridge"
@@ -341,6 +350,7 @@ need_text .agents/skills/fleet-owner-claim-gate/SKILL.md "bridge" "Codex-discove
 need_text .agents/skills/pod-wrapper-dup-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/local-heavy-compute-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/candidate-validation-packet-gate/SKILL.md "bridge" "Codex-discoverable bridge"
+need_text .agents/skills/apply-cswap-support-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text scripts/storm-cout-host-row-gate.py "cout host row gate" "cout_host_row_gate=pass"
 need_text scripts/storm-cout-host-row-gate.py "safe host row" "SAFE_HOST_ROW"
 need_text scripts/storm-zero-host-accounting-gate.py "zero host accounting" "zero_host_accounting_gate=pass"
@@ -1621,6 +1631,59 @@ elif ! grep -q 'candidate_validation_packet_gate=fail' "$tmpdir/candidate-valida
   printf 'public_harness_check=fail candidate_validation_packet_fail_output\n' >&2
   cat "$tmpdir/candidate-validation-packet-fail.out" >&2
   cat "$tmpdir/candidate-validation-packet-fail.err" >&2
+  fail=1
+fi
+
+if ! python3 scripts/storm-apply-cswap-support-gate.py \
+  examples/apply-cswap-support-pass.example.txt \
+  --require-pass \
+  >"$tmpdir/apply-cswap-support-pass.out" \
+  2>"$tmpdir/apply-cswap-support-pass.err"; then
+  printf 'public_harness_check=fail apply_cswap_support_pass_failed\n' >&2
+  cat "$tmpdir/apply-cswap-support-pass.err" >&2
+  fail=1
+elif ! grep -q 'apply_cswap_support_gate=pass' "$tmpdir/apply-cswap-support-pass.out" ||
+     ! grep -q 'exact_scope=true' "$tmpdir/apply-cswap-support-pass.out" ||
+     ! grep -q 'invariants=swp_zero' "$tmpdir/apply-cswap-support-pass.out" ||
+     ! grep -q 'ready-for-source-proof-review-no-submit' "$tmpdir/apply-cswap-support-pass.out"; then
+  printf 'public_harness_check=fail apply_cswap_support_pass_output\n' >&2
+  cat "$tmpdir/apply-cswap-support-pass.out" >&2
+  fail=1
+fi
+
+if python3 scripts/storm-apply-cswap-support-gate.py \
+  examples/apply-cswap-support-hold.example.txt \
+  --require-pass \
+  >"$tmpdir/apply-cswap-support-hold.out" \
+  2>"$tmpdir/apply-cswap-support-hold.err"; then
+  printf 'public_harness_check=fail apply_cswap_support_hold_unexpected_pass\n' >&2
+  cat "$tmpdir/apply-cswap-support-hold.out" >&2
+  fail=1
+elif ! grep -q 'apply_cswap_support_gate=hold' "$tmpdir/apply-cswap-support-hold.out" ||
+     ! grep -q 'missing_per_step_per_bit_scope' "$tmpdir/apply-cswap-support-hold.out" ||
+     ! grep -q 'missing_source_hash_bound_certificate' "$tmpdir/apply-cswap-support-hold.out" ||
+     ! grep -q 'support_unknown' "$tmpdir/apply-cswap-support-hold.out"; then
+  printf 'public_harness_check=fail apply_cswap_support_hold_output\n' >&2
+  cat "$tmpdir/apply-cswap-support-hold.out" >&2
+  cat "$tmpdir/apply-cswap-support-hold.err" >&2
+  fail=1
+fi
+
+if python3 scripts/storm-apply-cswap-support-gate.py \
+  examples/apply-cswap-support-fail.example.txt \
+  --require-pass \
+  >"$tmpdir/apply-cswap-support-fail.out" \
+  2>"$tmpdir/apply-cswap-support-fail.err"; then
+  printf 'public_harness_check=fail apply_cswap_support_fail_unexpected_pass\n' >&2
+  cat "$tmpdir/apply-cswap-support-fail.out" >&2
+  fail=1
+elif ! grep -q 'apply_cswap_support_gate=fail' "$tmpdir/apply-cswap-support-fail.out" ||
+     ! grep -q 'broad_cswap_delete_scope' "$tmpdir/apply-cswap-support-fail.out" ||
+     ! grep -q 'support_counterexample' "$tmpdir/apply-cswap-support-fail.out" ||
+     ! grep -q 'premature_submit_or_akash_language' "$tmpdir/apply-cswap-support-fail.out"; then
+  printf 'public_harness_check=fail apply_cswap_support_fail_output\n' >&2
+  cat "$tmpdir/apply-cswap-support-fail.out" >&2
+  cat "$tmpdir/apply-cswap-support-fail.err" >&2
   fail=1
 fi
 

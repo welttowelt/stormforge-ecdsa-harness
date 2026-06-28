@@ -1,0 +1,11 @@
+route=apply-step-cswap-blanket-delete
+host=mac
+source_base=d44cad3
+source_location=src/point_add/trailmix_ludicrous/gcd.rs:1591
+scope=delete all apply cswaps in the final block
+primitive_family=apply_cswap_live
+support_status=COUNTEREXAMPLE
+support_certificate=blanket delete based on broad final-block intuition
+expected_avgT_delta=0
+decision=FOR-AKASH after local wrapper
+no_submit_ack=no

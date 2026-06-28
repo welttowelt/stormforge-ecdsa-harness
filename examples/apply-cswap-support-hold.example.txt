@@ -1,0 +1,10 @@
+route=apply-cswap-step-proof-incomplete
+host=studio
+source_base=d44cad3
+source_location=src/point_add/trailmix_ludicrous/gcd.rs:1591
+primitive_family=apply_cswap_exact_zero
+step=203
+support_status=UNKNOWN
+support_certificate=needs per-bit source-hash-bound public proof
+validation_target=trusted full 0/0/0 after proof
+no_submit_ack=yes

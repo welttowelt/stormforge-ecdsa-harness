@@ -1,0 +1,17 @@
+route=apply-cswap-step-bit-proof
+host=studio
+owner=validator
+source_base=d44cad3
+source_hash=0123456789abcdef
+source_location=src/point_add/trailmix_ludicrous/gcd.rs:1591
+primitive_family=apply_cswap_exact_zero
+direction=forward
+step=203
+bit=17
+invariant=swp_zero
+support_status=CERTIFIED
+support_certificate=source-hash-bound public enumerator proves step=203 bit=17 swp=0 on reachable states
+proof_method=per_step_per_bit_support_enum
+expected_avgT_delta=-1
+validation_target=exact-miner proof then candidate-validation-packet gate; trusted full 0/0/0 required
+no_submit_ack=yes
