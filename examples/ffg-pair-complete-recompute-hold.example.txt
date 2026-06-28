@@ -1,0 +1,15 @@
+route_id=ffg-pair-complete-recompute
+route=ffg-pair-complete-toy
+source_base=d44cad3
+qubits=1152
+evidence_label=Partial
+claim=recompute predecessor boundary carries on demand
+chunks=4
+carry_predictor=pass
+no_recompute_dependency_violations=3
+recompute_required=1
+recompute_predicates_lower_bound=6
+restore_proof=unknown
+phase_proof=unknown
+decision=recompute-plan-needs-source-phase-score-proof
+no_submit_ack=yes

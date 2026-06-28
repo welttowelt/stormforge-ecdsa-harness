@@ -94,6 +94,8 @@ endorsement where there was only inspiration.
 - A redaction checklist and automated redaction scan.
 - Machine-readable claim-ledger, proof-backlog, pod-admission, and state-packet
   helper scripts for running short control loops without private state.
+- Public carry-toy gates that separate value/recompute hypotheses from compute
+  or submit authorization.
 - Public patch packages for source-preserving throughput helpers that require
   their own validation gates before use.
 - Public-credit policy for community-derived ideas.

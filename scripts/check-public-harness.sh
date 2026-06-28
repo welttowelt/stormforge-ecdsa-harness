@@ -58,6 +58,7 @@ for path in \
   scripts/storm-peak-lifetime-ledger.py \
   scripts/storm-gidney-thread-join.py \
   scripts/storm-windowed-carry-toy.py \
+  scripts/storm-ffg-pair-complete-toy.py \
   scripts/storm-const-chunk-prefix-ledger.py \
   scripts/storm-q1152-binder-ledger.py \
   scripts/storm-mcx-incrementer-budget.py \
@@ -129,6 +130,8 @@ for path in \
   examples/source-packet-novelty-fail.example.txt \
   examples/source-packet-novelty-family-exhausted.example.txt \
   examples/source-packet-novelty-stale.example.txt \
+  examples/ffg-pair-complete-no-recompute.example.txt \
+  examples/ffg-pair-complete-recompute-hold.example.txt \
   examples/transcript-overlap-pass.example.txt \
   examples/transcript-overlap-hold.example.txt \
   examples/transcript-overlap-fail.example.txt \
@@ -143,6 +146,7 @@ for path in \
   examples/compute-unlock-stale.example.txt \
   templates/exact-skip-candidate.json \
   docs/exact-support-miner.md \
+  docs/bluesky-redsky-ffg-pair-complete-toy-2026-06-28.md \
   docs/redsky-stormgate-audit-2026-06-20-f8e215b-current.md \
   operators/codex-storm.md \
   operators/deep-storm.md \
@@ -326,6 +330,9 @@ need_text scripts/storm-alloc-owner-summary.py "alloc owner summary" "alloc_owne
 need_text scripts/storm-peak-lifetime-ledger.py "peak lifetime ledger" "peak_lifetime_ledger=pass"
 need_text scripts/storm-gidney-thread-join.py "gidney thread join" "gidney_thread_join=pass"
 need_text scripts/storm-windowed-carry-toy.py "windowed carry toy" "windowed_carry_toy="
+need_text scripts/storm-ffg-pair-complete-toy.py "ffg pair complete toy" "ffg_pair_complete_toy="
+need_text scripts/storm-ffg-pair-complete-toy.py "no recompute nack" "no-recompute-pair-complete-nack"
+need_text scripts/storm-ffg-pair-complete-toy.py "recompute hold" "recompute-plan-needs-source-phase-score-proof"
 need_text scripts/storm-q1152-binder-ledger.py "q1152 binder ledger" "q1152_binder_ledger=pass"
 need_text scripts/storm-q1152-binder-ledger.py "mcx floor" "none_kg_prefix_ancilla"
 need_text scripts/storm-mcx-incrementer-budget.py "mcx incrementer budget" "mcx_incrementer_budget=pass"
@@ -447,6 +454,8 @@ need_text examples/support-facts.example.jsonl "support fixture" "dirty_host"
 need_text examples/nack-ledger.example.jsonl "nack ledger fixture" "nack_note"
 need_text examples/exact-skip-candidates.example.jsonl "proof packet" "proof_status"
 need_text examples/cycle48-audit-impact.example.json "machine-readable improvement" "ranked_unknown_rows_reduction_pct"
+need_text examples/ffg-pair-complete-no-recompute.example.txt "ffg no recompute fixture" "no-recompute-pair-complete-nack"
+need_text examples/ffg-pair-complete-recompute-hold.example.txt "ffg recompute fixture" "recompute-plan-needs-source-phase-score-proof"
 need_text examples/apply-overlap-trace.example.txt "apply overlap fixture" "TLM_OVERLAP_CHECK"
 need_text examples/apply-overlap-trace.example.txt "apply overlap tail fixture" "TLM_TAIL"
 need_text examples/apply-overlap-restore-missing.example.txt "apply overlap restore-missing fixture" "restore_proof=0"
@@ -459,6 +468,8 @@ need_text docs/exact-support-miner.md "exact support miner" "Exact Support Miner
 need_text docs/exact-support-miner.md "support checker" "support-check"
 need_text docs/exact-support-miner.md "redsky gate" "Redsky"
 need_text docs/exact-support-miner.md "pip gate" "PIP"
+need_text docs/bluesky-redsky-ffg-pair-complete-toy-2026-06-28.md "ffg pair complete audit" "FFG Pair-Complete Toy"
+need_text docs/bluesky-redsky-ffg-pair-complete-toy-2026-06-28.md "ffg no compute" "No candidate, no official clean run"
 need_text docs/redsky-stormgate-audit-2026-06-20-f8e215b-current.md "current source" "f8e215b"
 need_text docs/redsky-stormgate-audit-2026-06-20-f8e215b-current.md "no submit gate" "No clean winning candidate"
 need_text operators/kimi-storm.md "kimi boss" "operator boss"
@@ -2756,6 +2767,41 @@ if python3 scripts/storm-windowed-carry-toy.py \
 elif ! grep -q -- '--window and --count-window must be >=1' "$tmpdir/windowed-carry-zero-window.err"; then
   printf 'public_harness_check=fail windowed_carry_zero_window_error\n' >&2
   cat "$tmpdir/windowed-carry-zero-window.err" >&2
+  fail=1
+fi
+
+if ! python3 scripts/storm-ffg-pair-complete-toy.py \
+  --max-width 5 \
+  --chunks 4 >"$tmpdir/ffg-pair-complete-no-recompute.out" 2>"$tmpdir/ffg-pair-complete-no-recompute.err"; then
+  printf 'public_harness_check=fail ffg_pair_complete_no_recompute_failed\n' >&2
+  cat "$tmpdir/ffg-pair-complete-no-recompute.err" >&2
+  fail=1
+elif ! grep -q 'ffg_pair_complete_toy=fail' "$tmpdir/ffg-pair-complete-no-recompute.out" ||
+     ! grep -q 'carry_predictor_mismatches=0' "$tmpdir/ffg-pair-complete-no-recompute.out" ||
+     ! grep -q 'no_recompute_dependency_violations=3' "$tmpdir/ffg-pair-complete-no-recompute.out" ||
+     ! grep -q 'recompute_required=1' "$tmpdir/ffg-pair-complete-no-recompute.out" ||
+     ! grep -q 'decision=no-recompute-pair-complete-nack' "$tmpdir/ffg-pair-complete-no-recompute.out" ||
+     ! grep -q 'witness=erase_carry_1_needs_freed_carry_0' "$tmpdir/ffg-pair-complete-no-recompute.out" ||
+     ! grep -q 'source_edit_ready=0' "$tmpdir/ffg-pair-complete-no-recompute.out"; then
+  printf 'public_harness_check=fail ffg_pair_complete_no_recompute_output\n' >&2
+  cat "$tmpdir/ffg-pair-complete-no-recompute.out" >&2
+  fail=1
+fi
+
+if ! python3 scripts/storm-ffg-pair-complete-toy.py \
+  --max-width 5 \
+  --chunks 4 \
+  --allow-recompute >"$tmpdir/ffg-pair-complete-recompute.out" 2>"$tmpdir/ffg-pair-complete-recompute.err"; then
+  printf 'public_harness_check=fail ffg_pair_complete_recompute_failed\n' >&2
+  cat "$tmpdir/ffg-pair-complete-recompute.err" >&2
+  fail=1
+elif ! grep -q 'ffg_pair_complete_toy=hold' "$tmpdir/ffg-pair-complete-recompute.out" ||
+     ! grep -q 'carry_predictor_mismatches=0' "$tmpdir/ffg-pair-complete-recompute.out" ||
+     ! grep -q 'recompute_predicates_lower_bound=6' "$tmpdir/ffg-pair-complete-recompute.out" ||
+     ! grep -q 'decision=recompute-plan-needs-source-phase-score-proof' "$tmpdir/ffg-pair-complete-recompute.out" ||
+     ! grep -q 'required_next=source-hash-bound-recompute-certificate' "$tmpdir/ffg-pair-complete-recompute.out"; then
+  printf 'public_harness_check=fail ffg_pair_complete_recompute_output\n' >&2
+  cat "$tmpdir/ffg-pair-complete-recompute.out" >&2
   fail=1
 fi
 

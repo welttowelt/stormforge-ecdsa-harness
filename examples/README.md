@@ -16,6 +16,8 @@ Use them to teach agents the workflow:
 - source-certificate scouts filter already-closed context rows before mining,
 - source-packet novelty checks accept public `src/point_add` sites beyond one
   subdirectory,
+- FFG pair-complete fixtures distinguish no-recompute NACKs from recompute
+  proof holds,
 - candidate validation packets fail stale source bases before handoff language,
 - scanner output stays `Prefilter` until official validation passes.
 

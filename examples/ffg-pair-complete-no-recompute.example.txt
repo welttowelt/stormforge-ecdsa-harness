@@ -1,0 +1,14 @@
+route_id=ffg-pair-complete-no-recompute
+route=ffg-pair-complete-toy
+source_base=d44cad3
+qubits=1152
+evidence_label=Partial
+claim=no-recompute pair-complete frees predecessor boundary carry early
+chunks=4
+carry_predictor=pass
+no_recompute_dependency_violations=3
+recompute_required=1
+restore_proof=0
+phase_proof=0
+decision=no-recompute-pair-complete-nack
+no_submit_ack=yes
