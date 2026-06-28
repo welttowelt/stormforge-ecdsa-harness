@@ -81,6 +81,7 @@ for path in \
   scripts/storm-source-packet-novelty-gate.py \
   scripts/storm-source-row-routing-gate.py \
   scripts/storm-gidney-ccz-residual-gate.py \
+  scripts/storm-qoffset-host-accounting-gate.py \
   scripts/storm-transcript-overlap-gate.py \
   scripts/storm-compute-restart-gate.py \
   scripts/storm-compute-unlock-gate.py \
@@ -152,6 +153,10 @@ for path in \
   examples/gidney-ccz-residual-pass.example.txt \
   examples/gidney-ccz-residual-hold.example.txt \
   examples/gidney-ccz-residual-fail.example.txt \
+  examples/qoffset-host-accounting-pass.example.txt \
+  examples/qoffset-host-accounting-closure.example.txt \
+  examples/qoffset-host-accounting-hold.example.txt \
+  examples/qoffset-host-accounting-fail.example.txt \
   examples/ffg-pair-complete-no-recompute.example.txt \
   examples/ffg-pair-complete-recompute-hold.example.txt \
   examples/transcript-overlap-pass.example.txt \
@@ -224,6 +229,7 @@ for path in \
   skills/source-packet-novelty-gate.md \
   skills/source-row-routing-gate.md \
   skills/gidney-ccz-residual-gate.md \
+  skills/qoffset-host-accounting-gate.md \
   skills/transcript-overlap-gate.md \
   skills/compute-unlock-gate.md \
   skills/compute-restart-gate.md \
@@ -287,6 +293,7 @@ for path in \
   .agents/skills/source-packet-novelty-gate/SKILL.md \
   .agents/skills/source-row-routing-gate/SKILL.md \
   .agents/skills/gidney-ccz-residual-gate/SKILL.md \
+  .agents/skills/qoffset-host-accounting-gate/SKILL.md \
   .agents/skills/transcript-overlap-gate/SKILL.md \
   .agents/skills/compute-unlock-gate/SKILL.md \
   .agents/skills/compute-restart-gate/SKILL.md \
@@ -426,6 +433,8 @@ need_text scripts/storm-source-row-routing-gate.py "source row routing gate" "so
 need_text scripts/storm-source-row-routing-gate.py "source row closure decision" "source-row-closed-advance-next-no-compute"
 need_text scripts/storm-gidney-ccz-residual-gate.py "gidney ccz residual gate" "gidney_ccz_residual_gate="
 need_text scripts/storm-gidney-ccz-residual-gate.py "default remainder failure" "default_on_remainder_not_new_edge"
+need_text scripts/storm-qoffset-host-accounting-gate.py "qoffset host accounting gate" "qoffset_host_accounting_gate="
+need_text scripts/storm-qoffset-host-accounting-gate.py "qoffset unknown close failure" "proof_unknown_close_as_nack"
 need_text scripts/storm-transcript-overlap-gate.py "transcript overlap gate" "transcript_overlap_gate="
 need_text scripts/storm-transcript-overlap-gate.py "source theorem review decision" "source-theorem-review-no-compute"
 need_text scripts/storm-transcript-overlap-gate.py "score edge failure" "score_no_edge"
@@ -473,6 +482,8 @@ need_text skills/source-row-routing-gate.md "source row routing skill" "Source R
 need_text skills/source-row-routing-gate.md "source row no compute" "no-compute"
 need_text skills/gidney-ccz-residual-gate.md "gidney ccz residual skill" "Gidney CCZ Residual Gate"
 need_text skills/gidney-ccz-residual-gate.md "gidney ccz no auto compute" "no automatic compute"
+need_text skills/qoffset-host-accounting-gate.md "qoffset host accounting skill" "Qoffset Host Accounting Gate"
+need_text skills/qoffset-host-accounting-gate.md "qoffset no compute" "no-compute"
 need_text skills/transcript-overlap-gate.md "transcript overlap skill" "transcript peak-overlap"
 need_text skills/transcript-overlap-gate.md "active only failure" "active-only"
 need_text skills/compute-restart-gate.md "compute restart skill" "scanner restart"
@@ -496,6 +507,7 @@ need_text .agents/skills/source-packet-novelty-gate/SKILL.md "bridge" "Codex-dis
 need_text .agents/skills/source-packet-novelty-gate/SKILL.md "bridge candidate hash" "candidate index/diff hash"
 need_text .agents/skills/source-row-routing-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/gidney-ccz-residual-gate/SKILL.md "bridge" "Codex-discoverable bridge"
+need_text .agents/skills/qoffset-host-accounting-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/transcript-overlap-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/compute-unlock-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/compute-restart-gate/SKILL.md "bridge" "Codex-discoverable bridge"
@@ -552,6 +564,10 @@ need_text examples/source-row-routing-fail.example.txt "source row fail fixture"
 need_text examples/gidney-ccz-residual-pass.example.txt "gidney ccz pass fixture" "gidney-ccz-residual-certified"
 need_text examples/gidney-ccz-residual-hold.example.txt "gidney ccz hold fixture" "support_status=UNKNOWN"
 need_text examples/gidney-ccz-residual-fail.example.txt "gidney ccz fail fixture" "gidney_erase_capped_ccz_remainder"
+need_text examples/qoffset-host-accounting-pass.example.txt "qoffset pass fixture" "qoffset-host-accounting-certified"
+need_text examples/qoffset-host-accounting-closure.example.txt "qoffset closure fixture" "qoffset-host-accounting-counterexample"
+need_text examples/qoffset-host-accounting-hold.example.txt "qoffset hold fixture" "restore_proof=0"
+need_text examples/qoffset-host-accounting-fail.example.txt "qoffset fail fixture" "proof_status=UNPROVEN"
 need_text templates/exact-skip-candidate.json "allocator unchanged" "allocator_unchanged"
 need_text templates/exact-skip-candidate.json "support status" "support_status"
 need_text templates/exact-skip-candidate.json "trace context family" "trace_context_family"
@@ -730,6 +746,66 @@ if python3 scripts/storm-gidney-ccz-residual-gate.py \
 elif ! grep -q 'delta_overclaims_shot_mass' "$tmpdir/gidney-ccz-overclaim.out"; then
   printf 'public_harness_check=fail gidney_ccz_overclaim_output\n' >&2
   cat "$tmpdir/gidney-ccz-overclaim.out" >&2
+  fail=1
+fi
+
+if ! python3 scripts/storm-qoffset-host-accounting-gate.py \
+  examples/qoffset-host-accounting-pass.example.txt \
+  --require-pass >"$tmpdir/qoffset-host-accounting-pass.out" 2>"$tmpdir/qoffset-host-accounting-pass.err"; then
+  printf 'public_harness_check=fail qoffset_host_accounting_pass_failed\n' >&2
+  cat "$tmpdir/qoffset-host-accounting-pass.err" >&2
+  cat "$tmpdir/qoffset-host-accounting-pass.out" >&2
+  fail=1
+elif ! grep -q 'qoffset_host_accounting_gate=pass' "$tmpdir/qoffset-host-accounting-pass.out" ||
+     ! grep -q 'decision=qoffset-host-accounting-certified-no-compute-review' "$tmpdir/qoffset-host-accounting-pass.out" ||
+     ! grep -q 'counted_q1152=true' "$tmpdir/qoffset-host-accounting-pass.out"; then
+  printf 'public_harness_check=fail qoffset_host_accounting_pass_output\n' >&2
+  cat "$tmpdir/qoffset-host-accounting-pass.out" >&2
+  fail=1
+fi
+if ! python3 scripts/storm-qoffset-host-accounting-gate.py \
+  examples/qoffset-host-accounting-closure.example.txt \
+  --require-pass >"$tmpdir/qoffset-host-accounting-closure.out" 2>"$tmpdir/qoffset-host-accounting-closure.err"; then
+  printf 'public_harness_check=fail qoffset_host_accounting_closure_failed\n' >&2
+  cat "$tmpdir/qoffset-host-accounting-closure.err" >&2
+  cat "$tmpdir/qoffset-host-accounting-closure.out" >&2
+  fail=1
+elif ! grep -q 'qoffset_host_accounting_gate=pass' "$tmpdir/qoffset-host-accounting-closure.out" ||
+     ! grep -q 'decision=qoffset-host-accounting-counterexample-closed-no-compute' "$tmpdir/qoffset-host-accounting-closure.out" ||
+     ! grep -q 'closure=True' "$tmpdir/qoffset-host-accounting-closure.out"; then
+  printf 'public_harness_check=fail qoffset_host_accounting_closure_output\n' >&2
+  cat "$tmpdir/qoffset-host-accounting-closure.out" >&2
+  fail=1
+fi
+if ! python3 scripts/storm-qoffset-host-accounting-gate.py \
+  examples/qoffset-host-accounting-hold.example.txt >"$tmpdir/qoffset-host-accounting-hold.out" 2>"$tmpdir/qoffset-host-accounting-hold.err"; then
+  printf 'public_harness_check=fail qoffset_host_accounting_hold_unexpected_error\n' >&2
+  cat "$tmpdir/qoffset-host-accounting-hold.err" >&2
+  fail=1
+elif ! grep -q 'qoffset_host_accounting_gate=hold' "$tmpdir/qoffset-host-accounting-hold.out" ||
+     ! grep -q 'missing_candidate_hash' "$tmpdir/qoffset-host-accounting-hold.out" ||
+     ! grep -q 'restore_proof_missing' "$tmpdir/qoffset-host-accounting-hold.out"; then
+  printf 'public_harness_check=fail qoffset_host_accounting_hold_output\n' >&2
+  cat "$tmpdir/qoffset-host-accounting-hold.out" >&2
+  fail=1
+fi
+if python3 scripts/storm-qoffset-host-accounting-gate.py \
+  examples/qoffset-host-accounting-hold.example.txt \
+  --require-pass >"$tmpdir/qoffset-host-accounting-hold-strict.out" 2>"$tmpdir/qoffset-host-accounting-hold-strict.err"; then
+  printf 'public_harness_check=fail qoffset_host_accounting_hold_strict_unexpected_pass\n' >&2
+  cat "$tmpdir/qoffset-host-accounting-hold-strict.out" >&2
+  fail=1
+fi
+if python3 scripts/storm-qoffset-host-accounting-gate.py \
+  examples/qoffset-host-accounting-fail.example.txt >"$tmpdir/qoffset-host-accounting-fail.out" 2>"$tmpdir/qoffset-host-accounting-fail.err"; then
+  printf 'public_harness_check=fail qoffset_host_accounting_fail_unexpected_pass\n' >&2
+  cat "$tmpdir/qoffset-host-accounting-fail.out" >&2
+  fail=1
+elif ! grep -q 'qoffset_host_accounting_gate=fail' "$tmpdir/qoffset-host-accounting-fail.out" ||
+     ! grep -q 'proof_unknown_close_as_nack' "$tmpdir/qoffset-host-accounting-fail.out" ||
+     ! grep -q 'premature_compute_or_residual_request' "$tmpdir/qoffset-host-accounting-fail.out"; then
+  printf 'public_harness_check=fail qoffset_host_accounting_fail_output\n' >&2
+  cat "$tmpdir/qoffset-host-accounting-fail.out" >&2
   fail=1
 fi
 

@@ -1,0 +1,20 @@
+ACK Rotbloomberg CLAIM qoffset-host-accounting-needs-fields skill=redsky+qoffset-host-accounting-gate file=src/point_add/trailmix_ludicrous/arith.rs:1090 next=complete-source-integrated-packet no_submit_ack=yes
+route_id=d44cad3_qoffset_source_integrated_hold_001
+owner=Rotbloomberg
+host=studio
+source_base=d44cad3
+frontier_score=1571592960
+q=1152
+source_location=src/point_add/trailmix_ludicrous/arith.rs:1090
+source_hash=82826d8bb041577c
+qoffset=0x09000000
+source_integrated=yes
+host_accounting=source_integrated_counted
+counted_q1152=yes
+expected_avgT_delta=-0.25
+support_status=CERTIFIED
+proof_status=CERTIFIED
+restore_proof=0
+phase_proof=0
+evidence_label=Prefilter
+no_submit_ack=yes

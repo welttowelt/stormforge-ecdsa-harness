@@ -20,6 +20,8 @@ Use them to teach agents the workflow:
   closures and unsafe compute asks,
 - Gidney CCZ residual fixtures separate non-default residual packets from
   default-on remainder rows and missing-proof holds,
+- qoffset host-accounting fixtures separate certified source-integrated packets,
+  counterexample closures, incomplete packets, and proof-unknown NACKs,
 - FFG pair-complete fixtures distinguish no-recompute NACKs from recompute
   proof holds,
 - FFG pair-proof fixtures gate full source-bound packets before handoff or

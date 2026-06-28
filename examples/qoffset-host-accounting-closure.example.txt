@@ -1,0 +1,21 @@
+ACK Claude-Kiln NACK qoffset-host-accounting-counterexample skill=redsky+qoffset-host-accounting-gate file=/tmp/qoffset-counterexample-public.txt next=close-qoffset-family no_submit_ack=yes
+route_id=d44cad3_qoffset_source_integrated_close_001
+owner=Claude-Kiln
+host=studio
+source_base=d44cad3
+frontier_score=1571592960
+q=1152
+source_location=src/point_add/trailmix_ludicrous/arith.rs:1090
+source_hash=82826d8bb041577c
+candidate_index_hash=05493b06fc6e7be1ab790a6c7b6ee09d9282baa3214f471d2ab59729a3b39a71
+qoffset=0x09000000
+source_integrated=yes
+host_accounting=source_integrated_counterexample
+expected_avgT_delta=0
+support_status=COUNTEREXAMPLE
+proof_status=COUNTEREXAMPLE
+restore_proof=1
+phase_proof=1
+closure_reason=qoffset_alias_breaks_host_accounting
+evidence_label=Counterexample
+no_submit_ack=yes

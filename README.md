@@ -198,6 +198,9 @@ agent instructions or used as a preflight before route work:
   advances to the next source row, with no compute authority.
 - `skills/gidney-ccz-residual-gate.md`: screen Gidney erase-CCZ residual
   packets so default-on remainder rows and below-bar mass do not unlock compute.
+- `skills/qoffset-host-accounting-gate.md`: require source-integrated qoffset
+  packets or closures to carry source/candidate hashes, proof status, restore
+  and phase flags, counted q1152 delta, and no-submit discipline.
 - `skills/transcript-overlap-gate.md`: gate transcript peak-overlap drop
   packets before implementation, blocking active-only origins, stale indexes,
   dirty probes, missing peak calls, and premature residual/compute requests.
@@ -292,6 +295,7 @@ The bridge names are:
 - `compute-restart-gate`
 - `compute-unlock-gate`
 - `candidate-validation-packet-gate`
+- `qoffset-host-accounting-gate`
 - `transcript-overlap-gate`
 - `paper-gidney-constant-workspace-adder`
 - `paper-mbu-modular-arithmetic`
