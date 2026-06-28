@@ -27,7 +27,8 @@ Use them to teach agents the workflow:
 - construction-intake fixtures separate source-bound paper construction packets
   from incomplete handoffs and paper-only compute asks,
 - anvil-mass-ledger fixtures separate complete conditional-Toffoli economics
-  ledgers from incomplete rows and stale/score-inconsistent promotions,
+  and raw mass ledgers from incomplete rows and stale/score-inconsistent
+  promotions,
 - pebbling-theorem fixtures separate certified recompute/pebbling DAG packets
   from incomplete handoffs and stale/dirty compute asks,
 - FFG pair-complete fixtures distinguish no-recompute NACKs from recompute

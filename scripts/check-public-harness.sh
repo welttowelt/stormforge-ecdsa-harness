@@ -169,6 +169,7 @@ for path in \
   examples/construction-intake-hold.example.txt \
   examples/construction-intake-fail.example.txt \
   examples/anvil-mass-ledger-pass.example.tsv \
+  examples/anvil-mass-ledger-raw-pass.example.tsv \
   examples/anvil-mass-ledger-hold.example.tsv \
   examples/anvil-mass-ledger-fail.example.tsv \
   examples/pebbling-theorem-pass.example.txt \
@@ -612,6 +613,7 @@ need_text examples/construction-intake-pass.example.txt "construction intake pas
 need_text examples/construction-intake-hold.example.txt "construction intake hold fixture" "construction-intake-incomplete"
 need_text examples/construction-intake-fail.example.txt "construction intake fail fixture" "paper_only=yes"
 need_text examples/anvil-mass-ledger-pass.example.tsv "anvil mass ledger pass fixture" "d44cad3_mass_row_new"
+need_text examples/anvil-mass-ledger-raw-pass.example.tsv "anvil raw mass ledger pass fixture" "2273872"
 need_text examples/anvil-mass-ledger-hold.example.tsv "anvil mass ledger hold fixture" "d44cad3_mass_row_incomplete"
 need_text examples/anvil-mass-ledger-fail.example.tsv "anvil mass ledger fail fixture" "58866a2"
 need_text examples/pebbling-theorem-pass.example.txt "pebbling theorem pass fixture" "pebbling-theorem-source-bound"
@@ -988,6 +990,21 @@ elif ! grep -q 'anvil_mass_ledger_gate=pass' "$tmpdir/anvil-mass-ledger-pass.out
      ! grep -q 'closure_rows=1' "$tmpdir/anvil-mass-ledger-pass.out"; then
   printf 'public_harness_check=fail anvil_mass_ledger_pass_output\n' >&2
   cat "$tmpdir/anvil-mass-ledger-pass.out" >&2
+  fail=1
+fi
+if ! python3 scripts/storm-anvil-mass-ledger-gate.py \
+  examples/anvil-mass-ledger-raw-pass.example.tsv \
+  --require-pass >"$tmpdir/anvil-mass-ledger-raw-pass.out" 2>"$tmpdir/anvil-mass-ledger-raw-pass.err"; then
+  printf 'public_harness_check=fail anvil_mass_ledger_raw_pass_failed\n' >&2
+  cat "$tmpdir/anvil-mass-ledger-raw-pass.err" >&2
+  cat "$tmpdir/anvil-mass-ledger-raw-pass.out" >&2
+  fail=1
+elif ! grep -q 'anvil_mass_ledger_gate=pass' "$tmpdir/anvil-mass-ledger-raw-pass.out" ||
+     ! grep -q 'schema=raw' "$tmpdir/anvil-mass-ledger-raw-pass.out" ||
+     ! grep -q 'decision=raw-mass-ledger-ready-no-compute' "$tmpdir/anvil-mass-ledger-raw-pass.out" ||
+     ! grep -q 'over_bar_rows=3' "$tmpdir/anvil-mass-ledger-raw-pass.out"; then
+  printf 'public_harness_check=fail anvil_mass_ledger_raw_pass_output\n' >&2
+  cat "$tmpdir/anvil-mass-ledger-raw-pass.out" >&2
   fail=1
 fi
 if ! python3 scripts/storm-anvil-mass-ledger-gate.py \

@@ -34,6 +34,17 @@ REQUIRED_COLUMNS = {
     "next_gate",
 }
 
+RAW_COLUMNS = {
+    "op_index",
+    "kind",
+    "q_target",
+    "q_c1",
+    "q_c2",
+    "c_condition",
+    "mass",
+    "frac_shots",
+}
+
 GATE_ALLOWLIST = {
     "source-packet-novelty",
     "source_packet_novelty",
@@ -126,28 +137,181 @@ def next_gate_class(value: str) -> str:
     return normalize_key(value).replace("_gate", "")
 
 
-def parse_rows(text: str) -> tuple[list[dict[str, str]], list[str], str]:
+def parse_rows(text: str) -> tuple[list[dict[str, str]], list[str], str, str]:
     lines = [line for line in text.splitlines() if line.strip() and not line.lstrip().startswith("#")]
     if not lines:
-        return [], [], "tsv"
-    sample = "\n".join(lines[:3])
+        return [], [], "tsv", "missing"
+    table_lines: list[str] | None = None
     delimiter = "\t"
-    if "," in sample and "\t" not in sample:
-        delimiter = ","
-    reader = csv.DictReader(io.StringIO("\n".join(lines)), delimiter=delimiter)
+    schema = "summary"
+    for index, line in enumerate(lines):
+        for candidate_delimiter in ("\t", ","):
+            if candidate_delimiter not in line:
+                continue
+            header = [normalize_key(value) for value in next(csv.reader([line], delimiter=candidate_delimiter))]
+            header_set = set(header)
+            if RAW_COLUMNS <= header_set:
+                schema = "raw"
+            elif header_set & REQUIRED_COLUMNS:
+                schema = "summary"
+            else:
+                continue
+            delimiter = candidate_delimiter
+            collected = [line]
+            expected_len = len(header)
+            for candidate in lines[index + 1 :]:
+                if delimiter not in candidate:
+                    break
+                try:
+                    values = next(csv.reader([candidate], delimiter=delimiter))
+                except csv.Error:
+                    break
+                if len(values) != expected_len:
+                    break
+                collected.append(candidate)
+            table_lines = collected
+            break
+        if table_lines is not None:
+            break
+    if table_lines is None:
+        return [], [], "tsv", "missing"
+    reader = csv.DictReader(io.StringIO("\n".join(table_lines)), delimiter=delimiter)
     if not reader.fieldnames:
-        return [], [], "csv" if delimiter == "," else "tsv"
+        return [], [], "csv" if delimiter == "," else "tsv", "missing"
     fieldnames = [normalize_key(name) for name in reader.fieldnames]
     rows: list[dict[str, str]] = []
     for raw in reader:
         row = {normalize_key(key or ""): (value or "").strip() for key, value in raw.items()}
         rows.append(row)
-    return rows, fieldnames, "csv" if delimiter == "," else "tsv"
+    return rows, fieldnames, "csv" if delimiter == "," else "tsv", schema
+
+
+def inspect_raw_rows(text: str, rows: list[dict[str, str]], fieldnames: list[str], dialect: str) -> dict[str, object]:
+    columns = set(fieldnames)
+    missing_columns = sorted(RAW_COLUMNS - columns)
+    failures: list[str] = []
+    holds: list[str] = []
+    warnings: list[str] = []
+    row_failures: list[str] = []
+    row_holds: list[str] = []
+    kind_counts: dict[str, int] = {}
+    mass_min: int | None = None
+    mass_max: int | None = None
+    total_mass = 0
+    zero_mass_rows = 0
+    over_bar_rows = 0
+    invalid_rows = 0
+    c_condition_values: set[str] = set()
+
+    risk_text = risk_scan_text(text)
+    if not rows:
+        failures.append("empty_ledger")
+    if missing_columns:
+        holds.append("missing_required_columns")
+    if not NO_SUBMIT_RE.search(text) and "no_submit_ack" not in columns:
+        failures.append("missing_no_submit_ack")
+    if COMPUTE_REQUEST_RE.search(risk_text):
+        failures.append("premature_compute_or_residual_request")
+    if PREMATURE_RE.search(risk_text):
+        failures.append("premature_submit_or_alert_language")
+    if LOCAL_RE.search(text):
+        failures.append("local_heavy_context")
+
+    for index, row in enumerate(rows, 1):
+        prefix = f"row{index}"
+        kind = row.get("kind", "").upper()
+        if kind:
+            kind_counts[kind] = kind_counts.get(kind, 0) + 1
+            if kind not in {"CCX", "CCZ", "CSWAP", "TOFFOLI", "T"}:
+                row_failures.append(f"{prefix}:bad_kind")
+        op_index = parse_int(row.get("op_index", ""))
+        q_target = parse_int(row.get("q_target", ""))
+        q_c1 = parse_int(row.get("q_c1", ""))
+        q_c2 = parse_int(row.get("q_c2", ""))
+        mass = parse_int(row.get("mass", ""))
+        frac = parse_float(row.get("frac_shots", ""))
+        c_condition = row.get("c_condition", "")
+        if c_condition:
+            c_condition_values.add(c_condition)
+        for label, value in [
+            ("op_index", op_index),
+            ("q_target", q_target),
+            ("q_c1", q_c1),
+            ("q_c2", q_c2),
+            ("mass", mass),
+            ("frac_shots", frac),
+        ]:
+            if label in columns and value is None:
+                invalid_rows += 1
+                row_holds.append(f"{prefix}:bad_numeric_{label}")
+        if mass is not None:
+            mass_min = mass if mass_min is None else min(mass_min, mass)
+            mass_max = mass if mass_max is None else max(mass_max, mass)
+            total_mass += mass
+            if mass == 0:
+                zero_mass_rows += 1
+            if mass >= 2439:
+                over_bar_rows += 1
+            if mass < 0 or mass > 9024:
+                row_failures.append(f"{prefix}:mass_out_of_range")
+        if frac is not None and (frac < 0 or frac > 1.01):
+            row_failures.append(f"{prefix}:frac_out_of_range")
+        if not meaningful(c_condition):
+            row_holds.append(f"{prefix}:missing_c_condition")
+
+    if rows and over_bar_rows == 0:
+        holds.append("no_rows_clear_win_mass_bar")
+    if row_failures:
+        failures.extend(sorted(set(value.split(":", 1)[1] for value in row_failures)))
+    if row_holds:
+        holds.extend(sorted(set(value.split(":", 1)[1] for value in row_holds)))
+
+    if failures:
+        gate = "fail"
+        decision = "raw-ledger-nack"
+    elif holds:
+        gate = "hold"
+        decision = "complete-raw-mass-ledger"
+    else:
+        gate = "pass"
+        decision = "raw-mass-ledger-ready-no-compute"
+
+    return {
+        "gate": gate,
+        "decision": decision,
+        "schema": "raw",
+        "dialect": dialect,
+        "row_count": len(rows),
+        "columns": sorted(columns),
+        "missing_columns": missing_columns,
+        "positive_rows": 0,
+        "closure_rows": 0,
+        "source_bases": [],
+        "next_gates": [],
+        "min_score_edge": None,
+        "max_score_edge": None,
+        "mass_min": mass_min,
+        "mass_max": mass_max,
+        "total_mass": total_mass,
+        "zero_mass_rows": zero_mass_rows,
+        "over_bar_rows": over_bar_rows,
+        "kind_counts": sorted(f"{key}:{value}" for key, value in kind_counts.items()),
+        "c_condition_values": sorted(c_condition_values)[:8],
+        "invalid_rows": invalid_rows,
+        "no_submit_ack": bool(NO_SUBMIT_RE.search(text) or "no_submit_ack" in columns),
+        "failures": failures,
+        "holds": holds,
+        "warnings": sorted(set(warnings)),
+        "row_failures": row_failures[:20],
+        "row_holds": row_holds[:20],
+    }
 
 
 def inspect(text: str, expected_source: str) -> dict[str, object]:
     risk_text = risk_scan_text(text)
-    rows, fieldnames, dialect = parse_rows(text)
+    rows, fieldnames, dialect, schema = parse_rows(text)
+    if schema == "raw":
+        return inspect_raw_rows(text, rows, fieldnames, dialect)
     columns = set(fieldnames)
     missing_columns = sorted(REQUIRED_COLUMNS - columns)
 
@@ -260,6 +424,7 @@ def inspect(text: str, expected_source: str) -> dict[str, object]:
     return {
         "gate": gate,
         "decision": decision,
+        "schema": "summary",
         "dialect": dialect,
         "row_count": len(rows),
         "columns": sorted(columns),
@@ -270,6 +435,14 @@ def inspect(text: str, expected_source: str) -> dict[str, object]:
         "next_gates": sorted(next_gates),
         "min_score_edge": min_score_edge,
         "max_score_edge": max_score_edge,
+        "mass_min": None,
+        "mass_max": None,
+        "total_mass": None,
+        "zero_mass_rows": None,
+        "over_bar_rows": None,
+        "kind_counts": [],
+        "c_condition_values": [],
+        "invalid_rows": None,
         "no_submit_ack": bool(NO_SUBMIT_RE.search(text) or "no_submit_ack" in columns),
         "failures": failures,
         "holds": holds,
@@ -290,11 +463,15 @@ def join(values: object) -> str:
 def text_summary(row: dict[str, object]) -> str:
     return (
         f"anvil_mass_ledger_gate={row['gate']} decision={row['decision']} "
-        f"dialect={row['dialect']} row_count={row['row_count']} "
+        f"schema={row['schema']} dialect={row['dialect']} row_count={row['row_count']} "
         f"positive_rows={row['positive_rows']} closure_rows={row['closure_rows']} "
         f"missing_columns={join(row['missing_columns'])} source_bases={join(row['source_bases'])} "
         f"next_gates={join(row['next_gates'])} min_score_edge={row['min_score_edge']} "
-        f"max_score_edge={row['max_score_edge']} no_submit_ack={str(row['no_submit_ack']).lower()} "
+        f"max_score_edge={row['max_score_edge']} mass_min={row['mass_min']} mass_max={row['mass_max']} "
+        f"total_mass={row['total_mass']} zero_mass_rows={row['zero_mass_rows']} "
+        f"over_bar_rows={row['over_bar_rows']} kind_counts={join(row['kind_counts'])} "
+        f"c_condition_values={join(row['c_condition_values'])} invalid_rows={row['invalid_rows']} "
+        f"no_submit_ack={str(row['no_submit_ack']).lower()} "
         f"failures={join(row['failures'])} holds={join(row['holds'])} warnings={join(row['warnings'])} "
         f"row_failures={join(row['row_failures'])} row_holds={join(row['row_holds'])}"
     )

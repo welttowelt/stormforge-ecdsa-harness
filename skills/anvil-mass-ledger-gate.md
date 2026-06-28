@@ -1,7 +1,7 @@
 # Anvil Mass Ledger Gate
 
-Use this before accepting an Anvil conditional-Toffoli mass/economics ledger as
-packet-ready evidence.
+Use this before accepting an Anvil conditional-Toffoli mass/economics ledger or
+raw per-op mass ledger as packet-ready evidence.
 
 ## Command
 
@@ -12,6 +12,8 @@ packet-ready evidence.
 Defaults assume source `d44cad3`.
 
 ## Pass Requirements
+
+Summary mode:
 
 - TSV/CSV has rows and required columns: `route_id`, `source_base`,
   `source_location`, `source_hash`, `candidate_class`, `current_q`, `target_q`,
@@ -27,6 +29,14 @@ Defaults assume source `d44cad3`.
   close, or hold.
 - no pod, GPU, CPU, scanner, residual, benchmark, alert, or submit request is
   present.
+
+Raw mode:
+
+- TSV/CSV has rows and columns `op_index`, `kind`, `q_target`, `q_c1`, `q_c2`,
+  `c_condition`, `mass`, and `frac_shots`;
+- `no_submit_ack=yes` appears in a comment, side packet, or column;
+- kind is scored-gate-shaped, numeric fields parse, mass is in `0..9024`, and
+  at least one row clears the 2,439 executed-Toffoli-shot win bar.
 
 ## Decisions
 
