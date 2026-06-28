@@ -153,6 +153,9 @@ agent instructions or used as a preflight before route work:
   hashes before spending pod time.
 - `skills/fanout-survivor-phase-gate.md`: gate fanout GPU survivors against
   phase-aware official eval evidence before any win-language handoff.
+- `skills/official-fast-exit-eval.md`: apply and use the eval_circuit
+  `ISLAND_FAST_EXIT` dirty-triage patch without turning partial dirty counts
+  into score claims.
 - `skills/paper-gidney-constant-workspace-adder.md`: apply Gidney 2025
   constant-workspace adders only after a toy proof and one-callsite residual
   gate.
@@ -233,6 +236,7 @@ The bridge names are:
 - `ecdsafail-cli-ops`
 - `stormgate-prefilter`
 - `fanout-survivor-phase-gate`
+- `official-fast-exit-eval`
 - `paper-gidney-constant-workspace-adder`
 - `paper-mbu-modular-arithmetic`
 - `paper-hrs-dirty-constant-adder`

@@ -99,6 +99,7 @@ for path in \
   routes/tobitvector-cswap-body-trim-q1170.md \
   routes/tobitvector-cswap-body-trim-q1170.rci-audit.md \
   patches/fanout-no-clone-d44.patch \
+  patches/eval-fast-exit-dirty-triage.patch \
   skills/nasqret-playbook.md \
   skills/deepseek-pressure-test.md \
   skills/pip-discipline.md \
@@ -119,6 +120,7 @@ for path in \
   skills/single-ccx-fanout-throughput.md \
   skills/fanout-runpod-qstate-guard.md \
   skills/fanout-survivor-phase-gate.md \
+  skills/official-fast-exit-eval.md \
   skills/support-bounded-vented-dead-carry.md \
   skills/paper-gidney-constant-workspace-adder.md \
   skills/paper-mbu-modular-arithmetic.md \
@@ -164,6 +166,7 @@ for path in \
   .agents/skills/frontier-escape-gate/SKILL.md \
   .agents/skills/single-ccx-fanout-throughput/SKILL.md \
   .agents/skills/fanout-survivor-phase-gate/SKILL.md \
+  .agents/skills/official-fast-exit-eval/SKILL.md \
   .agents/skills/paper-gidney-constant-workspace-adder/SKILL.md \
   .agents/skills/paper-mbu-modular-arithmetic/SKILL.md \
   .agents/skills/paper-hrs-dirty-constant-adder/SKILL.md \
@@ -264,12 +267,16 @@ need_text scripts/storm-fanout-survivor-phase-gate.py "phase gap" "phase_gap"
 need_text scripts/storm-q1152-avgt-theorem.py "q1152 avgT theorem" "q1152_avgt_theorem=pass"
 need_text scripts/storm-q1152-avgt-theorem.py "condition discount" "classical condition"
 need_text patches/fanout-no-clone-d44.patch "fanout no clone patch" "rewrite_first_target_fanout\\(&ops"
+need_text patches/eval-fast-exit-dirty-triage.patch "fast exit patch" "ISLAND_FAST_EXIT"
+need_text patches/eval-fast-exit-dirty-triage.patch "tested shots" "tested_shots"
 need_text skills/single-ccx-fanout-throughput.md "fanout throughput skill" "throughput helper only"
 need_text skills/single-ccx-fanout-throughput.md "fanout not winner" "not a winner"
 need_text skills/fanout-runpod-qstate-guard.md "qstate guard skill" "qstate_guard=ok"
 need_text skills/fanout-survivor-phase-gate.md "survivor phase skill" "phase-aware official eval"
+need_text skills/official-fast-exit-eval.md "official fast exit" "dirty-triage"
 need_text .agents/skills/single-ccx-fanout-throughput/SKILL.md "bridge" "fanout-no-clone-d44.patch"
 need_text .agents/skills/fanout-survivor-phase-gate/SKILL.md "bridge" "Codex-discoverable bridge"
+need_text .agents/skills/official-fast-exit-eval/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text scripts/storm-cout-host-row-gate.py "cout host row gate" "cout_host_row_gate=pass"
 need_text scripts/storm-cout-host-row-gate.py "safe host row" "SAFE_HOST_ROW"
 need_text scripts/storm-zero-host-accounting-gate.py "zero host accounting" "zero_host_accounting_gate=pass"

@@ -14,6 +14,10 @@ explicitly:
 
     python3 scripts/storm-fanout-survivor-phase-gate.py eval.out --nonce N --mark-survivor
 
+If the validation checkout does not already expose ISLAND_FAST_EXIT, use
+skills/official-fast-exit-eval.md and patches/eval-fast-exit-dirty-triage.patch
+to add the local dirty-triage helper first.
+
 The gate reports one of:
 
 - ready: at least one survivor has trusted official counts 0/0/0.

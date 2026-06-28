@@ -1,0 +1,62 @@
+diff --git a/src/bin/eval_circuit.rs b/src/bin/eval_circuit.rs
+index 118b821..3858865 100644
+--- a/src/bin/eval_circuit.rs
++++ b/src/bin/eval_circuit.rs
+@@ -239,6 +239,7 @@ fn run_tests(
+     num_bits: u64,
+     mut xof: sha3::Shake256Reader,
+     target_shots: usize,
++    fast_exit: bool,
+ ) -> SeedReport {
+     let curve = secp256k1();
+ 
+@@ -279,8 +280,10 @@ fn run_tests(
+ 
+     const BATCH: usize = 64;
+     let num_batches = (n + BATCH - 1) / BATCH;
++    let mut tested_shots = 0usize;
+     for batch in 0..num_batches {
+         let bs = BATCH.min(n - batch * BATCH);
++        tested_shots += bs;
+         let cond_mask: u64 = if bs == 64 { u64::MAX } else { (1u64 << bs) - 1 };
+ 
+         sim.clear_for_shot();
+@@ -351,17 +354,21 @@ fn run_tests(
+             }
+             ok = false;
+         }
++
++        if fast_exit && !ok {
++            break;
++        }
+     }
+ 
+     let _ = num_bits;
+-    let denom = n.max(1) as f64;
++    let denom = tested_shots.max(1) as f64;
+     SeedReport {
+         ok,
+         avg_cliff: sim.stats.clifford_gates as f64 / denom,
+         avg_tof: sim.stats.toffoli_gates as f64 / denom,
+         tot_tof: sim.stats.toffoli_gates,
+         tot_cliff: sim.stats.clifford_gates,
+-        n_shots: n,
++        n_shots: tested_shots,
+         classical_failures,
+         phase_garbage_batches,
+         ancilla_garbage_batches,
+@@ -510,9 +517,13 @@ fn main() {
+     println!("  qubits      : {}", total_qubits);
+     println!("  bits        : {}", num_bits);
+ 
++    let fast_exit = std::env::var_os("ISLAND_FAST_EXIT").is_some();
+     println!("\n-- correctness tests ({} shots) --", NUM_TESTS);
++    if fast_exit {
++        println!("  fast exit              : enabled for dirty-candidate triage");
++    }
+     let xof = fiat_shamir_seed(&ops);
+-    let r = run_tests(&ops, &regs, total_qubits, num_bits, xof, NUM_TESTS);
++    let r = run_tests(&ops, &regs, total_qubits, num_bits, xof, NUM_TESTS, fast_exit);
+     println!("  tested shots            : {}", r.n_shots);
+     println!("  classical mismatches    : {}", r.classical_failures);
+     println!("  phase-garbage batches   : {}", r.phase_garbage_batches);
