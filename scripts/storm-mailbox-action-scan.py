@@ -160,7 +160,8 @@ def scan(text: str, targets: list[str], context_lines: int) -> list[ReviewLine]:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--input", type=Path, default=Path("-"), help="file to scan, or '-' for stdin")
+    parser.add_argument("input_path", nargs="?", type=Path, help="optional file to scan, or '-' for stdin")
+    parser.add_argument("--input", type=Path, default=None, help="file to scan, or '-' for stdin")
     parser.add_argument(
         "--target",
         action="append",
@@ -182,7 +183,8 @@ def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
     targets = args.target or list(DEFAULT_TARGETS)
-    reviews = scan(read_text(args.input), targets, max(0, args.context_lines))
+    input_path = args.input if args.input is not None else args.input_path
+    reviews = scan(read_text(input_path), targets, max(0, args.context_lines))
     status = "review" if reviews else "pass"
     print(f"mailbox_action_scan={status} count={len(reviews)}")
     for review in reviews:

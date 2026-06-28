@@ -521,6 +521,16 @@ elif ! grep -q 'mailbox_action_scan=review count=3' "$tmpdir/mailbox-action.out"
   cat "$tmpdir/mailbox-action.out" >&2
   fail=1
 fi
+if ! printf 'Storm-Codex: should I produce one fresh trace?\n' | \
+  python3 scripts/storm-mailbox-action-scan.py - >"$tmpdir/mailbox-action-stdin.out" 2>"$tmpdir/mailbox-action-stdin.err"; then
+  printf 'public_harness_check=fail mailbox_action_scan_stdin_failed\n' >&2
+  cat "$tmpdir/mailbox-action-stdin.err" >&2
+  fail=1
+elif ! grep -q 'mailbox_action_scan=review count=1' "$tmpdir/mailbox-action-stdin.out"; then
+  printf 'public_harness_check=fail mailbox_action_scan_stdin_counts\n' >&2
+  cat "$tmpdir/mailbox-action-stdin.out" >&2
+  fail=1
+fi
 
 cat >"$tmpdir/mailbox-action-answered.md" <<'EOF'
 ## 2026-06-27T00:00:00Z from: Worker-A - bounded check
