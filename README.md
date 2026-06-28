@@ -156,6 +156,8 @@ agent instructions or used as a preflight before route work:
 - `skills/official-fast-exit-eval.md`: apply and use the eval_circuit
   `ISLAND_FAST_EXIT` dirty-triage patch without turning partial dirty counts
   into score claims.
+- `skills/official-eval-isolation-gate.md`: require lock or isolated workdir
+  evidence before remote official eval output can become submit-grade evidence.
 - `skills/paper-gidney-constant-workspace-adder.md`: apply Gidney 2025
   constant-workspace adders only after a toy proof and one-callsite residual
   gate.
@@ -237,6 +239,7 @@ The bridge names are:
 - `stormgate-prefilter`
 - `fanout-survivor-phase-gate`
 - `official-fast-exit-eval`
+- `official-eval-isolation-gate`
 - `paper-gidney-constant-workspace-adder`
 - `paper-mbu-modular-arithmetic`
 - `paper-hrs-dirty-constant-adder`

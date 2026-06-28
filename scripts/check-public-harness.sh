@@ -66,6 +66,7 @@ for path in \
   scripts/storm-single-ccx-fanout-ledger.py \
   scripts/storm-fanout-qstate-guard.py \
   scripts/storm-fanout-survivor-phase-gate.py \
+  scripts/storm-official-eval-isolation-gate.py \
   scripts/storm-q1152-avgt-theorem.py \
   scripts/storm-cout-host-row-gate.py \
   scripts/storm-zero-host-accounting-gate.py \
@@ -88,6 +89,9 @@ for path in \
   examples/apply-overlap-trace.example.txt \
   examples/apply-overlap-restore-missing.example.txt \
   examples/fanout-survivor-phase-gate.example.txt \
+  examples/official-eval-isolation-unsafe.example.sh \
+  examples/official-eval-isolation-locked.example.sh \
+  examples/official-eval-isolation-workdir.example.sh \
   templates/exact-skip-candidate.json \
   docs/exact-support-miner.md \
   docs/redsky-stormgate-audit-2026-06-20-f8e215b-current.md \
@@ -121,6 +125,7 @@ for path in \
   skills/fanout-runpod-qstate-guard.md \
   skills/fanout-survivor-phase-gate.md \
   skills/official-fast-exit-eval.md \
+  skills/official-eval-isolation-gate.md \
   skills/support-bounded-vented-dead-carry.md \
   skills/paper-gidney-constant-workspace-adder.md \
   skills/paper-mbu-modular-arithmetic.md \
@@ -167,6 +172,7 @@ for path in \
   .agents/skills/single-ccx-fanout-throughput/SKILL.md \
   .agents/skills/fanout-survivor-phase-gate/SKILL.md \
   .agents/skills/official-fast-exit-eval/SKILL.md \
+  .agents/skills/official-eval-isolation-gate/SKILL.md \
   .agents/skills/paper-gidney-constant-workspace-adder/SKILL.md \
   .agents/skills/paper-mbu-modular-arithmetic/SKILL.md \
   .agents/skills/paper-hrs-dirty-constant-adder/SKILL.md \
@@ -264,6 +270,8 @@ need_text scripts/storm-single-ccx-fanout-ledger.py "trusted eval nack" "trusted
 need_text scripts/storm-fanout-qstate-guard.py "qstate guard" "qstate_guard=ok"
 need_text scripts/storm-fanout-survivor-phase-gate.py "survivor phase gate" "fanout_survivor_phase_gate="
 need_text scripts/storm-fanout-survivor-phase-gate.py "phase gap" "phase_gap"
+need_text scripts/storm-official-eval-isolation-gate.py "official eval isolation gate" "official_eval_isolation_gate="
+need_text scripts/storm-official-eval-isolation-gate.py "shared artifact race" "shared_artifact_without_lock_or_isolation"
 need_text scripts/storm-q1152-avgt-theorem.py "q1152 avgT theorem" "q1152_avgt_theorem=pass"
 need_text scripts/storm-q1152-avgt-theorem.py "condition discount" "classical condition"
 need_text patches/fanout-no-clone-d44.patch "fanout no clone patch" "rewrite_first_target_fanout\\(&ops"
@@ -274,9 +282,11 @@ need_text skills/single-ccx-fanout-throughput.md "fanout not winner" "not a winn
 need_text skills/fanout-runpod-qstate-guard.md "qstate guard skill" "qstate_guard=ok"
 need_text skills/fanout-survivor-phase-gate.md "survivor phase skill" "phase-aware official eval"
 need_text skills/official-fast-exit-eval.md "official fast exit" "dirty-triage"
+need_text skills/official-eval-isolation-gate.md "official eval isolation skill" "triage-only evidence"
 need_text .agents/skills/single-ccx-fanout-throughput/SKILL.md "bridge" "fanout-no-clone-d44.patch"
 need_text .agents/skills/fanout-survivor-phase-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/official-fast-exit-eval/SKILL.md "bridge" "Codex-discoverable bridge"
+need_text .agents/skills/official-eval-isolation-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text scripts/storm-cout-host-row-gate.py "cout host row gate" "cout_host_row_gate=pass"
 need_text scripts/storm-cout-host-row-gate.py "safe host row" "SAFE_HOST_ROW"
 need_text scripts/storm-zero-host-accounting-gate.py "zero host accounting" "zero_host_accounting_gate=pass"
@@ -1204,6 +1214,52 @@ elif ! grep -q 'fanout_survivor_phase_gate=nack' "$tmpdir/fanout-survivor-phase-
      ! grep -q 'phase_dirty=1' "$tmpdir/fanout-survivor-phase-gate-raw-eval-gate.out"; then
   printf 'public_harness_check=fail fanout_survivor_phase_gate_raw_eval_output\n' >&2
   cat "$tmpdir/fanout-survivor-phase-gate-raw-eval-gate.out" >&2
+  fail=1
+fi
+
+if python3 scripts/storm-official-eval-isolation-gate.py \
+  examples/official-eval-isolation-unsafe.example.sh \
+  --require-pass \
+  >"$tmpdir/official-eval-isolation-unsafe.out" \
+  2>"$tmpdir/official-eval-isolation-unsafe.err"; then
+  printf 'public_harness_check=fail official_eval_isolation_unsafe_unexpected_pass\n' >&2
+  cat "$tmpdir/official-eval-isolation-unsafe.out" >&2
+  fail=1
+elif ! grep -q 'official_eval_isolation_gate=fail' "$tmpdir/official-eval-isolation-unsafe.out" ||
+     ! grep -q 'shared_artifact_without_lock_or_isolation' "$tmpdir/official-eval-isolation-unsafe.out"; then
+  printf 'public_harness_check=fail official_eval_isolation_unsafe_output\n' >&2
+  cat "$tmpdir/official-eval-isolation-unsafe.out" >&2
+  cat "$tmpdir/official-eval-isolation-unsafe.err" >&2
+  fail=1
+fi
+
+if ! python3 scripts/storm-official-eval-isolation-gate.py \
+  examples/official-eval-isolation-locked.example.sh \
+  --require-pass \
+  >"$tmpdir/official-eval-isolation-locked.out" \
+  2>"$tmpdir/official-eval-isolation-locked.err"; then
+  printf 'public_harness_check=fail official_eval_isolation_locked_failed\n' >&2
+  cat "$tmpdir/official-eval-isolation-locked.err" >&2
+  fail=1
+elif ! grep -q 'official_eval_isolation_gate=pass' "$tmpdir/official-eval-isolation-locked.out" ||
+     ! grep -q 'lock=true' "$tmpdir/official-eval-isolation-locked.out"; then
+  printf 'public_harness_check=fail official_eval_isolation_locked_output\n' >&2
+  cat "$tmpdir/official-eval-isolation-locked.out" >&2
+  fail=1
+fi
+
+if ! python3 scripts/storm-official-eval-isolation-gate.py \
+  examples/official-eval-isolation-workdir.example.sh \
+  --require-pass \
+  >"$tmpdir/official-eval-isolation-workdir.out" \
+  2>"$tmpdir/official-eval-isolation-workdir.err"; then
+  printf 'public_harness_check=fail official_eval_isolation_workdir_failed\n' >&2
+  cat "$tmpdir/official-eval-isolation-workdir.err" >&2
+  fail=1
+elif ! grep -q 'official_eval_isolation_gate=pass' "$tmpdir/official-eval-isolation-workdir.out" ||
+     ! grep -q 'isolated=true' "$tmpdir/official-eval-isolation-workdir.out"; then
+  printf 'public_harness_check=fail official_eval_isolation_workdir_output\n' >&2
+  cat "$tmpdir/official-eval-isolation-workdir.out" >&2
   fail=1
 fi
 
