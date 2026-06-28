@@ -20,6 +20,7 @@ from typing import Iterable
 
 
 NONCE_RE = re.compile(r"\bnonce\s*[=:]\s*(?:nonce\s*[=:]\s*)?(\d+)\b", re.IGNORECASE)
+EVAL_LOG_HEADER_RE = re.compile(r"\beval-([0-9_]+)\.log\b", re.IGNORECASE)
 GPU_SURVIVOR_RE = re.compile(
     r"\bSTORM_RUNPOD_GPU_CLEAN_PREFILTER\b|"
     r"\b(?:gpu|prefilter|stage-1|cuda)[A-Za-z0-9_-]*.*\b(?:clean|survivor)\b|"
@@ -49,6 +50,13 @@ COUNT_PATTERNS = (
     ),
 )
 EVAL_BLOCK_RE = re.compile(
+    r"\bclassical\s+mismatches\s*:\s*(\d+)\b.*?"
+    r"\bphase-garbage\s+batches\s*:\s*(\d+)\b.*?"
+    r"\bancilla-garbage\s+batches\s*:\s*(\d+)\b",
+    re.IGNORECASE | re.DOTALL,
+)
+HEADER_EVAL_BLOCK_RE = re.compile(
+    r"\beval-([0-9_]+)\.log\b.*?"
     r"\bclassical\s+mismatches\s*:\s*(\d+)\b.*?"
     r"\bphase-garbage\s+batches\s*:\s*(\d+)\b.*?"
     r"\bancilla-garbage\s+batches\s*:\s*(\d+)\b",
@@ -124,7 +132,7 @@ def parse(
     if default_nonce and mark_default_survivor:
         records.setdefault(default_nonce, NonceRecord(nonce=default_nonce)).gpu_survivor = True
     for source, line in iter_lines(path_list):
-        nonce_match = NONCE_RE.search(line)
+        nonce_match = NONCE_RE.search(line) or EVAL_LOG_HEADER_RE.search(line)
         if not nonce_match:
             continue
         nonce = nonce_match.group(1)
@@ -144,6 +152,14 @@ def parse(
                 record.lines.append(str(path))
                 counts = tuple(int(match.group(i)) for i in range(1, 4))
                 update_official_counts(record, counts)  # type: ignore[arg-type]
+    for path in path_list:
+        text = path.read_text(encoding="utf-8", errors="replace")
+        for match in HEADER_EVAL_BLOCK_RE.finditer(text):
+            nonce = match.group(1).replace("_", "")
+            record = records.setdefault(nonce, NonceRecord(nonce=nonce))
+            record.lines.append(str(path))
+            counts = tuple(int(match.group(i)) for i in range(2, 5))
+            update_official_counts(record, counts)  # type: ignore[arg-type]
     return records
 
 

@@ -1302,6 +1302,30 @@ elif ! grep -q 'fanout_burst_triage_gate=candidate' "$tmpdir/fanout-burst-triage
   fail=1
 fi
 
+cat >"$tmpdir/fanout-survivor-phase-gate-eval-header.log" <<'EOF'
+STORM_RUNPOD_GPU_CLEAN_PREFILTER nonce=501 launching_eval=1
+=== fanout/eval-501.log ===
+-- correctness tests (9024 shots) --
+  classical mismatches    : 0
+  phase-garbage batches   : 1
+  ancilla-garbage batches : 0
+EOF
+if ! python3 scripts/storm-fanout-survivor-phase-gate.py \
+  "$tmpdir/fanout-survivor-phase-gate-eval-header.log" \
+  >"$tmpdir/fanout-survivor-phase-gate-eval-header.out" \
+  2>"$tmpdir/fanout-survivor-phase-gate-eval-header.err"; then
+  printf 'public_harness_check=fail fanout_survivor_phase_gate_eval_header_failed\n' >&2
+  cat "$tmpdir/fanout-survivor-phase-gate-eval-header.err" >&2
+  fail=1
+elif ! grep -q 'fanout_survivor_phase_gate=nack' "$tmpdir/fanout-survivor-phase-gate-eval-header.out" ||
+     ! grep -q 'gpu_survivors=1' "$tmpdir/fanout-survivor-phase-gate-eval-header.out" ||
+     ! grep -q 'official_dirty=1' "$tmpdir/fanout-survivor-phase-gate-eval-header.out" ||
+     ! grep -q 'phase_dirty=1' "$tmpdir/fanout-survivor-phase-gate-eval-header.out"; then
+  printf 'public_harness_check=fail fanout_survivor_phase_gate_eval_header_output\n' >&2
+  cat "$tmpdir/fanout-survivor-phase-gate-eval-header.out" >&2
+  fail=1
+fi
+
 if python3 scripts/storm-official-eval-isolation-gate.py \
   examples/official-eval-isolation-unsafe.example.sh \
   --require-pass \
