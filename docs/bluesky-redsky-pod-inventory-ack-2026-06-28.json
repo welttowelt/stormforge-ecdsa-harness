@@ -1,0 +1,173 @@
+{
+  "schema_version": 1,
+  "route_id": "process-pod-inventory-ack-five-loop",
+  "frontier": "d44cad3/q1152/1571592960",
+  "generated_at": "2026-06-28T03:13:11Z",
+  "loops": [
+    {
+      "loop": 1,
+      "finding": "Fleet stop directives needed a machine-readable provider inventory ACK before a pod could be treated as owned or idle.",
+      "artifact": "scripts/storm-pod-inventory-ack-gate.py",
+      "implemented": true,
+      "implementation": "Added a public-safe parser for owner, provider, pod_id, status, job, stop_condition, no-start/no-compute ACK, and no_submit_ack.",
+      "verification": "python3 scripts/storm-pod-inventory-ack-gate.py examples/pod-inventory-ack-pass.example.txt --require-pass",
+      "evidence_label": "Partial",
+      "claim_scope": "compute-gate",
+      "compute_dispatch_allowed": false,
+      "submit_language_allowed": false,
+      "bluesky": {
+        "route_or_idea": "Accept complete provider inventory ACKs without opening compute.",
+        "best_case": "Storm can distinguish a stopped owned pod from stale or prose-only watcher text.",
+        "missing_measurement": "A deterministic pass line for complete inventory packets.",
+        "smallest_useful_experiment": "Validate one stopped no-compute inventory ACK fixture.",
+        "bounded_alternative": "Hold inventory if any ownership or provider field is missing.",
+        "hidden_assumption": "A stopped pod with no job is useful only as control-plane inventory.",
+        "stop_condition": "Stop if the packet asks to launch, restart, submit, alert, or run compute.",
+        "decision": "measure"
+      },
+      "redsky": {
+        "route_or_claim": "A watcher ACK can prove pod ownership and idle state.",
+        "current_public_truth_checked": "frontier d44cad3/q1152/1571592960; no candidate or compute unlock is active",
+        "evidence_label": "Partial",
+        "strongest_objection": "A prose ACK can omit provider status or job state and still sound actionable.",
+        "fastest_falsifier": "Require the pass fixture to emit inventory-ack-accepted-no-compute.",
+        "failure_class": "owner-drift",
+        "missing_gate": "provider inventory field completeness",
+        "decision": "measure",
+        "required_verification": "pass fixture reports pod_inventory_ack_gate=pass"
+      }
+    },
+    {
+      "loop": 2,
+      "finding": "Unknown or unreachable provider inventory must not be accepted as a clean idle pod.",
+      "artifact": "examples/pod-inventory-ack-hold.example.txt",
+      "implemented": true,
+      "implementation": "Added a hold fixture for owner=UNKNOWN with status=unreachable and provider_inventory_not_verified.",
+      "verification": "python3 scripts/storm-pod-inventory-ack-gate.py examples/pod-inventory-ack-hold.example.txt --require-pass exits nonzero",
+      "evidence_label": "Partial",
+      "claim_scope": "compute-gate",
+      "compute_dispatch_allowed": false,
+      "submit_language_allowed": false,
+      "bluesky": {
+        "route_or_idea": "Keep unreachable inventory visible but non-actionable.",
+        "best_case": "Workers can report uncertainty without forcing Storm to treat it as a fail or pass.",
+        "missing_measurement": "A deterministic hold line with provider_inventory_not_verified.",
+        "smallest_useful_experiment": "Validate one unreachable inventory fixture under --require-pass.",
+        "bounded_alternative": "Ask for provider-dashboard refresh rather than pod action.",
+        "hidden_assumption": "Unreachable inventory can still carry useful next-step metadata.",
+        "stop_condition": "Stop if the packet lacks an owner, provider, pod_id, status, job, or stop condition.",
+        "decision": "measure"
+      },
+      "redsky": {
+        "route_or_claim": "Unreachable inventory can be treated as harmless because no compute is requested.",
+        "current_public_truth_checked": "frontier d44cad3/q1152/1571592960; no candidate or compute unlock is active",
+        "evidence_label": "Partial",
+        "strongest_objection": "Unknown provider state hides stale spend, orphaned jobs, or inaccessible pods.",
+        "fastest_falsifier": "Require --require-pass to reject the hold fixture.",
+        "failure_class": "provider-visibility-gap",
+        "missing_gate": "unreachable inventory hold",
+        "decision": "measure",
+        "required_verification": "hold fixture reports pod_inventory_ack_gate=hold"
+      }
+    },
+    {
+      "loop": 3,
+      "finding": "Ownerless running pods and start language need a fail decision, not a hold.",
+      "artifact": "examples/pod-inventory-ack-fail.example.txt",
+      "implemented": true,
+      "implementation": "Added fail checks for ownerless running pods, missing stop condition, premature compute/start request, and submit/alert language.",
+      "verification": "python3 scripts/storm-pod-inventory-ack-gate.py examples/pod-inventory-ack-fail.example.txt --require-pass exits nonzero",
+      "evidence_label": "Partial",
+      "claim_scope": "compute-gate",
+      "compute_dispatch_allowed": false,
+      "submit_language_allowed": false,
+      "bluesky": {
+        "route_or_idea": "Fail unsafe inventory packets sharply so cleanup work can be routed.",
+        "best_case": "Ownerless running pods are surfaced before spending or duplicate scanners continue.",
+        "missing_measurement": "Failure reasons include ownerless_running_pod and premature_compute_or_start_request.",
+        "smallest_useful_experiment": "Validate one ownerless running fixture that also asks to start compute.",
+        "bounded_alternative": "A worker can repost with owner, stop condition, and no-start ACK.",
+        "hidden_assumption": "A fail packet is for cleanup, not for new compute dispatch.",
+        "stop_condition": "Stop if the packet includes launch, start, restart, scale, dispatch, benchmark, eval, submit, alert, or winner language.",
+        "decision": "measure"
+      },
+      "redsky": {
+        "route_or_claim": "A running ownerless pod can be sorted out after the next route packet.",
+        "current_public_truth_checked": "frontier d44cad3/q1152/1571592960; no candidate or compute unlock is active",
+        "evidence_label": "Partial",
+        "strongest_objection": "Waiting turns orphaned compute into spend and stale evidence.",
+        "fastest_falsifier": "Require the fail fixture to emit ownerless_running_pod and premature_compute_or_start_request.",
+        "failure_class": "ownerless-compute",
+        "missing_gate": "ownerless running pod fail",
+        "decision": "measure",
+        "required_verification": "fail fixture reports pod_inventory_ack_gate=fail"
+      }
+    },
+    {
+      "loop": 4,
+      "finding": "The same heat-stop audit missed Mac-local proof and scanner loops beyond build_circuit and eval_circuit.",
+      "artifact": "scripts/storm-local-heavy-compute-gate.py",
+      "implemented": true,
+      "implementation": "Expanded local-heavy matching to storm-exact-miner, route_compare, search_driver, lower-q, source-line, FFG lifetime/proof, proof-loop, and scanner terms.",
+      "verification": "python3 scripts/storm-local-heavy-compute-gate.py examples/local-heavy-compute-fail.example.txt --require-pass exits nonzero",
+      "evidence_label": "Partial",
+      "claim_scope": "process-control",
+      "compute_dispatch_allowed": false,
+      "submit_language_allowed": false,
+      "bluesky": {
+        "route_or_idea": "Make MacBook heat-stop enforcement cover the actual ECDSA proof/search vocabulary.",
+        "best_case": "Local process snapshots catch proof loops before they burn laptop resources or create stale claims.",
+        "missing_measurement": "The fail fixture reports seven local-heavy lines and local_recurring=1.",
+        "smallest_useful_experiment": "Run the hardened local-heavy fail fixture.",
+        "bounded_alternative": "Allow remote-owned heavy commands only when owner and route metadata are present.",
+        "hidden_assumption": "The vocabulary list should stay conservative and source-bound.",
+        "stop_condition": "Stop if benign one-shot control-plane checks are incorrectly blocked in pass fixtures.",
+        "decision": "measure"
+      },
+      "redsky": {
+        "route_or_claim": "Existing local-heavy patterns already catch the dangerous work.",
+        "current_public_truth_checked": "frontier d44cad3/q1152/1571592960; no local official run or compute unlock is active",
+        "evidence_label": "Partial",
+        "strongest_objection": "Workers were using storm-exact-miner, route_compare, search_driver, proof, and scanner wording that the gate did not name.",
+        "fastest_falsifier": "Run the local-heavy fail fixture and check for storm-exact-miner.py and route_compare in terms.",
+        "failure_class": "mac-local-heavy-drift",
+        "missing_gate": "expanded heavy vocabulary",
+        "decision": "measure",
+        "required_verification": "fail fixture reports stop-mac-local-heavy-compute"
+      }
+    },
+    {
+      "loop": 5,
+      "finding": "The new process control needed to be wired into the public harness, not left as a standalone helper.",
+      "artifact": "scripts/check-public-harness.sh",
+      "implemented": true,
+      "implementation": "Added required files, text checks, fixture checks, and this five-loop JSON audit packet to the public harness check.",
+      "verification": "scripts/check-public-harness.sh",
+      "evidence_label": "Partial",
+      "claim_scope": "process-control",
+      "compute_dispatch_allowed": false,
+      "submit_language_allowed": false,
+      "bluesky": {
+        "route_or_idea": "Make the process improvement durable in CI-style local checks.",
+        "best_case": "Future edits that weaken pod inventory or Mac heat-stop checks fail immediately.",
+        "missing_measurement": "Full public harness pass after the new gate and audit packet are added.",
+        "smallest_useful_experiment": "Run scripts/check-public-harness.sh.",
+        "bounded_alternative": "Keep the gate manual but require every worker to remember it.",
+        "hidden_assumption": "The public harness check remains fast enough for every process edit.",
+        "stop_condition": "Stop if the harness check needs private provider state or live ECDSA compute.",
+        "decision": "measure"
+      },
+      "redsky": {
+        "route_or_claim": "A standalone process gate is enough once documented.",
+        "current_public_truth_checked": "frontier d44cad3/q1152/1571592960; no candidate or submit language included",
+        "evidence_label": "Partial",
+        "strongest_objection": "Standalone helpers rot unless the repo-level check runs them.",
+        "fastest_falsifier": "Run the public harness check and the loop gate on this packet.",
+        "failure_class": "process-regression",
+        "missing_gate": "public harness integration",
+        "decision": "measure",
+        "required_verification": "check-public-harness reports pass"
+      }
+    }
+  ]
+}

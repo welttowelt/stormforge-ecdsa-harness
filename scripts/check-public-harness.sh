@@ -166,6 +166,7 @@ for path in \
   docs/bluesky-redsky-ffg-pair-proof-gate-2026-06-28.md \
   docs/bluesky-redsky-paper-invariant-intake-2026-06-28.md \
   docs/bluesky-redsky-pod-inventory-ack-2026-06-28.md \
+  docs/bluesky-redsky-pod-inventory-ack-2026-06-28.json \
   docs/redsky-stormgate-audit-2026-06-20-f8e215b-current.md \
   operators/codex-storm.md \
   operators/deep-storm.md \
@@ -528,6 +529,8 @@ need_text docs/bluesky-redsky-paper-invariant-intake-2026-06-28.md "paper invari
 need_text docs/bluesky-redsky-paper-invariant-intake-2026-06-28.md "paper invariant no compute" "does not open residual"
 need_text docs/bluesky-redsky-pod-inventory-ack-2026-06-28.md "pod inventory audit" "Pod Inventory ACK Gate"
 need_text docs/bluesky-redsky-pod-inventory-ack-2026-06-28.md "pod inventory no compute" "does not unlock"
+need_text docs/bluesky-redsky-pod-inventory-ack-2026-06-28.json "pod inventory loop packet" "process-pod-inventory-ack-five-loop"
+need_text docs/bluesky-redsky-pod-inventory-ack-2026-06-28.json "pod inventory loop no compute" "inventory-ack-accepted-no-compute"
 need_text docs/redsky-stormgate-audit-2026-06-20-f8e215b-current.md "current source" "f8e215b"
 need_text docs/redsky-stormgate-audit-2026-06-20-f8e215b-current.md "no submit gate" "No clean winning candidate"
 need_text operators/kimi-storm.md "kimi boss" "operator boss"
@@ -2509,6 +2512,25 @@ elif ! grep -q 'q1152_avgt_theorem=pass' "$tmpdir/q1152-avgt-theorem.out" ||
      ! grep -q 'decision=source-theorem-packet' "$tmpdir/q1152-avgt-theorem.out"; then
   printf 'public_harness_check=fail q1152_avgt_theorem_output\n' >&2
   cat "$tmpdir/q1152-avgt-theorem.out" >&2
+  fail=1
+fi
+
+if ! python3 scripts/storm-bluesky-redsky-loop-gate.py \
+  docs/bluesky-redsky-pod-inventory-ack-2026-06-28.json \
+  --require-implemented >"$tmpdir/bluesky-redsky-pod-inventory.out" 2>"$tmpdir/bluesky-redsky-pod-inventory.err"; then
+  printf 'public_harness_check=fail bluesky_redsky_pod_inventory_failed\n' >&2
+  cat "$tmpdir/bluesky-redsky-pod-inventory.out" >&2
+  cat "$tmpdir/bluesky-redsky-pod-inventory.err" >&2
+  fail=1
+elif ! grep -q 'bluesky_redsky_loop_gate=pass' "$tmpdir/bluesky-redsky-pod-inventory.out" ||
+     ! grep -q 'route_id=process-pod-inventory-ack-five-loop' "$tmpdir/bluesky-redsky-pod-inventory.out" ||
+     ! grep -q 'loops=5' "$tmpdir/bluesky-redsky-pod-inventory.out" ||
+     ! grep -q 'implemented=5' "$tmpdir/bluesky-redsky-pod-inventory.out" ||
+     ! grep -q 'verified=5' "$tmpdir/bluesky-redsky-pod-inventory.out" ||
+     ! grep -q 'compute_dispatch_allowed=0' "$tmpdir/bluesky-redsky-pod-inventory.out" ||
+     ! grep -q 'submit_language_allowed=0' "$tmpdir/bluesky-redsky-pod-inventory.out"; then
+  printf 'public_harness_check=fail bluesky_redsky_pod_inventory_output\n' >&2
+  cat "$tmpdir/bluesky-redsky-pod-inventory.out" >&2
   fail=1
 fi
 
