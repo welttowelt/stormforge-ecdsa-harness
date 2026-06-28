@@ -86,6 +86,7 @@ for path in \
   scripts/storm-zero-host-accounting-gate.py \
   scripts/storm-dead-drop-fixedpoint-gate.py \
   scripts/storm-route-compare-admission.py \
+  scripts/storm-ffg-pair-proof-gate.py \
   examples/audit-card.example.md \
   examples/operator-card.example.md \
   examples/mailbox-entry.example.md \
@@ -136,6 +137,9 @@ for path in \
   examples/transcript-overlap-hold.example.txt \
   examples/transcript-overlap-fail.example.txt \
   examples/transcript-overlap-stale.example.txt \
+  examples/ffg-pair-proof-pass.example.txt \
+  examples/ffg-pair-proof-hold.example.txt \
+  examples/ffg-pair-proof-fail.example.txt \
   examples/compute-restart-pass.example.txt \
   examples/compute-restart-hold.example.txt \
   examples/compute-restart-fail.example.txt \
@@ -147,6 +151,7 @@ for path in \
   templates/exact-skip-candidate.json \
   docs/exact-support-miner.md \
   docs/bluesky-redsky-ffg-pair-complete-toy-2026-06-28.md \
+  docs/bluesky-redsky-ffg-pair-proof-gate-2026-06-28.md \
   docs/redsky-stormgate-audit-2026-06-20-f8e215b-current.md \
   operators/codex-storm.md \
   operators/deep-storm.md \
@@ -184,6 +189,7 @@ for path in \
   skills/pod-wrapper-dup-gate.md \
   skills/local-heavy-compute-gate.md \
   skills/route-compare-admission-gate.md \
+  skills/ffg-pair-proof-gate.md \
   skills/candidate-validation-packet-gate.md \
   skills/apply-cswap-support-gate.md \
   skills/source-packet-novelty-gate.md \
@@ -242,6 +248,7 @@ for path in \
   .agents/skills/pod-wrapper-dup-gate/SKILL.md \
   .agents/skills/local-heavy-compute-gate/SKILL.md \
   .agents/skills/route-compare-admission-gate/SKILL.md \
+  .agents/skills/ffg-pair-proof-gate/SKILL.md \
   .agents/skills/candidate-validation-packet-gate/SKILL.md \
   .agents/skills/apply-cswap-support-gate/SKILL.md \
   .agents/skills/source-packet-novelty-gate/SKILL.md \
@@ -400,6 +407,8 @@ need_text skills/pod-wrapper-dup-gate.md "pod wrapper duplicate skill" "Duplicat
 need_text skills/local-heavy-compute-gate.md "local heavy compute skill" "Mac-local heavy compute"
 need_text skills/route-compare-admission-gate.md "route compare admission skill" "Route Compare Admission Gate"
 need_text skills/route-compare-admission-gate.md "strict admission flag" "require-admission"
+need_text skills/ffg-pair-proof-gate.md "ffg pair proof skill" "FFG Pair Proof Gate"
+need_text skills/ffg-pair-proof-gate.md "pair complete calls" "178,180,181"
 need_text skills/candidate-validation-packet-gate.md "candidate validation skill" "FOR-AKASH"
 need_text skills/apply-cswap-support-gate.md "apply cswap support skill" "per-step and per-bit"
 need_text skills/apply-cswap-support-gate.md "machine readable packet" "frontier_score"
@@ -422,6 +431,7 @@ need_text .agents/skills/fleet-owner-claim-gate/SKILL.md "bridge" "Codex-discove
 need_text .agents/skills/pod-wrapper-dup-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/local-heavy-compute-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/route-compare-admission-gate/SKILL.md "bridge" "Codex-discoverable bridge"
+need_text .agents/skills/ffg-pair-proof-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/candidate-validation-packet-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/apply-cswap-support-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/source-packet-novelty-gate/SKILL.md "bridge" "Codex-discoverable bridge"
@@ -439,6 +449,8 @@ need_text scripts/storm-route-compare-admission.py "route compare admission gate
 need_text scripts/storm-route-compare-admission.py "route compare admitted flag" "admitted="
 need_text scripts/storm-route-compare-admission.py "route compare min shots" "min_shots"
 need_text scripts/storm-route-compare-admission.py "route compare rounded score" "avg_tof_rounded"
+need_text scripts/storm-ffg-pair-proof-gate.py "ffg pair proof gate" "ffg_pair_proof_gate="
+need_text scripts/storm-ffg-pair-proof-gate.py "ffg pair calls" "required_calls"
 
 need_text examples/operator-card.example.md "falsifiable decision" "Falsifiable decision"
 need_text examples/audit-card.example.md "rci tony" "RCI/Tony"
@@ -460,6 +472,9 @@ need_text examples/apply-overlap-trace.example.txt "apply overlap fixture" "TLM_
 need_text examples/apply-overlap-trace.example.txt "apply overlap tail fixture" "TLM_TAIL"
 need_text examples/apply-overlap-restore-missing.example.txt "apply overlap restore-missing fixture" "restore_proof=0"
 need_text examples/apply-overlap-restore-missing.example.txt "apply overlap tape-tail fixture" "tape_tail_code"
+need_text examples/ffg-pair-proof-pass.example.txt "ffg pair pass fixture" "pair_complete=yes"
+need_text examples/ffg-pair-proof-hold.example.txt "ffg pair hold fixture" "candidate"
+need_text examples/ffg-pair-proof-fail.example.txt "ffg pair fail fixture" "covered_calls=192"
 need_text templates/exact-skip-candidate.json "allocator unchanged" "allocator_unchanged"
 need_text templates/exact-skip-candidate.json "support status" "support_status"
 need_text templates/exact-skip-candidate.json "trace context family" "trace_context_family"
@@ -470,6 +485,8 @@ need_text docs/exact-support-miner.md "redsky gate" "Redsky"
 need_text docs/exact-support-miner.md "pip gate" "PIP"
 need_text docs/bluesky-redsky-ffg-pair-complete-toy-2026-06-28.md "ffg pair complete audit" "FFG Pair-Complete Toy"
 need_text docs/bluesky-redsky-ffg-pair-complete-toy-2026-06-28.md "ffg no compute" "No candidate, no official clean run"
+need_text docs/bluesky-redsky-ffg-pair-proof-gate-2026-06-28.md "ffg pair proof audit" "FFG Pair Proof Gate"
+need_text docs/bluesky-redsky-ffg-pair-proof-gate-2026-06-28.md "ffg proof no compute" "no compute unlock"
 need_text docs/redsky-stormgate-audit-2026-06-20-f8e215b-current.md "current source" "f8e215b"
 need_text docs/redsky-stormgate-audit-2026-06-20-f8e215b-current.md "no submit gate" "No clean winning candidate"
 need_text operators/kimi-storm.md "kimi boss" "operator boss"
@@ -2068,6 +2085,63 @@ elif ! grep -q 'transcript_overlap_gate=fail' "$tmpdir/transcript-overlap-stale.
   printf 'public_harness_check=fail transcript_overlap_stale_output\n' >&2
   cat "$tmpdir/transcript-overlap-stale.out" >&2
   cat "$tmpdir/transcript-overlap-stale.err" >&2
+  fail=1
+fi
+
+if ! python3 scripts/storm-ffg-pair-proof-gate.py \
+  examples/ffg-pair-proof-pass.example.txt \
+  --require-pass \
+  >"$tmpdir/ffg-pair-proof-pass.out" \
+  2>"$tmpdir/ffg-pair-proof-pass.err"; then
+  printf 'public_harness_check=fail ffg_pair_proof_pass_failed\n' >&2
+  cat "$tmpdir/ffg-pair-proof-pass.err" >&2
+  fail=1
+elif ! grep -q 'ffg_pair_proof_gate=pass' "$tmpdir/ffg-pair-proof-pass.out" ||
+     ! grep -q 'pair_complete=true' "$tmpdir/ffg-pair-proof-pass.out" ||
+     ! grep -q 'source_hash_bound=true' "$tmpdir/ffg-pair-proof-pass.out" ||
+     ! grep -q 'candidate_hash_bound=true' "$tmpdir/ffg-pair-proof-pass.out" ||
+     ! grep -q 'route_compare_admission=pass' "$tmpdir/ffg-pair-proof-pass.out" ||
+     ! grep -q 'admitted=1' "$tmpdir/ffg-pair-proof-pass.out" ||
+     ! grep -q 'decision=source-bound-ffg-proof-review-no-compute' "$tmpdir/ffg-pair-proof-pass.out"; then
+  printf 'public_harness_check=fail ffg_pair_proof_pass_output\n' >&2
+  cat "$tmpdir/ffg-pair-proof-pass.out" >&2
+  fail=1
+fi
+
+if python3 scripts/storm-ffg-pair-proof-gate.py \
+  examples/ffg-pair-proof-hold.example.txt \
+  --require-pass \
+  >"$tmpdir/ffg-pair-proof-hold.out" \
+  2>"$tmpdir/ffg-pair-proof-hold.err"; then
+  printf 'public_harness_check=fail ffg_pair_proof_hold_unexpected_pass\n' >&2
+  cat "$tmpdir/ffg-pair-proof-hold.out" >&2
+  fail=1
+elif ! grep -q 'ffg_pair_proof_gate=hold' "$tmpdir/ffg-pair-proof-hold.out" ||
+     ! grep -q 'missing_candidate_hash' "$tmpdir/ffg-pair-proof-hold.out" ||
+     ! grep -q 'candidate_hash_bound=false' "$tmpdir/ffg-pair-proof-hold.out"; then
+  printf 'public_harness_check=fail ffg_pair_proof_hold_output\n' >&2
+  cat "$tmpdir/ffg-pair-proof-hold.out" >&2
+  cat "$tmpdir/ffg-pair-proof-hold.err" >&2
+  fail=1
+fi
+
+if python3 scripts/storm-ffg-pair-proof-gate.py \
+  examples/ffg-pair-proof-fail.example.txt \
+  --require-pass \
+  >"$tmpdir/ffg-pair-proof-fail.out" \
+  2>"$tmpdir/ffg-pair-proof-fail.err"; then
+  printf 'public_harness_check=fail ffg_pair_proof_fail_unexpected_pass\n' >&2
+  cat "$tmpdir/ffg-pair-proof-fail.out" >&2
+  fail=1
+elif ! grep -q 'ffg_pair_proof_gate=fail' "$tmpdir/ffg-pair-proof-fail.out" ||
+     ! grep -q 'missing_required_ffg_calls' "$tmpdir/ffg-pair-proof-fail.out" ||
+     ! grep -q 'route_compare_not_pass' "$tmpdir/ffg-pair-proof-fail.out" ||
+     ! grep -q 'route_compare_shots_below_min' "$tmpdir/ffg-pair-proof-fail.out" ||
+     ! grep -q 'wrong_qubit_tier' "$tmpdir/ffg-pair-proof-fail.out" ||
+     ! grep -q 'score_no_edge' "$tmpdir/ffg-pair-proof-fail.out"; then
+  printf 'public_harness_check=fail ffg_pair_proof_fail_output\n' >&2
+  cat "$tmpdir/ffg-pair-proof-fail.out" >&2
+  cat "$tmpdir/ffg-pair-proof-fail.err" >&2
   fail=1
 fi
 

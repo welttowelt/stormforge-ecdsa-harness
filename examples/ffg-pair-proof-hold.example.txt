@@ -1,0 +1,6 @@
+ACK researcher CLAIM ffg-pair-proof route_id=fixture-ffg-pair-hold owner=researcher next=complete-candidate-hash host=studio no_submit_ack=yes
+source_base=d44cad3 source_hash=12ab34cd56ef7890 source-hash-bound
+frontier_score=1571592960 q=1152 avgT=1364228 evidence_label=Partial
+TLM_FFG suffix-carry pair_complete=yes required_calls=178,180,181 covered_calls=178,180,181
+value_proof=CERTIFIED support_status=CERTIFIED exact_support=CERTIFIED restore_proof=CERTIFIED phase_proof=CERTIFIED
+route_compare_admission=pass admitted=1 shots=9024 min_shots=9024 score_edge=1

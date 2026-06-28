@@ -168,6 +168,10 @@ agent instructions or used as a preflight before route work:
 - `skills/route-compare-admission-gate.md`: require clean baseline, clean
   candidate, clean compare output, and a strict score edge before route-compare
   evidence can become residual, compute, pod, handoff, submit, or alert work.
+- `skills/ffg-pair-proof-gate.md`: require pair-complete FFG call coverage,
+  certified value/restore/phase proof, source and candidate hashes, route
+  admission, sufficient shot depth, positive score edge, and no-submit
+  discipline before any FFG suffix-carry handoff or compute language.
 - `skills/compute-restart-gate.md`: block scanner restarts when compute is
   closed, no route ACK exists, or no certified source/full-clean evidence exists.
 - `skills/compute-unlock-gate.md`: require a source-hash-bound certified
