@@ -20,7 +20,8 @@ HEAVY_RE = re.compile(
     r"\b(?:build_circuit|eval_circuit|fanout_nonce_eval|ccx_site_histogram|gpu_island2|"
     r"kiln-validate-nonce\.sh|vast-fanout|gpu_forever(?:\.sh)?)\b|"
     r"\btarget/release/[A-Za-z0-9_.-]+\b|"
-    r"\bcargo\s+(?:build|run)\s+--release\b",
+    r"\bcargo\s+(?:build|run)\s+--release\b|"
+    r"\becdsafail\s+(?:benchmark|run|submit)\b",
     re.IGNORECASE,
 )
 LOCAL_RE = re.compile(

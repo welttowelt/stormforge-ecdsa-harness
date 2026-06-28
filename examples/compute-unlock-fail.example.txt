@@ -1,0 +1,14 @@
+ACK Worker CLAIM q1152-fanout-runpod
+route_id=q1152-fanout-restart-after-close
+host=mac
+owner=Worker
+next=harvest-restarted-range
+frontier_score=1571592960
+qubits=1152
+source_base=d44cad3
+evidence_label=Prefilter
+compute_gate=closed
+gpu_forever.sh 1012000000 1000000 1000000
+compute_request=restart GPU fanout scanner after compute close
+latest_eval=dirty rc=1 c=4 p=7 a=0
+no_submit_ack=no

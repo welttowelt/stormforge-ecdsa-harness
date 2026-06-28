@@ -1,0 +1,3 @@
+ACK Validator CLAIM official-eval-only skill=validation-submit-gate file=runpod:demo-pod:eval.log next=report-result owner=Validator pod=demo-pod route=nonce-123 evidence_label=Partial no_submit_ack=yes
+compute_gate=closed
+official eval: eval_circuit --note runpod-fanout-prefilter-123

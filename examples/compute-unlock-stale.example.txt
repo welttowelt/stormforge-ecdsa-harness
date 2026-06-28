@@ -1,0 +1,22 @@
+ACK Validator CLAIM q1152-certified-source-compute-unlock-stale
+route_id=q1152-certified-source-compute-unlock-stale
+host=studio
+owner=Validator
+next=dispatch-one-bounded-proof-range
+frontier_score=1571592960
+qubits=1152
+source_base=58866a2
+source_hash=0123456789abcdef
+source_hash_bound=yes
+evidence_label=Partial
+value_exact_status=CERTIFIED
+proof_status=CERTIFIED
+exact_diff=patch-hash-demo
+expected_avgT_delta=-64
+allocator_order_hash=allocator-order-demo
+validation_owner=Storm-Codex
+budget=max_range=1000
+stop_condition=stop_on_first_dirty_or_budget
+storm_route_ack=yes
+compute_request=dispatch GPU scanner on one bounded owned pod range
+no_submit_ack=yes

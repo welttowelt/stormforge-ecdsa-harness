@@ -75,6 +75,8 @@ for path in \
   scripts/storm-candidate-validation-packet-gate.py \
   scripts/storm-apply-cswap-support-gate.py \
   scripts/storm-source-packet-novelty-gate.py \
+  scripts/storm-compute-restart-gate.py \
+  scripts/storm-compute-unlock-gate.py \
   examples/fleet-owner-claim-vague-token.example.txt \
   examples/official-eval-isolation-helper-storm.example.sh \
   scripts/storm-q1152-avgt-theorem.py \
@@ -123,6 +125,14 @@ for path in \
   examples/source-packet-novelty-hold.example.txt \
   examples/source-packet-novelty-fail.example.txt \
   examples/source-packet-novelty-stale.example.txt \
+  examples/compute-restart-pass.example.txt \
+  examples/compute-restart-hold.example.txt \
+  examples/compute-restart-fail.example.txt \
+  examples/compute-restart-eval-pass.example.txt \
+  examples/compute-unlock-pass.example.txt \
+  examples/compute-unlock-hold.example.txt \
+  examples/compute-unlock-fail.example.txt \
+  examples/compute-unlock-stale.example.txt \
   templates/exact-skip-candidate.json \
   docs/exact-support-miner.md \
   docs/redsky-stormgate-audit-2026-06-20-f8e215b-current.md \
@@ -164,6 +174,8 @@ for path in \
   skills/candidate-validation-packet-gate.md \
   skills/apply-cswap-support-gate.md \
   skills/source-packet-novelty-gate.md \
+  skills/compute-unlock-gate.md \
+  skills/compute-restart-gate.md \
   skills/support-bounded-vented-dead-carry.md \
   skills/paper-gidney-constant-workspace-adder.md \
   skills/paper-mbu-modular-arithmetic.md \
@@ -218,6 +230,8 @@ for path in \
   .agents/skills/candidate-validation-packet-gate/SKILL.md \
   .agents/skills/apply-cswap-support-gate/SKILL.md \
   .agents/skills/source-packet-novelty-gate/SKILL.md \
+  .agents/skills/compute-unlock-gate/SKILL.md \
+  .agents/skills/compute-restart-gate/SKILL.md \
   .agents/skills/paper-gidney-constant-workspace-adder/SKILL.md \
   .agents/skills/paper-mbu-modular-arithmetic/SKILL.md \
   .agents/skills/paper-hrs-dirty-constant-adder/SKILL.md \
@@ -334,6 +348,12 @@ need_text scripts/storm-apply-cswap-support-gate.py "stale source decision" "sta
 need_text scripts/storm-source-packet-novelty-gate.py "source packet novelty gate" "source_packet_novelty_gate="
 need_text scripts/storm-source-packet-novelty-gate.py "bounded source proof decision" "admit-one-bounded-source-proof-no-compute"
 need_text scripts/storm-source-packet-novelty-gate.py "closed ledger failure" "all_current_unknowns_closed"
+need_text scripts/storm-compute-restart-gate.py "compute restart gate" "compute_restart_gate="
+need_text scripts/storm-compute-restart-gate.py "scanner closed failure" "scanner_restart_under_closed_compute_gate"
+need_text scripts/storm-compute-restart-gate.py "scanner route ack failure" "scanner_without_route_ack_and_certified_evidence"
+need_text scripts/storm-compute-unlock-gate.py "compute unlock gate" "compute_unlock_gate="
+need_text scripts/storm-compute-unlock-gate.py "no submit dispatch decision" "compute-unlock-ready-for-storm-dispatch-no-submit"
+need_text scripts/storm-compute-unlock-gate.py "closed compute failure" "compute_closed_without_unlock_packet"
 need_text scripts/storm-claim-ledger.py "claim ledger summary" "claim_ledger_summary"
 need_text scripts/storm-q1152-avgt-theorem.py "q1152 avgT theorem" "q1152_avgt_theorem=pass"
 need_text scripts/storm-q1152-avgt-theorem.py "condition discount" "classical condition"
@@ -356,6 +376,10 @@ need_text skills/apply-cswap-support-gate.md "apply cswap support skill" "per-st
 need_text skills/apply-cswap-support-gate.md "machine readable packet" "frontier_score"
 need_text skills/source-packet-novelty-gate.md "source packet novelty skill" "outside_closed_ledger"
 need_text skills/source-packet-novelty-gate.md "source packet no compute" "no compute"
+need_text skills/compute-restart-gate.md "compute restart skill" "scanner restart"
+need_text skills/compute-restart-gate.md "compute restart no submit" "no submit authority"
+need_text skills/compute-unlock-gate.md "compute unlock skill" "storm_route_ack"
+need_text skills/compute-unlock-gate.md "compute unlock no submit" "no-submit"
 need_text .agents/skills/single-ccx-fanout-throughput/SKILL.md "bridge" "fanout-no-clone-d44.patch"
 need_text .agents/skills/fanout-survivor-phase-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/fanout-burst-triage-gate/SKILL.md "bridge" "Codex-discoverable bridge"
@@ -367,6 +391,8 @@ need_text .agents/skills/local-heavy-compute-gate/SKILL.md "bridge" "Codex-disco
 need_text .agents/skills/candidate-validation-packet-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/apply-cswap-support-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/source-packet-novelty-gate/SKILL.md "bridge" "Codex-discoverable bridge"
+need_text .agents/skills/compute-unlock-gate/SKILL.md "bridge" "Codex-discoverable bridge"
+need_text .agents/skills/compute-restart-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text scripts/storm-cout-host-row-gate.py "cout host row gate" "cout_host_row_gate=pass"
 need_text scripts/storm-cout-host-row-gate.py "safe host row" "SAFE_HOST_ROW"
 need_text scripts/storm-zero-host-accounting-gate.py "zero host accounting" "zero_host_accounting_gate=pass"
@@ -1547,6 +1573,76 @@ elif ! grep -q 'pod_wrapper_dup_gate=fail' "$tmpdir/pod-wrapper-dup-fail.out" ||
   fail=1
 fi
 
+if ! python3 scripts/storm-compute-restart-gate.py \
+  examples/compute-restart-pass.example.txt \
+  --require-pass \
+  >"$tmpdir/compute-restart-pass.out" \
+  2>"$tmpdir/compute-restart-pass.err"; then
+  printf 'public_harness_check=fail compute_restart_pass_failed\n' >&2
+  cat "$tmpdir/compute-restart-pass.err" >&2
+  fail=1
+elif ! grep -q 'compute_restart_gate=pass' "$tmpdir/compute-restart-pass.out" ||
+     ! grep -q 'scanner=true' "$tmpdir/compute-restart-pass.out" ||
+     ! grep -q 'certified_evidence=true' "$tmpdir/compute-restart-pass.out" ||
+     ! grep -q 'scanner-restart-gate-cleared' "$tmpdir/compute-restart-pass.out"; then
+  printf 'public_harness_check=fail compute_restart_pass_output\n' >&2
+  cat "$tmpdir/compute-restart-pass.out" >&2
+  fail=1
+fi
+
+if python3 scripts/storm-compute-restart-gate.py \
+  examples/compute-restart-fail.example.txt \
+  --require-pass \
+  >"$tmpdir/compute-restart-fail.out" \
+  2>"$tmpdir/compute-restart-fail.err"; then
+  printf 'public_harness_check=fail compute_restart_fail_unexpected_pass\n' >&2
+  cat "$tmpdir/compute-restart-fail.out" >&2
+  fail=1
+elif ! grep -q 'compute_restart_gate=fail' "$tmpdir/compute-restart-fail.out" ||
+     ! grep -q 'scanner_restart_under_closed_compute_gate' "$tmpdir/compute-restart-fail.out" ||
+     ! grep -q 'stale_or_manual_scanner_route' "$tmpdir/compute-restart-fail.out" ||
+     ! grep -q 'scanner_without_route_ack_and_certified_evidence' "$tmpdir/compute-restart-fail.out"; then
+  printf 'public_harness_check=fail compute_restart_fail_output\n' >&2
+  cat "$tmpdir/compute-restart-fail.out" >&2
+  cat "$tmpdir/compute-restart-fail.err" >&2
+  fail=1
+fi
+
+if python3 scripts/storm-compute-restart-gate.py \
+  examples/compute-restart-hold.example.txt \
+  --require-pass \
+  >"$tmpdir/compute-restart-hold.out" \
+  2>"$tmpdir/compute-restart-hold.err"; then
+  printf 'public_harness_check=fail compute_restart_hold_unexpected_pass\n' >&2
+  cat "$tmpdir/compute-restart-hold.out" >&2
+  fail=1
+elif ! grep -q 'compute_restart_gate=hold' "$tmpdir/compute-restart-hold.out" ||
+     ! grep -q 'missing_owner' "$tmpdir/compute-restart-hold.out" ||
+     ! grep -q 'missing_route_or_range' "$tmpdir/compute-restart-hold.out" ||
+     ! grep -q 'complete-route-owner-and-gate-evidence' "$tmpdir/compute-restart-hold.out"; then
+  printf 'public_harness_check=fail compute_restart_hold_output\n' >&2
+  cat "$tmpdir/compute-restart-hold.out" >&2
+  cat "$tmpdir/compute-restart-hold.err" >&2
+  fail=1
+fi
+
+if ! python3 scripts/storm-compute-restart-gate.py \
+  examples/compute-restart-eval-pass.example.txt \
+  --require-pass \
+  >"$tmpdir/compute-restart-eval-pass.out" \
+  2>"$tmpdir/compute-restart-eval-pass.err"; then
+  printf 'public_harness_check=fail compute_restart_eval_pass_failed\n' >&2
+  cat "$tmpdir/compute-restart-eval-pass.err" >&2
+  fail=1
+elif ! grep -q 'compute_restart_gate=pass' "$tmpdir/compute-restart-eval-pass.out" ||
+     ! grep -q 'scanner=false' "$tmpdir/compute-restart-eval-pass.out" ||
+     ! grep -q 'official_eval=true' "$tmpdir/compute-restart-eval-pass.out" ||
+     ! grep -q 'no-scanner-restart' "$tmpdir/compute-restart-eval-pass.out"; then
+  printf 'public_harness_check=fail compute_restart_eval_pass_output\n' >&2
+  cat "$tmpdir/compute-restart-eval-pass.out" >&2
+  fail=1
+fi
+
 if ! python3 scripts/storm-local-heavy-compute-gate.py \
   examples/local-heavy-compute-pass.example.txt \
   --require-pass \
@@ -1572,7 +1668,7 @@ if python3 scripts/storm-local-heavy-compute-gate.py \
   cat "$tmpdir/local-heavy-compute-fail.out" >&2
   fail=1
 elif ! grep -q 'local_heavy_compute_gate=fail' "$tmpdir/local-heavy-compute-fail.out" ||
-     ! grep -q 'local_heavy=3' "$tmpdir/local-heavy-compute-fail.out" ||
+     ! grep -q 'local_heavy=4' "$tmpdir/local-heavy-compute-fail.out" ||
      ! grep -q 'local_recurring=1' "$tmpdir/local-heavy-compute-fail.out" ||
      ! grep -q 'stop-mac-local-heavy-compute' "$tmpdir/local-heavy-compute-fail.out"; then
   printf 'public_harness_check=fail local_heavy_compute_fail_output\n' >&2
@@ -1794,6 +1890,80 @@ elif ! grep -q 'source_packet_novelty_gate=fail' "$tmpdir/source-packet-novelty-
   printf 'public_harness_check=fail source_packet_novelty_stale_output\n' >&2
   cat "$tmpdir/source-packet-novelty-stale.out" >&2
   cat "$tmpdir/source-packet-novelty-stale.err" >&2
+  fail=1
+fi
+
+if ! python3 scripts/storm-compute-unlock-gate.py \
+  examples/compute-unlock-pass.example.txt \
+  --require-pass \
+  >"$tmpdir/compute-unlock-pass.out" \
+  2>"$tmpdir/compute-unlock-pass.err"; then
+  printf 'public_harness_check=fail compute_unlock_pass_failed\n' >&2
+  cat "$tmpdir/compute-unlock-pass.err" >&2
+  fail=1
+elif ! grep -q 'compute_unlock_gate=pass' "$tmpdir/compute-unlock-pass.out" ||
+     ! grep -q 'storm_route_ack=true' "$tmpdir/compute-unlock-pass.out" ||
+     ! grep -q 'source_hash_bound=true' "$tmpdir/compute-unlock-pass.out" ||
+     ! grep -q 'value_exact=true' "$tmpdir/compute-unlock-pass.out" ||
+     ! grep -q 'certified=true' "$tmpdir/compute-unlock-pass.out" ||
+     ! grep -q 'decision=compute-unlock-ready-for-storm-dispatch-no-submit' "$tmpdir/compute-unlock-pass.out"; then
+  printf 'public_harness_check=fail compute_unlock_pass_output\n' >&2
+  cat "$tmpdir/compute-unlock-pass.out" >&2
+  fail=1
+fi
+
+if python3 scripts/storm-compute-unlock-gate.py \
+  examples/compute-unlock-hold.example.txt \
+  --require-pass \
+  >"$tmpdir/compute-unlock-hold.out" \
+  2>"$tmpdir/compute-unlock-hold.err"; then
+  printf 'public_harness_check=fail compute_unlock_hold_unexpected_pass\n' >&2
+  cat "$tmpdir/compute-unlock-hold.out" >&2
+  fail=1
+elif ! grep -q 'compute_unlock_gate=hold' "$tmpdir/compute-unlock-hold.out" ||
+     ! grep -q 'missing_compute_request' "$tmpdir/compute-unlock-hold.out" ||
+     ! grep -q 'missing_storm_route_ack' "$tmpdir/compute-unlock-hold.out" ||
+     ! grep -q 'missing_budget' "$tmpdir/compute-unlock-hold.out" ||
+     ! grep -q 'missing_stop_condition' "$tmpdir/compute-unlock-hold.out"; then
+  printf 'public_harness_check=fail compute_unlock_hold_output\n' >&2
+  cat "$tmpdir/compute-unlock-hold.out" >&2
+  cat "$tmpdir/compute-unlock-hold.err" >&2
+  fail=1
+fi
+
+if python3 scripts/storm-compute-unlock-gate.py \
+  examples/compute-unlock-fail.example.txt \
+  --require-pass \
+  >"$tmpdir/compute-unlock-fail.out" \
+  2>"$tmpdir/compute-unlock-fail.err"; then
+  printf 'public_harness_check=fail compute_unlock_fail_unexpected_pass\n' >&2
+  cat "$tmpdir/compute-unlock-fail.out" >&2
+  fail=1
+elif ! grep -q 'compute_unlock_gate=fail' "$tmpdir/compute-unlock-fail.out" ||
+     ! grep -q 'compute_closed_without_unlock_packet' "$tmpdir/compute-unlock-fail.out" ||
+     ! grep -q 'prefilter_is_not_compute_unlock' "$tmpdir/compute-unlock-fail.out" ||
+     ! grep -q 'dirty_or_failed_validation_evidence' "$tmpdir/compute-unlock-fail.out" ||
+     ! grep -q 'missing_storm_route_ack' "$tmpdir/compute-unlock-fail.out"; then
+  printf 'public_harness_check=fail compute_unlock_fail_output\n' >&2
+  cat "$tmpdir/compute-unlock-fail.out" >&2
+  cat "$tmpdir/compute-unlock-fail.err" >&2
+  fail=1
+fi
+
+if python3 scripts/storm-compute-unlock-gate.py \
+  examples/compute-unlock-stale.example.txt \
+  --require-pass \
+  >"$tmpdir/compute-unlock-stale.out" \
+  2>"$tmpdir/compute-unlock-stale.err"; then
+  printf 'public_harness_check=fail compute_unlock_stale_unexpected_pass\n' >&2
+  cat "$tmpdir/compute-unlock-stale.out" >&2
+  fail=1
+elif ! grep -q 'compute_unlock_gate=fail' "$tmpdir/compute-unlock-stale.out" ||
+     ! grep -q 'stale_source_base' "$tmpdir/compute-unlock-stale.out" ||
+     ! grep -q 'source_base=58866a2' "$tmpdir/compute-unlock-stale.out"; then
+  printf 'public_harness_check=fail compute_unlock_stale_output\n' >&2
+  cat "$tmpdir/compute-unlock-stale.out" >&2
+  cat "$tmpdir/compute-unlock-stale.err" >&2
   fail=1
 fi
 

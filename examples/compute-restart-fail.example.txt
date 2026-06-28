@@ -1,0 +1,3 @@
+ACK Worker CLAIM stale-q1152-fanout skill=redsky+ecdsafail-fleet-overwatch file=runpod:demo-pod:demo-island/search_driver.sh next=harvest owner=Worker route=[1012000000,1013000000) pod=demo-pod evidence_label=Prefilter no_submit_ack=yes
+compute_gate=closed queue=pod_dispatch=empty_or_no_eligible_job stale_gate_warning=manual_gpu_island2_missing_strict_stormgate_contract
+restart gpu_island2 1012000000 200000

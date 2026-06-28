@@ -1,0 +1,3 @@
+status q1152-scanner skill=redsky pod=demo-pod next=bounded-scan no_submit_ack=yes
+compute_gate=open route_ack=yes source-hash-bound support_status=CERTIFIED
+gpu_island2 1000 200000

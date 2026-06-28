@@ -163,6 +163,12 @@ agent instructions or used as a preflight before route work:
   paid instance survives audit.
 - `skills/local-heavy-compute-gate.md`: block Mac-local heavy ECDSA compute and
   recurring watcher wrappers from laptop process snapshots.
+- `skills/compute-restart-gate.md`: block scanner restarts when compute is
+  closed, no route ACK exists, or no certified source/full-clean evidence exists.
+- `skills/compute-unlock-gate.md`: require a source-hash-bound certified
+  value-exact packet, exact diff, negative edge, allocator order, validation
+  owner, budget, stop condition, Storm route ACK, and no-submit ACK before
+  compute can reopen.
 - `skills/candidate-validation-packet-gate.md`: check remote validation packets
   for host, owner, ops, score edge, c/p/a, artifacts, and no-submit discipline
   before FOR-AKASH language.
@@ -250,6 +256,8 @@ The bridge names are:
 - `official-eval-isolation-gate`
 - `fleet-owner-claim-gate`
 - `local-heavy-compute-gate`
+- `compute-restart-gate`
+- `compute-unlock-gate`
 - `candidate-validation-packet-gate`
 - `paper-gidney-constant-workspace-adder`
 - `paper-mbu-modular-arithmetic`

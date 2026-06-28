@@ -1,0 +1,19 @@
+ACK Validator CLAIM q1152-source-compute-hold
+route_id=q1152-source-compute-hold
+host=studio
+owner=Validator
+next=add-storm-route-ack-budget-and-stop-condition
+frontier_score=1571592960
+qubits=1152
+source_base=d44cad3
+source_hash=0123456789abcdef
+source_hash_bound=yes
+evidence_label=Partial
+value_exact_status=CERTIFIED
+proof_status=CERTIFIED
+exact_diff=patch-hash-demo
+expected_avgT_delta=-64
+allocator_order_hash=allocator-order-demo
+validation_owner=Storm-Codex
+intent=preflight packet only; add missing fields before any worker request
+no_submit_ack=yes

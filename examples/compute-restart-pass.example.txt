@@ -1,0 +1,3 @@
+ACK Worker CLAIM q1152-certified-scanner skill=redsky+route-compute-gate file=runpod:demo-pod:gpu_forever.sh next=bounded-scan owner=Worker route=[1000,2000) pod=demo-pod evidence_label=Partial no_submit_ack=yes
+compute_gate=open route_ack=yes source-hash-bound support_status=CERTIFIED expected_avgT_delta=-12
+process gpu_forever.sh 1000 1000 100000
