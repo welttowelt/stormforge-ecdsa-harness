@@ -1,11 +1,11 @@
-route_id=apply-cswap-step-bit-proof
+route_id=apply-cswap-stale-source
 route=apply-cswap-step-bit-proof
 host=studio
 owner=validator
-next=source-proof-review
+next=refresh-frontier-before-proof
 frontier_score=1571592960
 qubits=1152
-source_base=d44cad3
+source_base=deadbee
 source_hash=0123456789abcdef
 source_location=src/point_add/trailmix_ludicrous/gcd.rs:1591
 primitive_family=apply_cswap_exact_zero

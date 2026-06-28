@@ -1,9 +1,15 @@
+route_id=apply-cswap-step-proof-incomplete
 route=apply-cswap-step-proof-incomplete
 host=studio
+owner=validator
+next=add-bit-source-hash-and-invariant
+frontier_score=1571592960
+qubits=1152
 source_base=d44cad3
 source_location=src/point_add/trailmix_ludicrous/gcd.rs:1591
 primitive_family=apply_cswap_exact_zero
 step=203
+evidence_label=Partial
 support_status=UNKNOWN
 support_certificate=needs per-bit source-hash-bound public proof
 validation_target=trusted full 0/0/0 after proof

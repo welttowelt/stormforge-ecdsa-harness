@@ -117,6 +117,7 @@ for path in \
   examples/apply-cswap-support-pass.example.txt \
   examples/apply-cswap-support-hold.example.txt \
   examples/apply-cswap-support-fail.example.txt \
+  examples/apply-cswap-support-stale.example.txt \
   templates/exact-skip-candidate.json \
   docs/exact-support-miner.md \
   docs/redsky-stormgate-audit-2026-06-20-f8e215b-current.md \
@@ -322,6 +323,7 @@ need_text scripts/storm-candidate-validation-packet-gate.py "candidate validatio
 need_text scripts/storm-candidate-validation-packet-gate.py "akash handoff decision" "candidate-for-akash-handoff-no-submit"
 need_text scripts/storm-apply-cswap-support-gate.py "apply cswap support gate" "apply_cswap_support_gate="
 need_text scripts/storm-apply-cswap-support-gate.py "per step bit decision" "complete-per-step-per-bit-proof"
+need_text scripts/storm-apply-cswap-support-gate.py "stale source decision" "stale_source_base"
 need_text scripts/storm-claim-ledger.py "claim ledger summary" "claim_ledger_summary"
 need_text scripts/storm-q1152-avgt-theorem.py "q1152 avgT theorem" "q1152_avgt_theorem=pass"
 need_text scripts/storm-q1152-avgt-theorem.py "condition discount" "classical condition"
@@ -341,6 +343,7 @@ need_text skills/pod-wrapper-dup-gate.md "pod wrapper duplicate skill" "Duplicat
 need_text skills/local-heavy-compute-gate.md "local heavy compute skill" "Mac-local heavy compute"
 need_text skills/candidate-validation-packet-gate.md "candidate validation skill" "FOR-AKASH"
 need_text skills/apply-cswap-support-gate.md "apply cswap support skill" "per-step and per-bit"
+need_text skills/apply-cswap-support-gate.md "machine readable packet" "frontier_score"
 need_text .agents/skills/single-ccx-fanout-throughput/SKILL.md "bridge" "fanout-no-clone-d44.patch"
 need_text .agents/skills/fanout-survivor-phase-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/fanout-burst-triage-gate/SKILL.md "bridge" "Codex-discoverable bridge"
@@ -1644,6 +1647,10 @@ if ! python3 scripts/storm-apply-cswap-support-gate.py \
   fail=1
 elif ! grep -q 'apply_cswap_support_gate=pass' "$tmpdir/apply-cswap-support-pass.out" ||
      ! grep -q 'exact_scope=true' "$tmpdir/apply-cswap-support-pass.out" ||
+     ! grep -q 'route_id=apply-cswap-step-bit-proof' "$tmpdir/apply-cswap-support-pass.out" ||
+     ! grep -q 'frontier_score=1571592960.0' "$tmpdir/apply-cswap-support-pass.out" ||
+     ! grep -q 'qubits=1152' "$tmpdir/apply-cswap-support-pass.out" ||
+     ! grep -q 'evidence_label=Partial' "$tmpdir/apply-cswap-support-pass.out" ||
      ! grep -q 'invariants=swp_zero' "$tmpdir/apply-cswap-support-pass.out" ||
      ! grep -q 'ready-for-source-proof-review-no-submit' "$tmpdir/apply-cswap-support-pass.out"; then
   printf 'public_harness_check=fail apply_cswap_support_pass_output\n' >&2
@@ -1680,10 +1687,29 @@ if python3 scripts/storm-apply-cswap-support-gate.py \
 elif ! grep -q 'apply_cswap_support_gate=fail' "$tmpdir/apply-cswap-support-fail.out" ||
      ! grep -q 'broad_cswap_delete_scope' "$tmpdir/apply-cswap-support-fail.out" ||
      ! grep -q 'support_counterexample' "$tmpdir/apply-cswap-support-fail.out" ||
+     ! grep -q 'premature_compute_request' "$tmpdir/apply-cswap-support-fail.out" ||
+     ! grep -q 'support_packet_overclaims_full_run' "$tmpdir/apply-cswap-support-fail.out" ||
      ! grep -q 'premature_submit_or_akash_language' "$tmpdir/apply-cswap-support-fail.out"; then
   printf 'public_harness_check=fail apply_cswap_support_fail_output\n' >&2
   cat "$tmpdir/apply-cswap-support-fail.out" >&2
   cat "$tmpdir/apply-cswap-support-fail.err" >&2
+  fail=1
+fi
+
+if python3 scripts/storm-apply-cswap-support-gate.py \
+  examples/apply-cswap-support-stale.example.txt \
+  --require-pass \
+  >"$tmpdir/apply-cswap-support-stale.out" \
+  2>"$tmpdir/apply-cswap-support-stale.err"; then
+  printf 'public_harness_check=fail apply_cswap_support_stale_unexpected_pass\n' >&2
+  cat "$tmpdir/apply-cswap-support-stale.out" >&2
+  fail=1
+elif ! grep -q 'apply_cswap_support_gate=fail' "$tmpdir/apply-cswap-support-stale.out" ||
+     ! grep -q 'stale_source_base' "$tmpdir/apply-cswap-support-stale.out" ||
+     ! grep -q 'source_base=deadbee' "$tmpdir/apply-cswap-support-stale.out"; then
+  printf 'public_harness_check=fail apply_cswap_support_stale_output\n' >&2
+  cat "$tmpdir/apply-cswap-support-stale.out" >&2
+  cat "$tmpdir/apply-cswap-support-stale.err" >&2
   fail=1
 fi
 

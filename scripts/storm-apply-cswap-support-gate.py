@@ -20,8 +20,14 @@ NO_SUBMIT_RE = re.compile(r"\bno_submit_ack\s*=\s*yes\b", re.IGNORECASE)
 SOURCE_BASE_RE = re.compile(r"\b(?:source_base|source|base|source commit)\s*[=:]\s*([0-9a-f]{6,40})\b", re.IGNORECASE)
 SOURCE_HASH_RE = re.compile(r"\b(?:source_hash|source-hash|source_snippet_hash)\s*[=:]\s*([0-9a-f]{8,64})\b", re.IGNORECASE)
 SOURCE_LOCATION_RE = re.compile(r"\b(?:source_location|file|site)\s*[=:]\s*[^\s]*gcd\.rs:[0-9]+\b", re.IGNORECASE)
+ROUTE_ID_RE = re.compile(r"\broute_id\s*[=:]\s*([A-Za-z0-9_.:/@+-]+)\b", re.IGNORECASE)
+OWNER_RE = re.compile(r"\b(?:owner|agent|validator)\s*[=:]\s*([A-Za-z0-9_.-]+)\b|\bACK\s+([A-Za-z0-9_.-]+)\b", re.IGNORECASE)
+NEXT_RE = re.compile(r"\bnext\s*[=:]\s*([A-Za-z0-9_.:/@+-]+)\b", re.IGNORECASE)
+FRONTIER_SCORE_RE = re.compile(r"\bfrontier(?:_score| score)?\s*[=:]\s*([0-9][0-9_]*(?:\.[0-9]+)?)\b", re.IGNORECASE)
+QUBITS_RE = re.compile(r"\b(?:q|qubits?)\s*[=:]\s*([0-9][0-9_]*)\b", re.IGNORECASE)
 STEP_RE = re.compile(r"\b(?:step|call|trace_context_call|apply_step)\s*[=:]\s*([0-9]+)\b", re.IGNORECASE)
 BIT_RE = re.compile(r"\b(?:bit|j|trace_context_bit|limb)\s*[=:]\s*([0-9]+)\b", re.IGNORECASE)
+EVIDENCE_LABEL_RE = re.compile(r"\bevidence_label\s*[=:]\s*(Prefilter|Partial|Local full run|Promoted)\b", re.IGNORECASE)
 SUPPORT_CERT_RE = re.compile(r"\bsupport_(?:status|proof)\s*[=:]\s*CERTIFIED\b|\bproof_status\s*[=:]\s*CERTIFIED\b", re.IGNORECASE)
 SUPPORT_UNKNOWN_RE = re.compile(r"\bsupport_(?:status|proof)\s*[=:]\s*UNKNOWN\b|\bproof_status\s*[=:]\s*UNKNOWN\b", re.IGNORECASE)
 SUPPORT_COUNTER_RE = re.compile(r"\bsupport_(?:status|proof)\s*[=:]\s*COUNTEREXAMPLE\b|\bproof_status\s*[=:]\s*COUNTEREXAMPLE\b", re.IGNORECASE)
@@ -33,6 +39,12 @@ DELTA_RE = re.compile(r"\b(?:expected_avgT_delta|expected_delta|expected_ops_del
 VALIDATION_RE = re.compile(r"\b(?:validation_target|candidate-validation-packet|trusted full|official|0/0/0|residual validation)\b", re.IGNORECASE)
 BROAD_RE = re.compile(r"\b(?:blanket|global|all\s+(?:apply\s+)?cswaps?|all\s+bits|whole\s+(?:apply|block)|delete\s+all|final\s+block)\b", re.IGNORECASE)
 PREMATURE_RE = re.compile(r"\b(?:FOR[- ]AKASH|WINNER|mobile alert|submit(?:ted)?|ready[- ]to[- ]submit|Akash-ready)\b", re.IGNORECASE)
+COMPUTE_REQUEST_RE = re.compile(
+    r"\b(?:launch|start|scale|fire\s+up|spin\s+up|rent)\b.{0,80}\b(?:pods?|runpod|vast|akash|gpus?|cpus?|scanners?|nonce)\b|"
+    r"\b(?:gpus?|cpus?|nonce|island)\s+search\b|"
+    r"\bbrute\s+force\b",
+    re.IGNORECASE,
+)
 LOCAL_RE = re.compile(r"\b(?:host|machine)\s*[=:]\s*(?:mac|macbook|local|darwin)\b|\b(?:MacBook|mac-local|/Users/[A-Za-z0-9_.-]+)\b", re.IGNORECASE)
 REMOTE_RE = re.compile(r"\b(?:host|machine)\s*[=:]\s*(?:studio|runpod|vast|pod|remote)\b|\b(?:studio|runpod:|vast:|owned pod|owned-pod)\b", re.IGNORECASE)
 
@@ -52,15 +64,27 @@ def first_float(pattern: re.Pattern[str], text: str) -> float | None:
     match = pattern.search(text)
     if not match:
         return None
-    return float(match.group(1))
+    return float(match.group(1).replace("_", ""))
 
 
-def inspect(text: str, expected_source: str) -> dict[str, object]:
+def inspect(text: str, expected_source: str, expected_qubits: int) -> dict[str, object]:
     step = first_int(STEP_RE, text)
     bit = first_int(BIT_RE, text)
     delta = first_float(DELTA_RE, text)
+    frontier_score = first_float(FRONTIER_SCORE_RE, text)
+    qubits = first_int(QUBITS_RE, text)
     source_base_match = SOURCE_BASE_RE.search(text)
     source_base = source_base_match.group(1) if source_base_match else ""
+    route_id_match = ROUTE_ID_RE.search(text)
+    route_id = route_id_match.group(1) if route_id_match else ""
+    owner_match = OWNER_RE.search(text)
+    owner = ""
+    if owner_match:
+        owner = next((group for group in owner_match.groups() if group), "")
+    next_match = NEXT_RE.search(text)
+    next_action = next_match.group(1) if next_match else ""
+    evidence_match = EVIDENCE_LABEL_RE.search(text)
+    evidence_label = evidence_match.group(1) if evidence_match else ""
     invariant_types = []
     if SWP_ZERO_RE.search(text):
         invariant_types.append("swp_zero")
@@ -80,6 +104,7 @@ def inspect(text: str, expected_source: str) -> dict[str, object]:
     has_validation = bool(VALIDATION_RE.search(text))
     has_broad_scope = bool(BROAD_RE.search(text))
     has_premature_language = bool(PREMATURE_RE.search(text))
+    has_compute_request = bool(COMPUTE_REQUEST_RE.search(text))
     has_local_host = bool(LOCAL_RE.search(text))
     has_remote_host = bool(REMOTE_RE.search(text))
     has_negative_delta = delta is not None and delta < 0
@@ -92,21 +117,37 @@ def inspect(text: str, expected_source: str) -> dict[str, object]:
         failures.append("broad_cswap_delete_scope")
     if has_premature_language:
         failures.append("premature_submit_or_akash_language")
+    if has_compute_request:
+        failures.append("premature_compute_request")
     if has_local_host:
         failures.append("local_heavy_validation_context")
     if not has_no_submit:
         failures.append("missing_no_submit_ack")
     if has_support_counter:
         failures.append("support_counterexample")
+    if expected_source and source_base and source_base != expected_source:
+        failures.append("stale_source_base")
+    if expected_qubits > 0 and qubits is not None and qubits != expected_qubits:
+        failures.append("wrong_qubit_tier")
+    if evidence_label.lower() in {"local full run", "promoted"}:
+        failures.append("support_packet_overclaims_full_run")
 
     if not has_apply_cswap:
         holds.append("missing_apply_cswap_route")
+    if not route_id:
+        holds.append("missing_route_id")
+    if not owner:
+        holds.append("missing_owner")
+    if not next_action:
+        holds.append("missing_next_action")
     if not has_source_location:
         holds.append("missing_gcd_source_location")
     if not source_base:
         holds.append("missing_source_base")
-    elif expected_source and source_base != expected_source:
-        warnings.append("source_base_not_expected_frontier")
+    if frontier_score is None:
+        holds.append("missing_frontier_score")
+    if qubits is None:
+        holds.append("missing_qubits")
     if not has_source_hash:
         holds.append("missing_source_hash")
     if not has_source_bound:
@@ -119,6 +160,10 @@ def inspect(text: str, expected_source: str) -> dict[str, object]:
         holds.append("support_unknown")
     elif not has_support_certified:
         holds.append("missing_support_certified")
+    if not evidence_label:
+        holds.append("missing_evidence_label")
+    elif evidence_label.lower() not in {"prefilter", "partial"}:
+        holds.append("evidence_label_not_source_proof")
     if not has_certificate:
         holds.append("missing_support_certificate")
     if not has_validation:
@@ -145,9 +190,16 @@ def inspect(text: str, expected_source: str) -> dict[str, object]:
         "decision": decision,
         "source_base": source_base,
         "expected_source": expected_source,
+        "route_id": route_id,
+        "owner": owner,
+        "next_action": next_action,
+        "frontier_score": frontier_score,
+        "qubits": qubits,
+        "expected_qubits": expected_qubits,
         "step": step,
         "bit": bit,
         "delta": delta,
+        "evidence_label": evidence_label,
         "invariant_types": invariant_types,
         "apply_cswap": has_apply_cswap,
         "source_hash": has_source_hash,
@@ -162,6 +214,7 @@ def inspect(text: str, expected_source: str) -> dict[str, object]:
         "validation_boundary": has_validation,
         "broad_scope": has_broad_scope,
         "premature_language": has_premature_language,
+        "compute_request": has_compute_request,
         "remote_host": has_remote_host,
         "local_host": has_local_host,
         "failures": failures,
@@ -181,13 +234,18 @@ def join(values: object) -> str:
 def text_summary(row: dict[str, object]) -> str:
     return (
         f"apply_cswap_support_gate={row['gate']} "
-        f"apply_cswap={str(row['apply_cswap']).lower()} exact_scope={str(row['exact_scope']).lower()} "
+        f"route_id={row['route_id'] or 'missing'} owner={row['owner'] or 'missing'} "
+        f"next={row['next_action'] or 'missing'} apply_cswap={str(row['apply_cswap']).lower()} "
+        f"exact_scope={str(row['exact_scope']).lower()} "
         f"step={row['step']} bit={row['bit']} invariants={join(row['invariant_types'])} "
         f"source_base={row['source_base'] or 'missing'} expected_source={row['expected_source'] or 'none'} "
+        f"frontier_score={row['frontier_score']} qubits={row['qubits']} expected_qubits={row['expected_qubits']} "
         f"source_hash={str(row['source_hash']).lower()} source_location={str(row['source_location']).lower()} "
         f"source_bound={str(row['source_bound']).lower()} support_certified={str(row['support_certified']).lower()} "
+        f"evidence_label={row['evidence_label'] or 'missing'} "
         f"certificate={str(row['certificate']).lower()} validation_boundary={str(row['validation_boundary']).lower()} "
         f"no_submit_ack={str(row['no_submit_ack']).lower()} remote_host={str(row['remote_host']).lower()} "
+        f"compute_request={str(row['compute_request']).lower()} "
         f"delta={row['delta']} decision={row['decision']} failures={join(row['failures'])} "
         f"holds={join(row['holds'])} warnings={join(row['warnings'])}"
     )
@@ -197,6 +255,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("inputs", nargs="+", type=Path)
     parser.add_argument("--expected-source", default="d44cad3")
+    parser.add_argument("--expected-qubits", type=int, default=1152)
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--require-pass", action="store_true")
     args = parser.parse_args()
@@ -206,7 +265,7 @@ def main() -> int:
         print(f"apply_cswap_support_gate=fail missing_inputs={','.join(missing)}", file=sys.stderr)
         return 2
 
-    row = inspect(read_text(args.inputs), args.expected_source)
+    row = inspect(read_text(args.inputs), args.expected_source, args.expected_qubits)
     if args.json:
         print(json.dumps(row, sort_keys=True))
     else:
