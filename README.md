@@ -158,6 +158,9 @@ agent instructions or used as a preflight before route work:
   into score claims.
 - `skills/official-eval-isolation-gate.md`: require lock or isolated workdir
   evidence before remote official eval output can become submit-grade evidence.
+- `skills/fleet-owner-claim-gate.md`: require owner, pod identity, route/range,
+  active watcher/log evidence, next action, and `no_submit_ack=yes` before a
+  paid instance survives audit.
 - `skills/paper-gidney-constant-workspace-adder.md`: apply Gidney 2025
   constant-workspace adders only after a toy proof and one-callsite residual
   gate.
@@ -240,6 +243,7 @@ The bridge names are:
 - `fanout-survivor-phase-gate`
 - `official-fast-exit-eval`
 - `official-eval-isolation-gate`
+- `fleet-owner-claim-gate`
 - `paper-gidney-constant-workspace-adder`
 - `paper-mbu-modular-arithmetic`
 - `paper-hrs-dirty-constant-adder`

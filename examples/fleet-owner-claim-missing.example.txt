@@ -1,0 +1,3 @@
+ACK Worker CLAIM q1152-fanout-runpod
+pod=pod-demo-123
+next=watch-dashboard

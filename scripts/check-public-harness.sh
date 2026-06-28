@@ -67,6 +67,7 @@ for path in \
   scripts/storm-fanout-qstate-guard.py \
   scripts/storm-fanout-survivor-phase-gate.py \
   scripts/storm-official-eval-isolation-gate.py \
+  scripts/storm-fleet-owner-claim-gate.py \
   scripts/storm-q1152-avgt-theorem.py \
   scripts/storm-cout-host-row-gate.py \
   scripts/storm-zero-host-accounting-gate.py \
@@ -92,6 +93,8 @@ for path in \
   examples/official-eval-isolation-unsafe.example.sh \
   examples/official-eval-isolation-locked.example.sh \
   examples/official-eval-isolation-workdir.example.sh \
+  examples/fleet-owner-claim-pass.example.txt \
+  examples/fleet-owner-claim-missing.example.txt \
   templates/exact-skip-candidate.json \
   docs/exact-support-miner.md \
   docs/redsky-stormgate-audit-2026-06-20-f8e215b-current.md \
@@ -126,6 +129,7 @@ for path in \
   skills/fanout-survivor-phase-gate.md \
   skills/official-fast-exit-eval.md \
   skills/official-eval-isolation-gate.md \
+  skills/fleet-owner-claim-gate.md \
   skills/support-bounded-vented-dead-carry.md \
   skills/paper-gidney-constant-workspace-adder.md \
   skills/paper-mbu-modular-arithmetic.md \
@@ -173,6 +177,7 @@ for path in \
   .agents/skills/fanout-survivor-phase-gate/SKILL.md \
   .agents/skills/official-fast-exit-eval/SKILL.md \
   .agents/skills/official-eval-isolation-gate/SKILL.md \
+  .agents/skills/fleet-owner-claim-gate/SKILL.md \
   .agents/skills/paper-gidney-constant-workspace-adder/SKILL.md \
   .agents/skills/paper-mbu-modular-arithmetic/SKILL.md \
   .agents/skills/paper-hrs-dirty-constant-adder/SKILL.md \
@@ -272,6 +277,8 @@ need_text scripts/storm-fanout-survivor-phase-gate.py "survivor phase gate" "fan
 need_text scripts/storm-fanout-survivor-phase-gate.py "phase gap" "phase_gap"
 need_text scripts/storm-official-eval-isolation-gate.py "official eval isolation gate" "official_eval_isolation_gate="
 need_text scripts/storm-official-eval-isolation-gate.py "shared artifact race" "shared_artifact_without_lock_or_isolation"
+need_text scripts/storm-fleet-owner-claim-gate.py "fleet owner claim gate" "fleet_owner_claim_gate="
+need_text scripts/storm-fleet-owner-claim-gate.py "no submit ack" "no_submit_ack"
 need_text scripts/storm-q1152-avgt-theorem.py "q1152 avgT theorem" "q1152_avgt_theorem=pass"
 need_text scripts/storm-q1152-avgt-theorem.py "condition discount" "classical condition"
 need_text patches/fanout-no-clone-d44.patch "fanout no clone patch" "rewrite_first_target_fanout\\(&ops"
@@ -283,10 +290,12 @@ need_text skills/fanout-runpod-qstate-guard.md "qstate guard skill" "qstate_guar
 need_text skills/fanout-survivor-phase-gate.md "survivor phase skill" "phase-aware official eval"
 need_text skills/official-fast-exit-eval.md "official fast exit" "dirty-triage"
 need_text skills/official-eval-isolation-gate.md "official eval isolation skill" "triage-only evidence"
+need_text skills/fleet-owner-claim-gate.md "fleet owner claim skill" "paid instance survives audit"
 need_text .agents/skills/single-ccx-fanout-throughput/SKILL.md "bridge" "fanout-no-clone-d44.patch"
 need_text .agents/skills/fanout-survivor-phase-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/official-fast-exit-eval/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text .agents/skills/official-eval-isolation-gate/SKILL.md "bridge" "Codex-discoverable bridge"
+need_text .agents/skills/fleet-owner-claim-gate/SKILL.md "bridge" "Codex-discoverable bridge"
 need_text scripts/storm-cout-host-row-gate.py "cout host row gate" "cout_host_row_gate=pass"
 need_text scripts/storm-cout-host-row-gate.py "safe host row" "SAFE_HOST_ROW"
 need_text scripts/storm-zero-host-accounting-gate.py "zero host accounting" "zero_host_accounting_gate=pass"
@@ -1260,6 +1269,39 @@ elif ! grep -q 'official_eval_isolation_gate=pass' "$tmpdir/official-eval-isolat
      ! grep -q 'isolated=true' "$tmpdir/official-eval-isolation-workdir.out"; then
   printf 'public_harness_check=fail official_eval_isolation_workdir_output\n' >&2
   cat "$tmpdir/official-eval-isolation-workdir.out" >&2
+  fail=1
+fi
+
+if ! python3 scripts/storm-fleet-owner-claim-gate.py \
+  examples/fleet-owner-claim-pass.example.txt \
+  --require-pass \
+  >"$tmpdir/fleet-owner-claim-pass.out" \
+  2>"$tmpdir/fleet-owner-claim-pass.err"; then
+  printf 'public_harness_check=fail fleet_owner_claim_pass_failed\n' >&2
+  cat "$tmpdir/fleet-owner-claim-pass.err" >&2
+  fail=1
+elif ! grep -q 'fleet_owner_claim_gate=pass' "$tmpdir/fleet-owner-claim-pass.out" ||
+     ! grep -q 'no_submit_ack=true' "$tmpdir/fleet-owner-claim-pass.out" ||
+     ! grep -q 'active_process_or_log=true' "$tmpdir/fleet-owner-claim-pass.out"; then
+  printf 'public_harness_check=fail fleet_owner_claim_pass_output\n' >&2
+  cat "$tmpdir/fleet-owner-claim-pass.out" >&2
+  fail=1
+fi
+
+if python3 scripts/storm-fleet-owner-claim-gate.py \
+  examples/fleet-owner-claim-missing.example.txt \
+  --require-pass \
+  >"$tmpdir/fleet-owner-claim-missing.out" \
+  2>"$tmpdir/fleet-owner-claim-missing.err"; then
+  printf 'public_harness_check=fail fleet_owner_claim_missing_unexpected_pass\n' >&2
+  cat "$tmpdir/fleet-owner-claim-missing.out" >&2
+  fail=1
+elif ! grep -q 'fleet_owner_claim_gate=fail' "$tmpdir/fleet-owner-claim-missing.out" ||
+     ! grep -q 'route_or_range' "$tmpdir/fleet-owner-claim-missing.out" ||
+     ! grep -q 'no_submit_ack' "$tmpdir/fleet-owner-claim-missing.out"; then
+  printf 'public_harness_check=fail fleet_owner_claim_missing_output\n' >&2
+  cat "$tmpdir/fleet-owner-claim-missing.out" >&2
+  cat "$tmpdir/fleet-owner-claim-missing.err" >&2
   fail=1
 fi
 
